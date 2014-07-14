@@ -1,0 +1,5 @@
+TODO
+ - Switch bare pointers to unique_ptr, shared_ptr
+ - convert pattern of class Initialize(), Shutdown(), mInitialize() into base class.
+
+ * Use DirectXTK math instead of DirectX::Math

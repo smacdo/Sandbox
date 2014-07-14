@@ -1,0 +1,3 @@
+
+del *.cso
+del *.fxo
