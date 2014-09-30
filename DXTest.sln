@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXTest", "DXTest\DXTest.vcxproj", "{7C997931-48A7-4AA1-B460-8805706FE994}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXTK_Desktop_2013", "DirectXTK\DirectXTK_Desktop_2013.vcxproj", "{E0B52AE7-E160-4D32-BF3F-910B785E5A8E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjConverter", "ObjConverter\ObjConverter.csproj", "{7B9A0CFD-8A15-472E-A4D0-8C8CD5B499F2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "UnitTests\UnitTests.vcxproj", "{D167B5DE-3BC8-4008-9983-CFFCC96124C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +61,18 @@ Global
 		{7B9A0CFD-8A15-472E-A4D0-8C8CD5B499F2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{7B9A0CFD-8A15-472E-A4D0-8C8CD5B499F2}.Release|Win32.ActiveCfg = Release|Any CPU
 		{7B9A0CFD-8A15-472E-A4D0-8C8CD5B499F2}.Release|x64.ActiveCfg = Release|Any CPU
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Debug|Win32.Build.0 = Debug|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Debug|x64.ActiveCfg = Debug|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Release|Win32.ActiveCfg = Release|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Release|Win32.Build.0 = Release|Win32
+		{D167B5DE-3BC8-4008-9983-CFFCC96124C0}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
