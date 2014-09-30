@@ -7,6 +7,11 @@
 namespace Utils
 {
 	std::wstring ConvertUtf8ToWString(const std::string& input);
+    std::string ConvertUtf16ToUtf8(const std::wstring& input);
+
+    std::wstring GetErrorMessageFromHResult(unsigned long errorCode);
+    std::wstring GetErrorMessageFromWinApiErrorCode(unsigned long windowsApiErrorCode);
+
     bool EndsWith(const std::string&fullString, const std::string& ending);
     float RandFloat();
     float RandFloat(float min, float max);

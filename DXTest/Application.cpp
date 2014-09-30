@@ -166,7 +166,7 @@ void Application::InitializeWindows(int& screenWidth, int& screenHeight)
 
 	if (mHwnd == nullptr)
 	{
-		throw WindowsApiException("Failed to initialize window via CreateWindowEx");
+		throw WindowsApiException(GetLastError(), L"Failed to initialize main window");
 	}
 
 	// Bring the window up on the scren, and focus it.

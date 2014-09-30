@@ -1,8 +1,14 @@
 #pragma once
+// TODO: Rename file to SandboxEngineExceptions.h
+// TODO: Do all test refactoring in a new commit group.
 #include <exception>
 #include <string>
 #include <errno.h>
 
+// TODO: Create an exception type macro.
+// TODO: Make it so exceptions can store where the exception was originally thrown.
+
+// TODO: Rename this to SandboxEngineException
 class DXTestException : public std::exception
 {
 public:
@@ -147,18 +153,21 @@ protected:
 class WindowsApiException : public DXTestException
 {
 public:
-	WindowsApiException(long result, const char * pMessage)
-		: DXTestException(pMessage)
+	WindowsApiException(unsigned long windowsApiErrorCode)
+        : DXTestException(GenerateMessage(windowsApiErrorCode, L"")),
+          mWinApiErrorCode(windowsApiErrorCode)
 	{
 	}
 
-	WindowsApiException(const char *pMessage)
-		: DXTestException(pMessage)
-	{
-	}
+    WindowsApiException(unsigned long windowsApiErrorCode, const std::wstring& message)
+        : DXTestException(GenerateMessage(windowsApiErrorCode, message)),
+          mWinApiErrorCode(windowsApiErrorCode)
+    {
+    }
 
 	WindowsApiException(const WindowsApiException& exception)
-		: DXTestException(exception)
+		: DXTestException(exception),
+          mWinApiErrorCode(exception.mWinApiErrorCode)
 	{
 	}
 
@@ -169,10 +178,19 @@ public:
 	WindowsApiException& operator= (const WindowsApiException& exception)
 	{
 		SetMessage(exception.Message());
+        mWinApiErrorCode = exception.WindowsApiErrorCode();
 	}
 
+    unsigned long WindowsApiErrorCode() const
+    {
+        return mWinApiErrorCode;
+    }
+
 protected:
-	std::string GenerateMessage(long result, const std::string& message) const;
+    std::string GenerateMessage(unsigned long windowsApiErrorCode, const std::wstring& message) const;
+
+protected:
+    unsigned long mWinApiErrorCode;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
