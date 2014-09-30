@@ -1,6 +1,6 @@
 #include "LightShader.h"
 #include "BinaryBlob.h"
-#include "DXTest.h"
+#include "DXSandbox.h"
 #include "SimpleMath.h"
 #include "Light.h"
 #include "Camera.h"

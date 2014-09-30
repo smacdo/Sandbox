@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "Input.h"
 #include "Graphics.h"
-#include "DXTest.h"
+#include "DXSandbox.h"
 #include "DXTestException.h"
 
 #include <cstdlib>      //  srand

@@ -1,6 +1,6 @@
 #include "Texture.h"
 #include "BinaryBlob.h"
-#include "DXTest.h"
+#include "DXSandbox.h"
 #include <d3d11.h>
 #include "DDSTextureLoader.h"
 

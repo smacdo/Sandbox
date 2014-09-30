@@ -1,5 +1,5 @@
 #include "Graphics.h"
-#include "DXTest.h"
+#include "DXSandbox.h"
 #include "Utils.h"
 #include "Dx3d.h"
 #include "Range.h"

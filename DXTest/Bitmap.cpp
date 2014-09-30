@@ -1,5 +1,5 @@
 #include "Bitmap.h"
-#include "DXTest.h"
+#include "DXSandbox.h"
 #include "Utils.h"
 #include "texture.h"
 #include "SimpleMath.h"

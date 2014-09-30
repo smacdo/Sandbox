@@ -1,6 +1,6 @@
 #include "Font.h"
 #include "Texture.h"
-#include "DXTest.h"
+#include "DXSandbox.h"
 #include "DXTestException.h"
 #include "Utils.h"
 #include "SimpleMath.h"

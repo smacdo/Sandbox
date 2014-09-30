@@ -1,7 +1,7 @@
 #include "TextureShader.h"
 #include <d3d11.h>
 
-#include "DXTest.h"
+#include "DXSandbox.h"
 
 #include "BinaryBlob.h"
 

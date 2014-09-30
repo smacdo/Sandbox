@@ -1,5 +1,5 @@
 #include "Dx3d.h"
-#include "DXTest.h"
+#include "DXSandbox.h"
 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
