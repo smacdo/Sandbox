@@ -45,6 +45,14 @@ namespace UnitTests
                 Utils::GetErrorMessageFromWinApiErrorCode(1u));
         }
 
+        TEST_METHOD(GetErrorMessageFromErrno)
+        {
+            // ERANGE
+            Assert::AreEqual(
+                std::wstring(L"Domain error"),
+                Utils::GetErrorMessageFromErrno(EDOM));
+        }
+
         TEST_METHOD(StartsWith)
         {
             // Convert a string to wstring
