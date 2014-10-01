@@ -13,7 +13,11 @@ namespace Utils
     std::wstring GetErrorMessageFromWinApiErrorCode(unsigned long windowsApiErrorCode);
     std::wstring GetErrorMessageFromErrno(errno_t errorCode);
 
-    bool EndsWith(const std::string&fullString, const std::string& ending);
+    bool StartsWith(const std::string& fullString, const std::string& prefix);
+    bool StartsWith(const std::wstring& fullString, const std::wstring& prefix);
+    bool EndsWith(const std::string& fullString, const std::string& ending);
+    bool EndsWith(const std::wstring& fullString, const std::wstring& ending);
+
     float RandFloat();
     float RandFloat(float min, float max);
 }
