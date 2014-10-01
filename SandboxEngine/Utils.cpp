@@ -2,6 +2,10 @@
 #include "Utils.h"
 #include "DXTestException.h"
 
+#include <algorithm>        // string trimming
+#include <cctype>           // string trimming
+#include <functional>       // string trimming
+
 using namespace Utils;
 
 // http://stackoverflow.com/a/6691829
@@ -205,9 +209,58 @@ bool Utils::EndsWith(const std::wstring& fullString, const std::wstring& ending)
     return result;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// string trimming functions
+// [+29] [2009-01-22 16:00:07] Evan Teran 
+// http://www.stackprinter.com/export?service=stackoverflow&question=469696
+///////////////////////////////////////////////////////////////////////////////////////////////////
+std::string Utils::RightTrim(const std::string& text)
+{
+    std::string s(text);
+    s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+    return s;
+}
+
+std::wstring Utils::RightTrim(const std::wstring& text)
+{
+    std::wstring s(text);
+    s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+    return s;
+}
+
+std::string Utils::LeftTrim(const std::string& text)
+{
+    std::string s(text);
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+    return s;
+}
+
+std::wstring Utils::LeftTrim(const std::wstring& text)
+{
+    std::wstring s(text);
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+    return s;
+}
+
+std::string Utils::Trim(const std::string& text)
+{
+    std::string s(text);
+    return LeftTrim(RightTrim(s));
+}
+
+std::wstring Utils::Trim(const std::wstring& text)
+{
+    std::wstring s(text);
+    return LeftTrim(RightTrim(s));
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Random
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// http://stackoverflow.com/a/686373
 float Utils::RandFloat()
 {
-    return (float)rand() / RAND_MAX;
+    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
 float Utils::RandFloat(float min, float max)

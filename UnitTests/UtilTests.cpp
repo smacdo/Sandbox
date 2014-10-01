@@ -11,6 +11,17 @@ namespace UnitTests
     // Unit tests for my extensions to SimpleMath.h
     TEST_CLASS(UtilTests)
     {
+    private:
+        void WriteToBuffer(char * pOutputBuffer, size_t length)
+        {
+            strcpy_s(pOutputBuffer, length, "Hello World");
+        }
+
+        void WriteToBuffer(wchar_t * pOutputBuffer, size_t length)
+        {
+            wcscpy_s(pOutputBuffer, length, L"Hello World");
+        }
+
     public:
         TEST_METHOD(ConvertUtf8ToWString)
         {
@@ -55,7 +66,6 @@ namespace UnitTests
 
         TEST_METHOD(StartsWith)
         {
-            // Convert a string to wstring
             std::string initial = "Hello World";
 
             Assert::IsTrue(Utils::StartsWith(initial, "H"));
@@ -70,7 +80,6 @@ namespace UnitTests
 
         TEST_METHOD(StartsWith_Wide)
         {
-            // Convert a string to wstring
             std::wstring initial = L"Hello World";
 
             Assert::IsTrue(Utils::StartsWith(initial, L"H"));
@@ -85,7 +94,6 @@ namespace UnitTests
 
         TEST_METHOD(EndsWith)
         {
-            // Convert a string to wstring
             std::string initial = "Hello World";
 
             Assert::IsTrue(Utils::EndsWith(initial, "d"));
@@ -99,7 +107,6 @@ namespace UnitTests
 
         TEST_METHOD(EndsWith_Wide)
         {
-            // Convert a string to wstring
             std::wstring initial = L"Hello World";
 
             Assert::IsTrue(Utils::EndsWith(initial, L"d"));
@@ -111,5 +118,100 @@ namespace UnitTests
             Assert::IsFalse(Utils::EndsWith(initial, L"Hello World!"));
         }
 
+        TEST_METHOD(TrimLeft)
+        {
+            Assert::AreEqual(std::string("hello"), Utils::LeftTrim("hello"));
+            Assert::AreEqual(std::string("hello"), Utils::LeftTrim(" \t hello"));
+            Assert::AreEqual(std::string("hello\t  "), Utils::LeftTrim(" \thello\t  "));
+        }
+
+        TEST_METHOD(TrimLeft_Wide)
+        {
+            Assert::AreEqual(std::wstring(L"hello"), Utils::LeftTrim(L"hello"));
+            Assert::AreEqual(std::wstring(L"hello"), Utils::LeftTrim(L" \t hello"));
+            Assert::AreEqual(std::wstring(L"hello\t  "), Utils::LeftTrim(L" \thello\t  "));
+        }
+
+        TEST_METHOD(TrimRight)
+        {
+            Assert::AreEqual(std::string("hello"), Utils::RightTrim("hello"));
+            Assert::AreEqual(std::string("hello"), Utils::RightTrim("hello \t "));
+            Assert::AreEqual(std::string("  \thello"), Utils::RightTrim("  \thello\t "));
+        }
+
+        TEST_METHOD(TrimRight_Wide)
+        {
+            Assert::AreEqual(std::wstring(L"hello"), Utils::RightTrim(L"hello"));
+            Assert::AreEqual(std::wstring(L"hello"), Utils::RightTrim(L"hello \t "));
+            Assert::AreEqual(std::wstring(L"  \thello"), Utils::RightTrim(L"  \thello\t "));
+        }
+
+        TEST_METHOD(Trim)
+        {
+            Assert::AreEqual(std::string("hello"), Utils::Trim("hello"));
+            Assert::AreEqual(std::string("hello"), Utils::Trim(" \t hello"));
+            Assert::AreEqual(std::string("hello"), Utils::Trim(" \thello\t  "));
+
+            Assert::AreEqual(std::string("hello"), Utils::Trim("hello"));
+            Assert::AreEqual(std::string("hello"), Utils::Trim("hello \t "));
+            Assert::AreEqual(std::string("hello"), Utils::Trim("  \thello\t "));
+        }
+
+        TEST_METHOD(Trim_Wide)
+        {
+            Assert::AreEqual(std::wstring(L"hello"), Utils::Trim(L"hello"));
+            Assert::AreEqual(std::wstring(L"hello"), Utils::Trim(L" \t hello"));
+            Assert::AreEqual(std::wstring(L"hello"), Utils::Trim(L" \thello\t  "));
+
+            Assert::AreEqual(std::wstring(L"hello"), Utils::Trim(L"hello"));
+            Assert::AreEqual(std::wstring(L"hello"), Utils::Trim(L"hello \t "));
+            Assert::AreEqual(std::wstring(L"hello"), Utils::Trim(L"  \thello\t "));
+        }
+
+        TEST_METHOD(MakeString)
+        {
+            Assert::AreEqual(
+                std::string("Hello World"),
+                (Utils::MakeString() << "Hello " << "World").operator std::string());
+
+            Assert::AreEqual(
+                std::string("Answer 42!"),
+                (Utils::MakeString() << "Answer " << 42 << "!").operator std::string());
+        }
+
+        TEST_METHOD(MakeString_Wide)
+        {
+            Assert::AreEqual(
+                std::wstring(L"Hello World"),
+                (Utils::MakeWideString() << "Hello " << "World").operator std::wstring());
+
+            Assert::AreEqual(
+                std::wstring(L"Hello World"),
+                (Utils::MakeWideString() << L"Hello " << L"World").operator std::wstring());
+
+            Assert::AreEqual(
+                std::wstring(L"Answer 42!"),
+                (Utils::MakeWideString() << L"Answer " << 42 << "!").operator std::wstring());
+        }
+
+        TEST_METHOD(WinStringBuffer)
+        {
+            const size_t MaxSize = 32;
+            std::string actual;
+
+            WriteToBuffer(Utils::WinStringBuffer(actual, MaxSize), MaxSize);
+
+            Assert::AreEqual(std::string("Hello World"), actual);
+        }
+
+        TEST_METHOD(WinStringBufferWide)
+        {
+            const size_t MaxSize = 32;
+            std::wstring actual;
+
+            WriteToBuffer(Utils::WinStringBuffer(actual, MaxSize), MaxSize);
+
+            Assert::AreEqual(std::wstring(L"Hello World"), actual);
+        }
     };
 }
