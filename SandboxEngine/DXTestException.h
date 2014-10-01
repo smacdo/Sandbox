@@ -48,6 +48,11 @@ class CStdLibException : public SandboxException
 public:
     CStdLibException(errno_t errorCode);
     CStdLibException(errno_t errorCode, const std::wstring& actionContext);
+
+    errno_t ErrorCode() const { return mErrorCode; }
+
+private:
+    errno_t mErrorCode;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
