@@ -70,7 +70,6 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Bitmap.cpp" />
-    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ColorShader.cpp" />
     <ClCompile Include="Dx3d.cpp" />
     <ClCompile Include="Font.cpp" />
@@ -78,7 +77,6 @@
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Input.cpp" />
-    <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightShader.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Text.cpp" />
@@ -89,17 +87,14 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="Bitmap.h" />
-    <ClInclude Include="Camera.h" />
     <ClInclude Include="ColorShader.h" />
     <ClInclude Include="Dx3d.h" />
-    <ClInclude Include="DXSandbox.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="FontShader.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="IInitializable.h" />
     <ClInclude Include="Input.h" />
-    <ClInclude Include="Light.h" />
     <ClInclude Include="LightShader.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Text.h" />

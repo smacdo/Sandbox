@@ -44,13 +44,13 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	// Initialize the camera.
 	mpCamera = new Camera();
-	mpCamera->SetPosition(0.0f, 0.0f, -10.0f);
+	mpCamera->SetPosition(Vector3(0.0f, 0.0f, -10.0f));
 
     // Set up a base view matrix for 2d user interface rendering.
     //  TODO: Rename referneces to "Base view matrix" to "2d ui view matrix" or "ui view matrix".
     mpUiCamera = new Camera();
     
-    mpUiCamera->SetPosition(0.0f, 0.0f, -1.0f);
+    mpUiCamera->SetPosition(Vector3(0.0f, 0.0f, -1.0f));
     mpUiCamera->Render();
     
     Matrix baseViewMatrix = mpUiCamera->ViewMatrix();
@@ -86,11 +86,13 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
     mpLightShader->Initialize(mpD3d->GetDevice());
 
     mpLight = new Light();
-    mpLight->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
-    mpLight->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-    mpLight->SetDirection(0.0f, 0.0f, 1.0f);
-    mpLight->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+    mpLight->SetAmbientColor(Vector4(0.15f, 0.15f, 0.15f, 1.0f));
+    mpLight->SetDiffuseColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+    mpLight->SetSpecularColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
     mpLight->SetSpecularPower(32.0f);
+
+    mpLight->SetDirection(Vector3(0.0f, 0.0f, 1.0f));
 
 	mInitialized = true;
 }

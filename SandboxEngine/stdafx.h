@@ -15,3 +15,6 @@
 
 // STL headers.
 #include <string>
+
+// Common project headers.
+#include "SimpleMath.h"

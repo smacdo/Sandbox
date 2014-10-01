@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Light.h"
 #include "SimpleMath.h"
 
@@ -12,24 +13,24 @@ Light::Light()
 {
 }
 
-void Light::SetAmbientColor(float red, float green, float blue, float alpha)
+void Light::SetAmbientColor(const DirectX::SimpleMath::Vector4& color)
 {
-    mAmbientColor = Vector4(red, green, blue, alpha);
+    mAmbientColor = color;
 }
 
-void Light::SetDiffuseColor(float red, float green, float blue, float alpha)
+void Light::SetDiffuseColor(const DirectX::SimpleMath::Vector4& color)
 {
-    mDiffuseColor = Vector4(red, green, blue, alpha);
+    mDiffuseColor = color;
 }
 
-void Light::SetDirection(float x, float y, float z)
+void Light::SetDirection(const DirectX::SimpleMath::Vector3& direction)
 {
-    mDirection = Vector3(x, y, z);
+    mDirection = direction;
 }
 
-void Light::SetSpecularColor(float r, float g, float b, float a)
+void Light::SetSpecularColor(const DirectX::SimpleMath::Vector4& color)
 {
-    mSpecularColor = Vector4(r, g, b, a);
+    mSpecularColor = color;
 }
 
 void Light::SetSpecularPower(float p)

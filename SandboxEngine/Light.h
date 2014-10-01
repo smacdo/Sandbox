@@ -2,18 +2,19 @@
 
 #include "SimpleMath.h"
 
-// Stores lighting information.
+/**
+ * \brief Holds values required for lighting computation.
+ */
 class Light
 {
 public:
-    // TODO: Add params to constructor.
     Light();
 
-    // TODO: Pass these around as vectors. This guy is really inconsistent.
-    void SetDiffuseColor(float r, float g, float b, float a);
-    void SetAmbientColor(float r, float g, float b, float a);
-    void SetDirection(float x, float y, float z);
-    void SetSpecularColor(float r, float g, float b, float a);
+    void SetDirection(const DirectX::SimpleMath::Vector3& direction);
+
+    void SetAmbientColor(const DirectX::SimpleMath::Vector4& color);
+    void SetDiffuseColor(const DirectX::SimpleMath::Vector4& color);
+    void SetSpecularColor(const DirectX::SimpleMath::Vector4& color);
     void SetSpecularPower(float p);
 
     DirectX::SimpleMath::Vector4 AmbientColor() const;
