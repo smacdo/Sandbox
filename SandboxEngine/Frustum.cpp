@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Frustum.h"
 #include "Range.h"
 #include "SimpleMath.h"
