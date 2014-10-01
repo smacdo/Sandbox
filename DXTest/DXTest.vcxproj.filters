@@ -89,9 +89,6 @@
     <ClInclude Include="Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IInitializable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TextureShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>

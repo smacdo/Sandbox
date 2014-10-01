@@ -89,6 +89,7 @@
   <ItemGroup>
     <ClCompile Include="BinaryBlobTests.cpp" />
     <ClCompile Include="CameraTests.cpp" />
+    <ClCompile Include="IInitializableTests.cpp" />
     <ClCompile Include="LightTests.cpp" />
     <ClCompile Include="RangeTests.cpp" />
     <ClCompile Include="SandboxExceptionsTests.cpp" />

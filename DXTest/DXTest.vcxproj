@@ -93,7 +93,6 @@
     <ClInclude Include="FontShader.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="Graphics.h" />
-    <ClInclude Include="IInitializable.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="LightShader.h" />
     <ClInclude Include="Model.h" />

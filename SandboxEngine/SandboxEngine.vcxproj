@@ -80,6 +80,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DXSandbox.h" />
     <ClInclude Include="DXTestException.h" />
+    <ClInclude Include="IInitializable.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Range.h" />
     <ClInclude Include="stdafx.h" />
@@ -91,6 +92,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DXTestException.cpp" />
     <ClCompile Include="ErrorUtils.cpp" />
+    <ClCompile Include="IInitializable.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Range.cpp" />
     <ClCompile Include="Utils.cpp" />
