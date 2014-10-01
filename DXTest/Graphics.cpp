@@ -63,7 +63,7 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
                        baseViewMatrix);
 
     // Initialize and load models.
-    for (auto i : Range(0, 25))
+    for (auto i : MakeRange(0, 25))
     {
         Model *pModel = new Model();
         pModel->Initialize(mpD3d->GetDevice(), ".\\Models\\cube.model", ".\\Textures\\seafloor.dds");

@@ -79,6 +79,7 @@
     <ClInclude Include="BinaryBlob.h" />
     <ClInclude Include="DXSandbox.h" />
     <ClInclude Include="DXTestException.h" />
+    <ClInclude Include="Range.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Utils.h" />
@@ -87,6 +88,7 @@
     <ClCompile Include="BinaryBlob.cpp" />
     <ClCompile Include="DXTestException.cpp" />
     <ClCompile Include="ErrorUtils.cpp" />
+    <ClCompile Include="Range.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
