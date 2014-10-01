@@ -74,7 +74,6 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ColorShader.cpp" />
     <ClCompile Include="Dx3d.cpp" />
-    <ClCompile Include="DXTest.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="FontShader.cpp" />
     <ClCompile Include="Frustum.cpp" />

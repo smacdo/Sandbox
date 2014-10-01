@@ -1,6 +1,8 @@
 #pragma once
 #include <errno.h>
 
+// TODO: Rename this file to SandboxEngine.h
+
 // Let VC++ know we are compiling for WinXP and up.  This let's us use
 // API functions specific to WinXP (e.g., WM_INPUT API).
 #ifndef _WIN32_WINNT
@@ -70,10 +72,10 @@ void SafeDeleteContainer(T& container)
 #define AssertIsTrue(x) ThrowExceptionIfFalse((x) == true, #x)
 #define VerifyDXResult(x) VerifyDXResultImpl((x), __FILE__, __LINE__, #x)	// L#x
 
-void ThrowExceptionIfNull(void* pointer, const char* pVariableName);
+void ThrowExceptionIfNull(void* pointer, const char* variableName);
 void ThrowExceptionIfFalse(bool result, const char* expression);
 void VerifyCResult(errno_t error, const char* description);
-void VerifyDXResultImpl(long result, char * pFileName, int line, char * pMessage);
+void VerifyDXResultImpl(unsigned long result, const char * fileName, int line, const char * message);
 
 const float PI = 3.14159265358979323f;
 const float MATH_EPS = 0.0001f;

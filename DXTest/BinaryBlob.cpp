@@ -1,6 +1,7 @@
 #include "BinaryBlob.h"
 #include "DXSandbox.h"
 #include "DXTestException.h"
+#include "Utils.h"
 
 #include <string>
 #include <fstream>
@@ -87,7 +88,7 @@ BinaryBlob BinaryBlob::LoadFromFile(const std::string& filepath)
 
 	if (!inputStream.is_open())
 	{
-		throw FileLoadException(filepath);
+        throw FileLoadException(Utils::ConvertUtf8ToWString(filepath));
 	}
 
 	// Get number of bytes in binary file.

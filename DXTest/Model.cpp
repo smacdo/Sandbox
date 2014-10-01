@@ -157,7 +157,7 @@ void Model::LoadTxtModelv1(const std::string& filepath)
 
     if (meshStream.fail())
     {
-        throw FileLoadException(filepath);
+        throw FileLoadException(Utils::ConvertUtf8ToWString(filepath));
     }
 
     // Get the vertex count.
@@ -189,7 +189,7 @@ void Model::LoadTxtModelv2(const std::string& filepath)
 
     if (meshStream.fail())
     {
-        throw FileLoadException(filepath);
+        throw FileLoadException(Utils::ConvertUtf8ToWString(filepath));
     }
     
     // Get mesh header.

@@ -1,6 +1,5 @@
 #pragma once
 // TODO: Rename file to SandboxEngineExceptions.h
-// TODO: Do all test refactoring in a new commit group.
 #include <exception>
 #include <string>
 #include <errno.h>
@@ -8,186 +7,82 @@
 // TODO: Create an exception type macro.
 // TODO: Make it so exceptions can store where the exception was originally thrown.
 
-// TODO: Rename this to SandboxEngineException
-class DXTestException : public std::exception
+class SandboxException : public std::runtime_error
 {
 public:
-	DXTestException()
-		: mMessage("Unspecified DXTest exception")
-	{
-	}
+    SandboxException();
+    SandboxException(const char * pMessage);
+    SandboxException(const std::string& message);
+    SandboxException(const std::wstring& message);
+    SandboxException(const std::wstring& message, const std::wstring& actionContext);
 
-	DXTestException(const char * pMessage)
-		: mMessage(pMessage)
-	{
-	}
-
-	DXTestException(const std::string& message)
-		: mMessage(message)
-	{
-	}
-
-	DXTestException(const DXTestException& exception)
-		: mMessage(exception.mMessage)
-	{
-	}
-
-	virtual ~DXTestException()
-	{
-	}
-
-	DXTestException& operator= (const DXTestException& exception)
-	{
-		SetMessage(exception.Message());
-	}
-
-	virtual const char* what() const
-	{
-		return mMessage.c_str();
-	}
-
-	std::string Message() const
-	{
-		return mMessage;
-	}
+    std::wstring Message() const { return mMessage; }
+    std::wstring ActionContext() const { return mActionContext; }
+    std::wstring FileName() const { return mFileName; }
+    int LineNumber() const { return mLineNumber; }
 
 protected:
-	void SetMessage(const std::string& message)
-	{
-		mMessage = message;
-	}
-
-	void SetMessage(const char* pMessage)
-	{
-		mMessage = pMessage;
-	}
-
-private:
-	std::string mMessage;
+    std::wstring mActionContext;
+	std::wstring mMessage;
+    std::wstring mFileName;
+    int mLineNumber;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Null pointer exception.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class NullPointerException : public DXTestException
+class NullPointerException : public SandboxException
 {
 public:
-	NullPointerException(const char * pVariableName)
-		: DXTestException(std::string(pVariableName) + std::string(" is null"))
+    NullPointerException(const std::wstring& variableName)
+		: SandboxException(L"Value is null", variableName)
 	{
-	}
-
-	NullPointerException(const NullPointerException& exception)
-		: DXTestException(exception)
-	{
-	}
-
-	virtual ~NullPointerException()
-	{
-	}
-
-	NullPointerException& operator= (const NullPointerException& exception)
-	{
-		SetMessage(exception.Message());
 	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // C standard library exception.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class CStdLibException : public DXTestException
+class CStdLibException : public SandboxException
 {
 public:
-	CStdLibException(errno_t error)
-		: DXTestException("C standard library call failed, need to add code to get error value")
-	{
-	}
-
-	CStdLibException(const NullPointerException& exception)
-		: DXTestException(exception)
-	{
-	}
-
-	virtual ~CStdLibException()
-	{
-	}
-
-	CStdLibException& operator= (const CStdLibException& exception)
-	{
-		SetMessage(exception.Message());
-	}
+    CStdLibException(errno_t errorCode);
+    CStdLibException(errno_t errorCode, const std::wstring& actionContext);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DirectX exception.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class DirectXException : public DXTestException
+class DirectXException : public SandboxException
 {
 public:
-	DirectXException(const char * pMessage)
-		: DXTestException(pMessage)
-	{
-	}
-
-	DirectXException(const DirectXException& exception)
-		: DXTestException(exception)
-	{
-	}
-
-	virtual ~DirectXException()
-	{
-	}
-
-	DirectXException& operator= (const DirectXException& exception)
-	{
-		SetMessage(exception.Message());
-	}
+    DirectXException(unsigned long errorCode);
+    DirectXException(unsigned long errorCode, const std::wstring& actionContext);
+    DirectXException(
+        unsigned long errorCode, 
+        const std::wstring& actionContext,
+        const std::wstring& fileName,
+        int lineNumber);
+	
+    unsigned long ErrorCode() const { return mDirectXErrorCode; }
 
 protected:
-	std::string GenerateMessage(const std::string& message) const;
+    unsigned long mDirectXErrorCode;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Exception thrown resulting from error in a Windows API call.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class WindowsApiException : public DXTestException
+class WindowsApiException : public SandboxException
 {
 public:
-	WindowsApiException(unsigned long windowsApiErrorCode)
-        : DXTestException(GenerateMessage(windowsApiErrorCode, L"")),
-          mWinApiErrorCode(windowsApiErrorCode)
-	{
-	}
+    WindowsApiException(unsigned long windowsApiErrorCode);
+    WindowsApiException(unsigned long windowsApiErrorCode, const std::wstring& message);
 
-    WindowsApiException(unsigned long windowsApiErrorCode, const std::wstring& message)
-        : DXTestException(GenerateMessage(windowsApiErrorCode, message)),
-          mWinApiErrorCode(windowsApiErrorCode)
-    {
-    }
-
-	WindowsApiException(const WindowsApiException& exception)
-		: DXTestException(exception),
-          mWinApiErrorCode(exception.mWinApiErrorCode)
-	{
-	}
-
-	virtual ~WindowsApiException()
-	{
-	}
-
-	WindowsApiException& operator= (const WindowsApiException& exception)
-	{
-		SetMessage(exception.Message());
-        mWinApiErrorCode = exception.WindowsApiErrorCode();
-	}
-
-    unsigned long WindowsApiErrorCode() const
+    unsigned long ErrorCode() const
     {
         return mWinApiErrorCode;
     }
-
-protected:
-    std::string GenerateMessage(unsigned long windowsApiErrorCode, const std::wstring& message) const;
 
 protected:
     unsigned long mWinApiErrorCode;
@@ -196,51 +91,17 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Assertion failed exception.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class AssertionFailedException : public DXTestException
+class AssertionFailedException : public SandboxException
 {
 public:
-	AssertionFailedException(const char * pMessage)
-		: DXTestException(pMessage)
-	{
-	}
-
-	AssertionFailedException(const AssertionFailedException& exception)
-		: DXTestException(exception)
-	{
-	}
-
-	virtual ~AssertionFailedException()
-	{
-	}
-
-	AssertionFailedException& operator= (const AssertionFailedException& exception)
-	{
-		SetMessage(exception.Message());
-	}
+    AssertionFailedException(const std::wstring& expression);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Null pointer exception.
+// File load exception.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class FileLoadException : public DXTestException
+class FileLoadException : public SandboxException
 {
 public:
-	FileLoadException(const std::string& filepath)
-		: DXTestException(filepath + std::string(" could not be loaded"))
-	{
-	}
-
-	FileLoadException(const FileLoadException& exception)
-		: DXTestException(exception)
-	{
-	}
-
-	virtual ~FileLoadException()
-	{
-	}
-
-	FileLoadException& operator= (const FileLoadException& exception)
-	{
-		SetMessage(exception.Message());
-	}
+    FileLoadException(const std::wstring& filepath);
 };

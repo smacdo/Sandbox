@@ -11,6 +11,7 @@ namespace Utils
 
     std::wstring GetErrorMessageFromHResult(unsigned long errorCode);
     std::wstring GetErrorMessageFromWinApiErrorCode(unsigned long windowsApiErrorCode);
+    std::wstring GetErrorMessageFromErrno(errno_t errorCode);
 
     bool EndsWith(const std::string&fullString, const std::string& ending);
     float RandFloat();

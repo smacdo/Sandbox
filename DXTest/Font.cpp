@@ -48,7 +48,7 @@ void Font::LoadFontLayout(const std::string& layoutFile)
 
     if (layoutStream.fail())
     {
-        throw FileLoadException(layoutFile);
+        throw FileLoadException(Utils::ConvertUtf8ToWString(layoutFile));
     }
 
     for (int i = 0; i < FONT_CHAR_COUNT; ++i)
