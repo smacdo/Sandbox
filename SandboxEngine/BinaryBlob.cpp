@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "BinaryBlob.h"
 #include "DXSandbox.h"
 #include "DXTestException.h"
@@ -6,6 +7,7 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <memory>
 
 BinaryBlob::BinaryBlob()
 : mpBuffer(nullptr),
@@ -14,66 +16,73 @@ BinaryBlob::BinaryBlob()
 }
 
 BinaryBlob::BinaryBlob(const char * pBuffer, std::streamsize size)
-: mpBuffer(nullptr),
-  mSize(pBuffer != nullptr ? size : 0)
+    : mpBuffer(),
+      mSize(0)
 {
-	if (pBuffer != nullptr)
+    if (pBuffer != nullptr && size > 0)
 	{
-		// TODO: Assert size > 0.
-		// Allocate a new buffer and copy the passed in buffer's contents.
-		mpBuffer = new char[static_cast<unsigned int>(size)];
-		std::copy(&pBuffer[0], &pBuffer[0] + size, &mpBuffer[0]);
+        mSize = size;
+        mpBuffer.reset(new char[static_cast<unsigned int>(mSize)]);
+
+        std::copy(
+            &pBuffer[0],
+            &pBuffer[0] + size,
+            stdext::checked_array_iterator<char *>(mpBuffer.get(), size));
 	}
 }
 
 BinaryBlob::BinaryBlob(const BinaryBlob& blob)
-: mpBuffer(nullptr),
-  mSize(blob.mSize)
+    : mpBuffer(),
+      mSize(0)
 {
-	if (blob.mpBuffer != nullptr)
+	if (!blob.IsNull())
 	{
-		// TODO: Assert size > 0.
-		// Allocate a new buffer and copy the passed in buffer's contents.
-		mpBuffer = new char[static_cast<unsigned int>(blob.mSize)];
-		std::copy(&(blob.mpBuffer[0]), &(blob.mpBuffer[0]) + blob.mSize, &mpBuffer[0]);
+        mSize = blob.mSize;
+        mpBuffer.reset(new char[static_cast<unsigned int>(mSize)]);
+
+		std::copy(
+            blob.mpBuffer.get(), 
+            blob.mpBuffer.get() + blob.mSize,
+            stdext::checked_array_iterator<char *>(mpBuffer.get(), mSize));
 	}
 }
 
 BinaryBlob::~BinaryBlob()
 {
-	SafeDeleteArray(mpBuffer);
 }
 
 BinaryBlob& BinaryBlob::operator =(const BinaryBlob& rhs)
 {
 	if (this != &rhs)
 	{
-		// Release the current buffer if this binary blob instance has one allocated.
-		if (mpBuffer != nullptr)
-		{
-			SafeDelete(mpBuffer);
-			mSize = 0;
-		}
+        if (rhs.IsNull())
+        {
+            mpBuffer.reset();
+            mSize = 0;
+        }
+        else
+        {
+            mSize = rhs.mSize;
+			mpBuffer.reset(new char[static_cast<unsigned int>(mSize)]);
 
-		// If the right hand binary blob instance (the source) has a valid buffer, copy its contents.
-		if (rhs.mpBuffer != nullptr)
-		{
-			mpBuffer = new char[static_cast<unsigned int>(rhs.mSize)];
-			std::copy(&(rhs.mpBuffer[0]), &(rhs.mpBuffer[0]) + rhs.mSize, &mpBuffer[0]);
-		}
-		else
-		{
-			mpBuffer = nullptr;
-			mSize = 0;
+			std::copy(
+                rhs.mpBuffer.get(),
+                rhs.mpBuffer.get() + rhs.mSize,
+                stdext::checked_array_iterator<char *>(mpBuffer.get(), rhs.mSize));
 		}
 	}
 
 	return *this;
 }
 
+bool BinaryBlob::IsNull() const
+{
+    return mSize == 0;
+}
+
 const char* BinaryBlob::BufferPointer() const
 {
-	return mpBuffer;
+	return mpBuffer.get();
 }
 
 std::streamsize BinaryBlob::BufferSize() const

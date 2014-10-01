@@ -76,6 +76,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BinaryBlob.h" />
     <ClInclude Include="DXSandbox.h" />
     <ClInclude Include="DXTestException.h" />
     <ClInclude Include="stdafx.h" />
@@ -83,6 +84,7 @@
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BinaryBlob.cpp" />
     <ClCompile Include="DXTestException.cpp" />
     <ClCompile Include="ErrorUtils.cpp" />
     <ClCompile Include="Utils.cpp" />
