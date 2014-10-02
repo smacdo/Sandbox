@@ -156,7 +156,7 @@ void Graphics::Render(float rotation)
 	mpCamera->Render();
 
 	Matrix viewMatrix = mpCamera->ViewMatrix();
-	Matrix worldMatrix = mpD3d->GetWorldMatrix();
+    Matrix worldMatrix = DirectX::XMMatrixIdentity();
 	Matrix projectionMatrix = mpCamera->ProjectionMatrix();
 
     // Rotate the world a little bit to show off.
@@ -209,8 +209,8 @@ void Graphics::Render(float rotation)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void Graphics::RenderUi()
 {
-    Matrix worldMatrix = mpD3d->GetWorldMatrix();
-    Matrix orthoMatrix = mpD3d->GetOrthoMatrix();
+    Matrix worldMatrix = DirectX::XMMatrixIdentity();
+    Matrix orthoMatrix = mpUiCamera->OrthoMatrix();
 
     mpD3d->EnableZBuffer(false);
     mpD3d->EnableAlphaBlending(true);

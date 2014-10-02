@@ -52,10 +52,6 @@ public:
 	ID3D11Device * GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
 
-	DirectX::SimpleMath::Matrix GetWorldMatrix() const;
-	DirectX::SimpleMath::Matrix GetOrthoMatrix() const;
-	std::string GetVideoCardInfo() const;
-
     // TODO: Merge these functions with a bool parameter.
     void EnableZBuffer(bool zEnabled);
     void EnableAlphaBlending(bool alphaBlendEnabled);
@@ -128,7 +124,6 @@ private:
     bool mIsFullScreenMode;
     HWND mHwnd;
     vram_info_t mVideoRamInfo;
-	std::string mVideoCardDescription;
     Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
     Microsoft::WRL::ComPtr<ID3D11Device> mDevice;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> mDeviceContext;
@@ -137,8 +132,6 @@ private:
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState> mDepthStencilState;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> mDepthStencilView;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> mRasterState;
-	DirectX::SimpleMath::Matrix mWorldMatrix;
-	DirectX::SimpleMath::Matrix mOrthoMatrix;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState> mDepthDisabledStencilState;
     Microsoft::WRL::ComPtr<ID3D11BlendState> mAlphaEnabledBlendingState;
     Microsoft::WRL::ComPtr<ID3D11BlendState> mAlphaDisabledBlendingState;

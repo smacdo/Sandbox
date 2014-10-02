@@ -5,8 +5,10 @@ using namespace DirectX::SimpleMath;
 
 Camera::Camera(const Size& screenSize, float screenNear, float screenDepth)
     : mRegenerateViewMatrix(false),
+      mScreenWidth(static_cast<float>(screenSize.Width())),
+      mScreenHeight(static_cast<float>(screenSize.Height())),
       mFieldOfView(3.141592653589793f / 4.0f),
-      mAspectRatio(static_cast<float>(screenSize.Width()) / static_cast<float>(screenSize.Height())),
+      mAspectRatio(mScreenWidth / mScreenHeight),
       mScreenNear(screenNear),
       mScreenDepth(screenDepth),
       mPosition(0.0f, 0.0f, 0.0f),
@@ -15,6 +17,7 @@ Camera::Camera(const Size& screenSize, float screenNear, float screenDepth)
       mProjectionMatrix()
 {
     RegenerateProjectionMatrix();
+    RegenerateOrthoMatrix();
 }
 
 void Camera::SetPosition(const Vector3& position)
@@ -87,4 +90,11 @@ void Camera::RegenerateProjectionMatrix()
     // Create the projection matrix. The projection matrix will be used to translate the 3d scene into a 2d viewport
     // space that was created above. We need to keep a copy of this matrix so we can pass it to our shaders.
     mProjectionMatrix = DirectX::XMMatrixPerspectiveFovLH(mFieldOfView, mAspectRatio, mScreenNear, mScreenDepth);
+}
+
+void Camera::RegenerateOrthoMatrix()
+{
+    // Create an orthographic projection matrix for 2d rendering. This matrix will be used to render 2d elements like the
+    // user inteface.
+    mOrthoMatrix = DirectX::XMMatrixOrthographicLH(mScreenWidth, mScreenHeight, mScreenNear, mScreenDepth);
 }

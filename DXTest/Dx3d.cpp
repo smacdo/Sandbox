@@ -15,7 +15,6 @@ Dx3d::Dx3d()
 : mInitialized(false),
   mVysncEnabled(false),
   mVideoRamInfo(),
-  mVideoCardDescription(),
   mSwapChain(),
   mDevice(),
   mDeviceContext(),
@@ -98,14 +97,6 @@ void Dx3d::Initialize(int screenWidth,
 
 	// Set the viewport description which will allow Direct3D to map clip space coordinates to the render target space.
     SetViewport(screenSize);
-
-	// Create the world matrix. This matrix is used to convert model space vertices into the 3d world space. After
-	// creating it make sure we initialize to the default identity matrix.
-	mWorldMatrix = DirectX::XMMatrixIdentity();
-
-	// Create an orthographic projection matrix for 2d rendering. This matrix will be used to render 2d elements like the
-	// user inteface.
-	mOrthoMatrix = DirectX::XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 
     // Create a depth stencil state that has the depth stencil disabled.
     result = CreateDepthStencilState(false, mDevice.Get(), &mDepthDisabledStencilState);
@@ -603,21 +594,6 @@ ID3D11Device * Dx3d::GetDevice()
 ID3D11DeviceContext * Dx3d::GetDeviceContext()
 {
 	return mDeviceContext.Get();
-}
-
-DirectX::SimpleMath::Matrix Dx3d::GetWorldMatrix() const
-{
-	return mWorldMatrix;
-}
-
-DirectX::SimpleMath::Matrix Dx3d::GetOrthoMatrix() const
-{
-	return mOrthoMatrix;
-}
-
-std::string Dx3d::GetVideoCardInfo() const
-{
-	return mVideoCardDescription;
 }
 
 void Dx3d::EnableZBuffer(bool zEnabled)

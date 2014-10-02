@@ -14,19 +14,23 @@ public:
 	DirectX::SimpleMath::Vector3 Position() const;
 	DirectX::SimpleMath::Vector3 Rotation() const;
 	DirectX::SimpleMath::Matrix ViewMatrix() const;
+    DirectX::SimpleMath::Matrix ProjectionMatrix() const { return mProjectionMatrix; }
+    DirectX::SimpleMath::Matrix OrthoMatrix() const { return mOrthoMatrix; }
 
     bool IsViewMatrixDirty() const;
 
 	void Render() const;
     float FieldOfView() const { return mFieldOfView; }
     float AspectRatio() const { return mAspectRatio; }
-    DirectX::SimpleMath::Matrix ProjectionMatrix() const { return mProjectionMatrix; }
 
 protected:
     void RegenerateProjectionMatrix();
+    void RegenerateOrthoMatrix();
 
 private:
     bool mRegenerateViewMatrix;
+    float mScreenWidth;
+    float mScreenHeight;
     float mFieldOfView;
     float mAspectRatio;
     float mScreenNear;
@@ -35,4 +39,5 @@ private:
     DirectX::SimpleMath::Vector3 mRotation;
 	mutable DirectX::SimpleMath::Matrix mViewMatrix;
     DirectX::SimpleMath::Matrix mProjectionMatrix;
+    DirectX::SimpleMath::Matrix mOrthoMatrix;
 };
