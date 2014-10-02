@@ -157,7 +157,7 @@ void Graphics::Render(float rotation)
 	Matrix projectionMatrix = mpD3d->GetProjectionMatrix();
 
     // Rotate the world a little bit to show off.
-//    worldMatrix = Matrix::CreateRotationY(rotation) * worldMatrix;
+    worldMatrix = Matrix::CreateRotationY(rotation) * worldMatrix;
 
     // Update camera view frustum before proceeding with rendering.
     mFrustum.Update(SCREEN_DEPTH, projectionMatrix, viewMatrix);

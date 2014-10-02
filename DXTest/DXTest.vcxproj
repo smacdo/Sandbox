@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Notes.txt" />
+    <Text Include="README.txt" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\seafloor.dds">
