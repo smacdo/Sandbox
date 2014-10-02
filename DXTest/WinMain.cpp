@@ -4,9 +4,13 @@
 #include <Windows.h>
 #include <sstream>
 
+#include <ctime>      // for time
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
 	Application app;
+
+    srand(std::time(0));
 	
 	try
 	{
