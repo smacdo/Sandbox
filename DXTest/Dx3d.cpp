@@ -23,10 +23,10 @@ Dx3d::Dx3d()
   mDepthStencilTexture(),
   mDepthStencilState(),
   mDepthStencilView(),
-  mpRasterState(nullptr),
-  mpDepthDisabledStencilState(nullptr),
-  mpAlphaEnabledBlendingState(nullptr),
-  mpAlphaDisabledBlendingState(nullptr)
+  mRasterState(),
+  mDepthDisabledStencilState(),
+  mAlphaEnabledBlendingState(),
+  mAlphaDisabledBlendingState()
 {
 }
 
@@ -93,42 +93,12 @@ void Dx3d::Initialize(int screenWidth,
     result = InitializeDepthBuffer(mDevice.Get(), screenSize);
     VerifyDXResult(result);
 
-	// Set the raster description object. This allows us to configure how and what polygons will be drawn.
-	D3D11_RASTERIZER_DESC rasterDesc;
-	ZeroMemory(&rasterDesc, sizeof(rasterDesc));
+    // Rasterizer state.
+    result = CreateRasterizerState(mDevice.Get(), mDeviceContext.Get(), &mRasterState);
 
-	rasterDesc.AntialiasedLineEnable = false;
-	rasterDesc.CullMode = D3D11_CULL_BACK;
-	rasterDesc.DepthBias = 0;
-	rasterDesc.DepthBiasClamp = 0.0f;
-	rasterDesc.DepthClipEnable = true;
-	rasterDesc.FillMode = D3D11_FILL_SOLID;
-	rasterDesc.FrontCounterClockwise = false;
-	rasterDesc.MultisampleEnable = false;
-	rasterDesc.ScissorEnable = false;
-	rasterDesc.SlopeScaledDepthBias = 0.0f;
- //   rasterDesc.DepthClipEnable = false;
-
-	// Create the raster state.
-	result = mDevice->CreateRasterizerState(&rasterDesc, &mpRasterState);
-
-	VerifyDXResult(result);
-	VerifyNotNull(mpRasterState);
-
-	mDeviceContext->RSSetState(mpRasterState);
 
 	// Set the viewport description which will allow Direct3D to map clip space coordinates to the render target space.
-	D3D11_VIEWPORT viewport;
-
-	viewport.Width = (float)screenWidth;
-	viewport.Height = (float)screenHeight;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
-
-	// Create the viewport.
-	mDeviceContext->RSSetViewports(1, &viewport);
+    SetViewport(screenSize);
 
 	// Create the projection matrix. The projection matrix will be used to translate the 3d scene into a 2d viewport space
 	// that was created above. We need to keep a copy of this matrix so we can pass it to our shaders.
@@ -148,57 +118,20 @@ void Dx3d::Initialize(int screenWidth,
 	mOrthoMatrix = DirectX::XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 
     // Create a depth stencil state that has the depth stencil disabled.
-    D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
-    ZeroMemory(&depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc));
-
-    depthDisabledStencilDesc.DepthEnable = false;           // Changed from earlier constructed depth stencil.
-    depthDisabledStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-    depthDisabledStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-    depthDisabledStencilDesc.StencilEnable = true;
-    depthDisabledStencilDesc.StencilReadMask = 0xFF;
-    depthDisabledStencilDesc.StencilWriteMask = 0xFF;
-    depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-    depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-    depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-    depthDisabledStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-    depthDisabledStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-    depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-    depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-    depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-
-    result = mDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &mpDepthDisabledStencilState);
-
+    result = CreateDepthStencilState(false, mDevice.Get(), &mDepthDisabledStencilState);
     VerifyDXResult(result);
-    VerifyNotNull(mpDepthDisabledStencilState);
 
-    // Create an alpha enabled blend state.
-    D3D11_BLEND_DESC blendDesc;
-    ZeroMemory(&blendDesc, sizeof(blendDesc));
-
-    blendDesc.RenderTarget[0].BlendEnable = true;
-    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-
-    result = mDevice->CreateBlendState(&blendDesc, &mpAlphaEnabledBlendingState);
-
+    // Create alpha enabled and disabled blend states.
+    result = CreateAlphaBlendState(true, mDevice.Get(), &mAlphaEnabledBlendingState);
     VerifyDXResult(result);
-    VerifyNotNull(mpAlphaEnabledBlendingState);
 
-    // Create an alpha disabled blend state.
-    blendDesc.RenderTarget[0].BlendEnable = false;
-
-    result = mDevice->CreateBlendState(&blendDesc, &mpAlphaDisabledBlendingState);
-
+    result = CreateAlphaBlendState(false, mDevice.Get(), &mAlphaDisabledBlendingState);
     VerifyDXResult(result);
-    VerifyNotNull(mpAlphaDisabledBlendingState);
 
 	// All done... finally!
 	mInitialized = true;
+
+    // TODO: Convert all &mXXX comptr base references to local comptr<t> and only on final success asssign them!
 }
 
 HRESULT Dx3d::InitializeDepthBuffer(
@@ -218,9 +151,6 @@ HRESULT Dx3d::InitializeDepthBuffer(
     if (SUCCEEDED(hr))
     {
         // Create depth stencil state object.
-        D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-        MakeDepthStencilDesc(&depthStencilDesc);
-
         Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
         Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
 
@@ -229,7 +159,6 @@ HRESULT Dx3d::InitializeDepthBuffer(
             mDeviceContext.Get(),
             mRenderTargetView.Get(),
             depthStencilTexture.Get(),
-            depthStencilDesc,
             &depthStencilState,
             &depthStencilView);
 
@@ -264,29 +193,45 @@ void Dx3d::MakeDepthTextureDesc(D3D11_TEXTURE2D_DESC *pDesc, const screen_size_t
     pDesc->MiscFlags = 0;
 }
 
-void Dx3d::MakeDepthStencilDesc(D3D11_DEPTH_STENCIL_DESC *pDesc) const
+HRESULT Dx3d::CreateDepthStencilState(
+    bool depthEnabled,
+    ID3D11Device *pDevice,
+    ID3D11DepthStencilState **ppDepthStencilState) const
 {
-    AssertNotNull(pDesc);
-    ZeroMemory(pDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+    AssertNotNull(pDevice);
+    AssertNotNull(ppDepthStencilState);
 
-    pDesc->DepthEnable = true;
-    pDesc->DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-    pDesc->DepthFunc = D3D11_COMPARISON_LESS;
-    pDesc->StencilEnable = true;
-    pDesc->StencilReadMask = 0xFF;
-    pDesc->StencilWriteMask = 0xFF;
+    *ppDepthStencilState = nullptr;
 
-    // Stencil operations if pixel is front facing.
-    pDesc->FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-    pDesc->FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-    pDesc->FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-    pDesc->FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+    // Describe the depth stencil state we are trying to create.
+    D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+    ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
 
-    // Stencil operations if pixel is back-facing.
-    pDesc->BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-    pDesc->BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-    pDesc->BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-    pDesc->BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+    depthStencilDesc.DepthEnable = depthEnabled;           // Changed from earlier constructed depth stencil.
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+    depthStencilDesc.StencilEnable = true;
+    depthStencilDesc.StencilReadMask = 0xFF;
+    depthStencilDesc.StencilWriteMask = 0xFF;
+    depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+    depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+    depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+    depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+    depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+    depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+    depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+    depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+    // Create the depth stencil state object using the above description.
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
+    HRESULT hr = pDevice->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
+
+    if (SUCCEEDED(hr))
+    {
+        *ppDepthStencilState = depthStencilState.Detach();
+    }
+
+    return hr;
 }
 
 HRESULT Dx3d::CreateDepthStencilStateAndView(
@@ -294,7 +239,6 @@ HRESULT Dx3d::CreateDepthStencilStateAndView(
     ID3D11DeviceContext * pDeviceContext,
     ID3D11RenderTargetView * pRenderTargetView,
     ID3D11Texture2D * pDepthBufferTexture,
-    const D3D11_DEPTH_STENCIL_DESC& depthStencilDesc,
     ID3D11DepthStencilState **ppDepthStencilState,
     ID3D11DepthStencilView **ppDepthStencilView) const
 {
@@ -310,7 +254,7 @@ HRESULT Dx3d::CreateDepthStencilStateAndView(
     *ppDepthStencilState = nullptr;
     *ppDepthStencilView = nullptr;
 
-    HRESULT hr = pDevice->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
+    HRESULT hr = CreateDepthStencilState(true, pDevice, &depthStencilState);
     
     if (SUCCEEDED(hr))
     {
@@ -335,6 +279,46 @@ HRESULT Dx3d::CreateDepthStencilStateAndView(
             *ppDepthStencilState = depthStencilState.Detach();
             *ppDepthStencilView = depthStencilView.Detach();
         }
+    }
+
+    return hr;
+}
+
+HRESULT Dx3d::CreateRasterizerState(
+    ID3D11Device *pDevice,
+    ID3D11DeviceContext *pDeviceContext,
+    ID3D11RasterizerState **ppRasterizerStateOut) const
+{
+    AssertNotNull(pDevice);
+    AssertNotNull(pDeviceContext);
+    AssertNotNull(ppRasterizerStateOut);
+
+    *ppRasterizerStateOut = nullptr;
+
+    // Set the raster description object. This allows us to configure how and what polygons will be drawn.
+    D3D11_RASTERIZER_DESC rasterDesc;
+    ZeroMemory(&rasterDesc, sizeof(rasterDesc));
+
+    rasterDesc.AntialiasedLineEnable = false;
+    rasterDesc.CullMode = D3D11_CULL_BACK;
+    rasterDesc.DepthBias = 0;
+    rasterDesc.DepthBiasClamp = 0.0f;
+    rasterDesc.DepthClipEnable = true;
+    rasterDesc.FillMode = D3D11_FILL_SOLID;
+    rasterDesc.FrontCounterClockwise = false;
+    rasterDesc.MultisampleEnable = false;
+    rasterDesc.ScissorEnable = false;
+    rasterDesc.SlopeScaledDepthBias = 0.0f;
+    //   rasterDesc.DepthClipEnable = false;
+
+    // Create the raster state.
+    Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
+    HRESULT hr = pDevice->CreateRasterizerState(&rasterDesc, &rasterizerState);
+
+    if (SUCCEEDED(hr))
+    {
+        pDeviceContext->RSSetState(rasterizerState.Get());
+        *ppRasterizerStateOut = rasterizerState.Detach();
     }
 
     return hr;
@@ -531,6 +515,56 @@ HRESULT Dx3d::GetPrimaryVideoVRAM(IDXGIFactory *pDxgiFactory, vram_info_t *pVram
     return hr;
 }
 
+HRESULT Dx3d::CreateAlphaBlendState(
+    bool alphaEnabled,
+    ID3D11Device *pDevice,
+    ID3D11BlendState **ppBlendState) const
+{
+    AssertNotNull(pDevice);
+    AssertNotNull(ppBlendState);
+
+    *ppBlendState = nullptr;
+
+    // Describe the alpha enabled (or disabled) blend state.
+    D3D11_BLEND_DESC blendDesc;
+    ZeroMemory(&blendDesc, sizeof(blendDesc));
+
+    blendDesc.RenderTarget[0].BlendEnable = alphaEnabled;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+
+    // Create the blend state object.
+    Microsoft::WRL::ComPtr<ID3D11BlendState> blendState;
+    HRESULT hr = pDevice->CreateBlendState(&blendDesc, &blendState);
+
+    if (SUCCEEDED(hr))
+    {
+        *ppBlendState = blendState.Detach();
+    }
+
+    return hr;
+}
+
+void Dx3d::SetViewport(const screen_size_t& screenSize)
+{
+    D3D11_VIEWPORT viewport;
+
+    viewport.Width = static_cast<float>(screenSize.width);
+    viewport.Height = static_cast<float>(screenSize.height);
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    viewport.TopLeftX = 0.0f;
+    viewport.TopLeftY = 0.0f;
+
+    // Create the viewport.
+    mDeviceContext->RSSetViewports(1, &viewport);
+}
+
 void Dx3d::Shutdown()
 {
 	if (!mInitialized)
@@ -543,11 +577,6 @@ void Dx3d::Shutdown()
 	{
 		mSwapChain->SetFullscreenState(false, NULL);
 	}
-
-    SafeRelease(mpAlphaEnabledBlendingState);
-    SafeRelease(mpAlphaDisabledBlendingState);
-    SafeRelease(mpDepthDisabledStencilState);
-	SafeRelease(mpRasterState);
 
 	mInitialized = false;
 }
@@ -617,8 +646,8 @@ void Dx3d::EnableZBuffer(bool zEnabled)
     }
     else
     {
-        VerifyNotNull(mpDepthDisabledStencilState);
-        mDeviceContext->OMSetDepthStencilState(mpDepthDisabledStencilState, 1);
+        VerifyNotNull(mDepthDisabledStencilState.Get());
+        mDeviceContext->OMSetDepthStencilState(mDepthDisabledStencilState.Get(), 1);
     }
 }
 
@@ -634,10 +663,10 @@ void Dx3d::EnableAlphaBlending(bool alphaBlendEnabled)
 
     if (alphaBlendEnabled)
     {
-        mDeviceContext->OMSetBlendState(mpAlphaEnabledBlendingState, blendFactor, 0xFFFFFFFF);
+        mDeviceContext->OMSetBlendState(mAlphaEnabledBlendingState.Get(), blendFactor, 0xFFFFFFFF);
     }
     else
     {
-        mDeviceContext->OMSetBlendState(mpAlphaDisabledBlendingState, blendFactor, 0xFFFFFFFF);
+        mDeviceContext->OMSetBlendState(mAlphaDisabledBlendingState.Get(), blendFactor, 0xFFFFFFFF);
     }
 }

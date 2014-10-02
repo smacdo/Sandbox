@@ -70,16 +70,24 @@ private:
         const screen_size_t& screenSize);
 
     void MakeDepthTextureDesc(D3D11_TEXTURE2D_DESC *pDesc, const screen_size_t& screenSize) const;
-    void MakeDepthStencilDesc(D3D11_DEPTH_STENCIL_DESC *pDesc) const;
+
+    HRESULT CreateDepthStencilState(
+        bool depthEnabled,
+        ID3D11Device *pDevice,
+        ID3D11DepthStencilState **ppDepthStencilState) const;
 
     HRESULT CreateDepthStencilStateAndView(
         ID3D11Device * pDevice,
         ID3D11DeviceContext * pDeviceContext,
         ID3D11RenderTargetView * pRenderTargetView,
         ID3D11Texture2D * pDepthBufferTexture,
-        const D3D11_DEPTH_STENCIL_DESC& depthStencilDesc,
         ID3D11DepthStencilState **ppDepthStencilState,
         ID3D11DepthStencilView **ppDepthStencilView) const;
+
+    HRESULT CreateRasterizerState(
+        ID3D11Device *pDevice,
+        ID3D11DeviceContext *pDeviceContext,
+        ID3D11RasterizerState **ppRasterizerStateOut) const;
 
     HRESULT GetPrimaryVideoAdapterOutput(IDXGIFactory *pDxgiFactory, IDXGIOutput **ppOutputAdapter) const;
 
@@ -107,6 +115,14 @@ private:
     // Get hardware VRAM available.
     HRESULT GetPrimaryVideoVRAM(IDXGIFactory *pDxgiFactory, vram_info_t *pVramInfoOut) const;
 
+    // Create an alpha enabled or disabled blend state.
+    HRESULT CreateAlphaBlendState(
+        bool alphaEnabled,
+        ID3D11Device *pDevice,
+        ID3D11BlendState **ppBlendState) const;
+
+    void SetViewport(const screen_size_t& screenSize);
+
 private:
 	bool mInitialized;
 	bool mVysncEnabled;
@@ -121,12 +137,12 @@ private:
     Microsoft::WRL::ComPtr<ID3D11Texture2D> mDepthStencilTexture;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState> mDepthStencilState;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> mDepthStencilView;
-	ID3D11RasterizerState * mpRasterState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> mRasterState;
 	DirectX::SimpleMath::Matrix mProjectionMatrix;
 	DirectX::SimpleMath::Matrix mWorldMatrix;
 	DirectX::SimpleMath::Matrix mOrthoMatrix;
-    ID3D11DepthStencilState * mpDepthDisabledStencilState;
-    ID3D11BlendState * mpAlphaEnabledBlendingState;
-    ID3D11BlendState * mpAlphaDisabledBlendingState;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilState> mDepthDisabledStencilState;
+    Microsoft::WRL::ComPtr<ID3D11BlendState> mAlphaEnabledBlendingState;
+    Microsoft::WRL::ComPtr<ID3D11BlendState> mAlphaDisabledBlendingState;
 };
 
