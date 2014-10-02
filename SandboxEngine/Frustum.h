@@ -1,20 +1,16 @@
 #pragma once
 #include "SimpleMath.h"
+#include <array>
 
 // TODO: Convert Check* to use structures representing the primitive, or at least wrap up the vectors.
 class Frustum
 {
 public:
     Frustum();
-    Frustum(const Frustum& frustum);
-
-    // Assignment.
-    Frustum& operator =(const Frustum& frustum);
 
     // Comparison.
     bool operator == (const Frustum& rhs) const;
     bool operator != (const Frustum& rhs) const;
-
 
     // Operations.
     bool CheckPoint(const DirectX::SimpleMath::Vector3& point) const;
@@ -28,7 +24,7 @@ public:
     void Clear();
 
 private:
-    static const int PLANE_COUNT = 6;
-    DirectX::SimpleMath::Plane mPlanes[PLANE_COUNT];
+    static const int FrustumPlaneCount = 6;
+    std::array<DirectX::SimpleMath::Plane, FrustumPlaneCount> mPlanes;
 };
 

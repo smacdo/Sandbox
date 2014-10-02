@@ -70,9 +70,11 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
         // Assign random position and color.
         Vector4 color(Utils::RandFloat(), Utils::RandFloat(), Utils::RandFloat(), 1.0f);
-        Vector3 position(Utils::RandFloat(-5.0f, 5.0f), Utils::RandFloat(0.0f, 8.0f), Utils::RandFloat(-6.0f, -1.0f));
+        Vector3 position(Utils::RandFloat(0.0f, 6.0f), Utils::RandFloat(2.0f, 8.0f), Utils::RandFloat(-3.0f, -1.0f));
 //        Vector3 position(Utils::RandFloat(-10.0f, 0.0f), Utils::RandFloat(-10.0f, 0.0f), Utils::RandFloat(-6.0f, -1.0f));
 //        Vector3 position(0.0f, 0.0f, -1);
+
+  //      position = Vector3(0.0f, -3.0f, 0.0f);
 
         pModel->SetColor(color);
         pModel->SetPosition(position);
@@ -155,7 +157,7 @@ void Graphics::Render(float rotation)
 	Matrix projectionMatrix = mpD3d->GetProjectionMatrix();
 
     // Rotate the world a little bit to show off.
-    worldMatrix = Matrix::CreateRotationY(rotation) * worldMatrix;
+//    worldMatrix = Matrix::CreateRotationY(rotation) * worldMatrix;
 
     // Update camera view frustum before proceeding with rendering.
     mFrustum.Update(SCREEN_DEPTH, projectionMatrix, viewMatrix);
@@ -173,7 +175,7 @@ void Graphics::Render(float rotation)
         }
 
         // Don't render the model if it is not visible to the camera frustum.
-/*        if (!mFrustum.CheckSphere(model.BoundingSphereCenter(), model.BoundingSphereRadius()))
+ /*       if (!mFrustum.CheckSphere(model.BoundingSphereCenter(), model.BoundingSphereRadius()))
         {
             continue;
         }*/

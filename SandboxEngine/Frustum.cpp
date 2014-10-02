@@ -5,36 +5,15 @@
 
 using namespace DirectX::SimpleMath;
 
-//const int Frustum::PLANE_COUNT = 6;
-
 Frustum::Frustum()
-: mPlanes()
+    : mPlanes()
 {
     Clear();
 }
 
-Frustum::Frustum(const Frustum& f)
-: mPlanes()
-{
-    for (auto i : MakeRange(0, PLANE_COUNT))
-    {
-        mPlanes[i] = f.mPlanes[i];
-    }
-}
-
-Frustum& Frustum::operator =(const Frustum& rhs)
-{
-    for (auto i : MakeRange(0, PLANE_COUNT))
-    {
-        mPlanes[i] = rhs.mPlanes[i];
-    }
-
-    return *this;
-}
-
 bool Frustum::operator ==(const Frustum& rhs) const
 {
-    for (auto i : MakeRange(0, PLANE_COUNT))
+    for (auto i : MakeRange<0, FrustumPlaneCount>())
     {
         if (mPlanes[i] != rhs.mPlanes[i])
         {
@@ -47,7 +26,7 @@ bool Frustum::operator ==(const Frustum& rhs) const
 
 bool Frustum::operator !=(const Frustum& rhs) const
 {
-    for (auto i : MakeRange(0, PLANE_COUNT))
+    for (auto i : MakeRange<0, FrustumPlaneCount>())
     {
         if (mPlanes[i] == rhs.mPlanes[i])
         {
@@ -127,11 +106,10 @@ void Frustum::Update(float screenDepth, const Matrix& inProjectionMatrix, const 
 // Check if the given point is inside the viewing frustum.
 bool Frustum::CheckPoint(const Vector3& point) const
 {
-    // Go through all the frustum planes. So long as the point is inside of the six planes of the view frustum this
-    // method is true.
-    for (auto i : MakeRange(0, PLANE_COUNT))
+    // Check if the point is inside the viewing frustum's six planes.
+    for (auto i : MakeRange<0, FrustumPlaneCount>())
     {
-        if (mPlanes[i].DotCoordinate(point) < 0.0f)     // TODO: correct? Had to use DotCoordinate() instead of Dot()
+        if (mPlanes[i].DotCoordinate(point) < 0.0f)
         {
             return false;
         }
@@ -142,7 +120,7 @@ bool Frustum::CheckPoint(const Vector3& point) const
 
 bool Frustum::CheckCube(const Vector3& center, float radius) const
 {
-    // Check that all eight of the cube's corner points are inside the viewing frustum.
+    // Check that any of the cube's eight corner corner points are inside the viewing frustum.
     Vector3 a(center.x - radius, center.y - radius, center.z - radius);
     Vector3 b(center.x + radius, center.y - radius, center.z - radius);
     Vector3 c(center.x - radius, center.y + radius, center.z - radius);
@@ -152,7 +130,7 @@ bool Frustum::CheckCube(const Vector3& center, float radius) const
     Vector3 g(center.x - radius, center.y + radius, center.z + radius);
     Vector3 h(center.x + radius, center.y + radius, center.z + radius);
 
-    for (auto i : MakeRange(0, PLANE_COUNT))
+    for (auto i : MakeRange<0, FrustumPlaneCount>())
     {
         if (mPlanes[i].DotCoordinate(a) < 0.0f && mPlanes[i].DotCoordinate(b) < 0.0f &&
             mPlanes[i].DotCoordinate(c) < 0.0f && mPlanes[i].DotCoordinate(d) < 0.0f &&
@@ -168,8 +146,8 @@ bool Frustum::CheckCube(const Vector3& center, float radius) const
 
 bool Frustum::CheckSphere(const Vector3& center, float radius) const
 {
-    // Check if the outer extend of the sphere (center + radius) is inside the viewing frustum.
-    for (auto i : MakeRange(0, PLANE_COUNT))
+    // Check if the outer extent of the sphere (center + radius) is inside all six planes of the viewing frustum.
+    for (auto i : MakeRange<0, FrustumPlaneCount>())
     {
         if (mPlanes[i].DotCoordinate(center) < -radius)
         {
@@ -191,7 +169,7 @@ bool Frustum::CheckRectangle(const Vector3& center, const Vector3& size) const
     Vector3 g(center.x - size.x, center.y + size.y, center.z + size.z);
     Vector3 h(center.x + size.x, center.y + size.y, center.z + size.z);
 
-    for (auto i : MakeRange(0, PLANE_COUNT))
+    for (auto i : MakeRange<0, FrustumPlaneCount>())
     {
         if (mPlanes[i].DotCoordinate(a) < 0.0f && mPlanes[i].DotCoordinate(b) < 0.0f &&
             mPlanes[i].DotCoordinate(c) < 0.0f && mPlanes[i].DotCoordinate(d) < 0.0f &&
@@ -207,7 +185,7 @@ bool Frustum::CheckRectangle(const Vector3& center, const Vector3& size) const
 
 void Frustum::Clear()
 {
-    for (auto i : MakeRange(0, PLANE_COUNT))
+    for (auto i : MakeRange<0, FrustumPlaneCount>())
     {
         mPlanes[i] = Plane(0.0f, 0.0f, 0.0f, 0.0f);
     }
