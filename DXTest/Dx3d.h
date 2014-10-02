@@ -40,6 +40,8 @@ private:
 	Dx3d(const Dx3d&);
 	Dx3d& operator= (const Dx3d&);
 
+    HRESULT GetPrimaryVideoAdapterOutput(IDXGIFactory *pDxgiFactory, IDXGIOutput **ppOutputAdapter) const;
+
 private:
 	bool mInitialized;
 	bool mVysncEnabled;

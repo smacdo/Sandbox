@@ -1,6 +1,9 @@
 #include "Dx3d.h"
 #include "DXSandbox.h"
 
+#include <wrl\wrappers\corewrappers.h>      // ComPtr
+#include <wrl\client.h>
+
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
 //#pragma comment(lib, "d3dx11.lib")
@@ -38,8 +41,6 @@ void Dx3d::Initialize(int screenWidth,
 					  float screenDepth,
 					  float screenNear)
 {
-	HRESULT result;
-
 	if (mInitialized)
 	{
 		return;
@@ -49,30 +50,19 @@ void Dx3d::Initialize(int screenWidth,
 	mVysncEnabled = vsync;
 
 	// Create a DirectX graphics interface factory.
-	IDXGIFactory * pFactory = nullptr;
+    Microsoft::WRL::ComPtr<IDXGIFactory> factory;
+	HRESULT result = CreateDXGIFactory(__uuidof(IDXGIFactory), &factory);
 
-	result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&pFactory);
+	// Get the primary video card's output adapter.
+	Microsoft::WRL::ComPtr<IDXGIOutput> adapterOutput;
+    result = GetPrimaryVideoAdapterOutput(factory.Get(), &adapterOutput);
+
 	VerifyDXResult(result);
-	VerifyNotNull(pFactory);
-
-	// Use the factory to create an adapter for the primary graphics interface (video card).
-	IDXGIAdapter * pAdapter = nullptr;
-
-	result = pFactory->EnumAdapters(0, &pAdapter);
-	VerifyDXResult(result);
-	VerifyNotNull(pAdapter);
-
-	// Get the primary adapter output (monitor).
-	IDXGIOutput * pAdapterOutput = nullptr;
-
-	result = pAdapter->EnumOutputs(0, &pAdapterOutput);
-	VerifyDXResult(result);
-	VerifyNotNull(pAdapterOutput);
 
 	// Get the number of modes that fit the DXGI_FORMAT_R8G8B8A8_UNORM display format for the monitor.
 	unsigned int numModes = 0;
 
-	result = pAdapterOutput->GetDisplayModeList(
+	result = adapterOutput->GetDisplayModeList(
 		DXGI_FORMAT_R8G8B8A8_UNORM,
 		DXGI_ENUM_MODES_INTERLACED,
 		&numModes,
@@ -83,7 +73,7 @@ void Dx3d::Initialize(int screenWidth,
 	// Create a list to hold all the possible display modes for this monitor / video card combination.
 	DXGI_MODE_DESC * pDisplayModeList = new DXGI_MODE_DESC[numModes];
 	
-	result = pAdapterOutput->GetDisplayModeList(
+	result = adapterOutput->GetDisplayModeList(
 		DXGI_FORMAT_R8G8B8A8_UNORM,
 		DXGI_ENUM_MODES_INTERLACED,
 		&numModes,
@@ -108,20 +98,17 @@ void Dx3d::Initialize(int screenWidth,
 	}
 
 	// Retrieve the video card description and VRAM count.
-	DXGI_ADAPTER_DESC adapterDesc;
+//	DXGI_ADAPTER_DESC adapterDesc;
 
-	result = pAdapter->GetDesc(&adapterDesc);
-	VerifyDXResult(result);
+//	result = pAdapter->GetDesc(&adapterDesc);
+//	VerifyDXResult(result);
 
 	// memory in MB
-	mVideoCardMemory = static_cast<int>(adapterDesc.DedicatedVideoMemory / 1024 / 1024);
+//	mVideoCardMemory = static_cast<int>(adapterDesc.DedicatedVideoMemory / 1024 / 1024);
 //	mVideoCardDescription = adapterDesc.Description; // XXX: FIXME
 
 	// Release temporary objects used during initialization.
 	SafeDeleteArray(pDisplayModeList);
-	SafeRelease(pAdapterOutput);
-	SafeRelease(pAdapter);
-	SafeRelease(pFactory);
 
 	// Set the desired configuration for our swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
@@ -357,6 +344,33 @@ void Dx3d::Initialize(int screenWidth,
 
 	// All done... finally!
 	mInitialized = true;
+}
+
+/**
+ * Get the primary adapter for the primary video card.
+ */
+HRESULT Dx3d::GetPrimaryVideoAdapterOutput(IDXGIFactory *pDxgiFactory, IDXGIOutput **ppOutputAdapter) const
+{
+    *ppOutputAdapter = nullptr;
+    VerifyNotNull(pDxgiFactory);
+
+    // Use the dxgi factory to create an adapter for the primary graphics interface (video card).
+    Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+    HRESULT hr = pDxgiFactory->EnumAdapters(0, &adapter);  // TODO: Make sure there's at least one card.
+
+    if (SUCCEEDED(hr))
+    {
+        // Get the primary adapter output (monitor).
+        Microsoft::WRL::ComPtr<IDXGIOutput> adapterOutput;
+        hr = adapter->EnumOutputs(0, &adapterOutput);
+
+        if (SUCCEEDED(hr))
+        {
+            *ppOutputAdapter = adapterOutput.Detach();
+        }
+    }
+    
+    return hr;
 }
 
 void Dx3d::Shutdown()
