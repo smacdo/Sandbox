@@ -5,8 +5,8 @@ using namespace DirectX::SimpleMath;
 
 Camera::Camera(const Size& screenSize, float screenNear, float screenDepth)
     : mRegenerateViewMatrix(false),
-      mScreenWidth(static_cast<float>(screenSize.Width())),
-      mScreenHeight(static_cast<float>(screenSize.Height())),
+      mScreenWidth(static_cast<float>(screenSize.width)),
+      mScreenHeight(static_cast<float>(screenSize.height)),
       mFieldOfView(3.141592653589793f / 4.0f),
       mAspectRatio(mScreenWidth / mScreenHeight),
       mScreenNear(screenNear),

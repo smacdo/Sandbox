@@ -4,22 +4,18 @@
 class Size
 {
 public:
-    Size(int width, int height)
-        : mWidth(width),
-          mHeight(height)
+    Size(int width_, int height_)
+        : width(width_),
+        height(height_)
     {
     }
 
-    Size(unsigned int width, unsigned int height)
-        : mWidth(width),
-          mHeight(height)
+    Size(unsigned int width_, unsigned int height_)
+        : width(width_),
+        height(height_)
     {
     }
 
-    unsigned int Width() const { return mWidth; }
-    unsigned int Height() const { return mHeight; }
-
-private:
-    unsigned int mWidth;
-    unsigned int mHeight;
+    const unsigned int width;
+    const unsigned int height;
 };

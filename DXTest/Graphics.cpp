@@ -43,7 +43,7 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	// Initialize DirectX D3D.
 	mpD3d = new Dx3d();
-	mpD3d->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
+	mpD3d->Initialize(screenSize, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 
 	// Initialize the camera.
 	mpCamera = new Camera(screenSize, SCREEN_NEAR, SCREEN_DEPTH);

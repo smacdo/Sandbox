@@ -5,6 +5,7 @@
 #include <wrl\client.h>
 #include <memory>
 #include <vector>
+#include "size.h"
 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -34,15 +35,13 @@ Dx3d::~Dx3d()
 	Shutdown();
 }
 
-void Dx3d::Initialize(int screenWidth,
-	                  int screenHeight,
+void Dx3d::Initialize(const Size& screenSize,
 					  bool vsync,
 					  HWND hwnd,
 					  bool fullscreen,
 					  float screenDepth,
 					  float screenNear)
 {
-    screen_size_t screenSize = { screenWidth, screenHeight };
 	if (mInitialized)
 	{
 		return;
@@ -65,7 +64,7 @@ void Dx3d::Initialize(int screenWidth,
 
     // Get monitor refresh information.
     refresh_rate_t refreshRate = { 0 };
-    result = GetRefreshRateInfo(adapterOutput.Get(), screenWidth, screenHeight, &refreshRate);
+    result = GetRefreshRateInfo(adapterOutput.Get(), screenSize, &refreshRate);
 
     VerifyDXResult(result);
 
@@ -76,8 +75,7 @@ void Dx3d::Initialize(int screenWidth,
 	// Create the swap chain, direct3d device and direct3d device context all at once.
     result = CreateDeviceAndSwapChain(
         refreshRate,
-        screenWidth,
-        screenHeight,
+        screenSize,
         &mDevice,
         &mDeviceContext,
         &mSwapChain);
@@ -117,7 +115,7 @@ void Dx3d::Initialize(int screenWidth,
 
 HRESULT Dx3d::InitializeDepthBuffer(
     ID3D11Device *pDevice,
-    const screen_size_t& screenSize)
+    const Size& screenSize)
 {
     AssertNotNull(pDevice);
     Microsoft::WRL::ComPtr<ID3D11Device> device(pDevice);
@@ -156,7 +154,7 @@ HRESULT Dx3d::InitializeDepthBuffer(
 }
 
 // TODO: Invert order, rename pDesc to pDescOut
-void Dx3d::MakeDepthTextureDesc(D3D11_TEXTURE2D_DESC *pDesc, const screen_size_t& screenSize) const
+void Dx3d::MakeDepthTextureDesc(D3D11_TEXTURE2D_DESC *pDesc, const Size& screenSize) const
 {
     AssertNotNull(pDesc);
     ZeroMemory(pDesc, sizeof(D3D11_TEXTURE2D_DESC));
@@ -337,8 +335,7 @@ HRESULT Dx3d::GetPrimaryVideoAdapterOutput(IDXGIFactory *pDxgiFactory, IDXGIOutp
  */
 HRESULT Dx3d::GetRefreshRateInfo(
     IDXGIOutput * pOutputAdapter,
-    unsigned int screenWidth,
-    unsigned int screenHeight,
+    const Size& screenSize,
     refresh_rate_t *pRefreshRateOut) const
 {
     AssertNotNull(pOutputAdapter);
@@ -373,7 +370,7 @@ HRESULT Dx3d::GetRefreshRateInfo(
             // Store a list of the matches along with monitor refresh information.
             for (int i = 0; i < static_cast<int>(numModes); ++i)
             {
-                if (displayModeList[i].Width == screenWidth && displayModeList[i].Height == screenHeight)
+                if (displayModeList[i].Width == screenSize.width && displayModeList[i].Height == screenSize.height)
                 {
                     refreshRate.numerator = displayModeList[i].RefreshRate.Numerator;
                     refreshRate.denominator = displayModeList[i].RefreshRate.Denominator;
@@ -392,8 +389,7 @@ HRESULT Dx3d::GetRefreshRateInfo(
  */
 HRESULT Dx3d::CreateDeviceAndSwapChain(
     const refresh_rate_t& refreshRate,
-    unsigned int screenWidth,           // TODO: Replace with size
-    unsigned int screenHeight,
+    const Size& screenSize,
     ID3D11Device **ppDeviceOut,
     ID3D11DeviceContext **ppDeviceContextOut,
     IDXGISwapChain **ppSwapChainOut) const
@@ -406,13 +402,13 @@ HRESULT Dx3d::CreateDeviceAndSwapChain(
     ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
 
     swapChainDesc.BufferCount = 1;	// Single back buffer.
-    swapChainDesc.BufferDesc.Width = screenWidth;
-    swapChainDesc.BufferDesc.Height = screenHeight;
+    swapChainDesc.BufferDesc.Width = screenSize.width;
+    swapChainDesc.BufferDesc.Height = screenSize.height;
     swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;       // TODO: Make this a variable that is tracked.
     swapChainDesc.BufferDesc.RefreshRate.Numerator = (mVysncEnabled ? refreshRate.numerator : 0);
     swapChainDesc.BufferDesc.RefreshRate.Denominator = (mVysncEnabled ? refreshRate.denominator : 1);
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	// Backbuffer renders to target.
-    swapChainDesc.OutputWindow = mHwnd;
+    swapChainDesc.OutputWindow = mHwnd;         // TODO: Pass this, don't store it.
     swapChainDesc.SampleDesc.Count = 1;		// Turn multi-sampling off :(
     swapChainDesc.SampleDesc.Quality = 0;	// Turn multi-sampling off :(   XXX: Fix this, make this configurable.
     swapChainDesc.Windowed = !mIsFullScreenMode;
@@ -531,7 +527,7 @@ HRESULT Dx3d::CreateAlphaBlendState(
     return hr;
 }
 
-void Dx3d::SetViewport(const screen_size_t& screenSize)
+void Dx3d::SetViewport(const Size& screenSize)
 {
     D3D11_VIEWPORT viewport;
 

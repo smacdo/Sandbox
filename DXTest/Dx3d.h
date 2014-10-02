@@ -12,17 +12,12 @@
 #include <memory>
 
 const int VIDEO_CARD_DESC_LENGTH = 128;
+class Size;
 
 struct refresh_rate_t
 {
     int numerator;
     int denominator;
-};
-
-struct screen_size_t
-{
-    unsigned int width;
-    unsigned int height;
 };
 
 struct vram_info_t      // values in MB
@@ -43,7 +38,7 @@ public:
 	Dx3d();
 	~Dx3d();
 
-	void Initialize(int, int, bool, HWND, bool, float, float);
+	void Initialize(const Size& screenSize, bool, HWND, bool, float, float);
 	void Shutdown();
 
 	void BeginScene(float, float, float, float);
@@ -62,9 +57,9 @@ private:
 
     HRESULT InitializeDepthBuffer(
         ID3D11Device *pDevice,
-        const screen_size_t& screenSize);
+        const Size& screenSize);
 
-    void MakeDepthTextureDesc(D3D11_TEXTURE2D_DESC *pDesc, const screen_size_t& screenSize) const;
+    void MakeDepthTextureDesc(D3D11_TEXTURE2D_DESC *pDesc, const Size& screenSize) const;
 
     HRESULT CreateDepthStencilState(
         bool depthEnabled,
@@ -89,15 +84,13 @@ private:
     // Get monitor refresh info for selected screen size.
     HRESULT GetRefreshRateInfo(
         IDXGIOutput * pOutputAdapter,
-        unsigned int screenWidth,           // TODO: replace with size
-        unsigned int screenHeight,
+        const Size& screenSize,
         refresh_rate_t *pRefreshRateOut) const;
 
     // Create and return the device swap chain.
     HRESULT CreateDeviceAndSwapChain(
         const refresh_rate_t& refreshRate,
-        unsigned int screenWidth,           // TODO: Replace with size
-        unsigned int screenHeight,
+        const Size& screenSize,
         ID3D11Device **ppDeviceOut,
         ID3D11DeviceContext **ppDeviceContextOut,
         IDXGISwapChain **ppSwapChainOut) const;
@@ -116,13 +109,13 @@ private:
         ID3D11Device *pDevice,
         ID3D11BlendState **ppBlendState) const;
 
-    void SetViewport(const screen_size_t& screenSize);
+    void SetViewport(const Size& screenSize);
 
 private:
 	bool mInitialized;
 	bool mVysncEnabled;
     bool mIsFullScreenMode;
-    HWND mHwnd;
+    HWND mHwnd;                     // TODO: Stop storing this?
     vram_info_t mVideoRamInfo;
     Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
     Microsoft::WRL::ComPtr<ID3D11Device> mDevice;
