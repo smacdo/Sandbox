@@ -96,18 +96,8 @@ void Dx3d::Initialize(int screenWidth,
     // Rasterizer state.
     result = CreateRasterizerState(mDevice.Get(), mDeviceContext.Get(), &mRasterState);
 
-
 	// Set the viewport description which will allow Direct3D to map clip space coordinates to the render target space.
     SetViewport(screenSize);
-
-	// Create the projection matrix. The projection matrix will be used to translate the 3d scene into a 2d viewport space
-	// that was created above. We need to keep a copy of this matrix so we can pass it to our shaders.
-	float fieldOfView = 0.0f, screenAspect = 0.0f;
-
-	fieldOfView = 3.141592653589793f / 4.0f;
-	screenAspect = (float)screenWidth / (float)screenHeight;
-
-	mProjectionMatrix = DirectX::XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
 
 	// Create the world matrix. This matrix is used to convert model space vertices into the 3d world space. After
 	// creating it make sure we initialize to the default identity matrix.
@@ -613,11 +603,6 @@ ID3D11Device * Dx3d::GetDevice()
 ID3D11DeviceContext * Dx3d::GetDeviceContext()
 {
 	return mDeviceContext.Get();
-}
-
-DirectX::SimpleMath::Matrix Dx3d::GetProjectionMatrix() const
-{
-	return mProjectionMatrix;
 }
 
 DirectX::SimpleMath::Matrix Dx3d::GetWorldMatrix() const

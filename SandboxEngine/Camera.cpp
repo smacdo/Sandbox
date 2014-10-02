@@ -3,12 +3,18 @@
 
 using namespace DirectX::SimpleMath;
 
-Camera::Camera()
+Camera::Camera(const Size& screenSize, float screenNear, float screenDepth)
     : mRegenerateViewMatrix(false),
+      mFieldOfView(3.141592653589793f / 4.0f),
+      mAspectRatio(static_cast<float>(screenSize.Width()) / static_cast<float>(screenSize.Height())),
+      mScreenNear(screenNear),
+      mScreenDepth(screenDepth),
       mPosition(0.0f, 0.0f, 0.0f),
       mRotation(0.0f, 0.0f, 0.0f),
-      mViewMatrix()
+      mViewMatrix(),
+      mProjectionMatrix()
 {
+    RegenerateProjectionMatrix();
 }
 
 void Camera::SetPosition(const Vector3& position)
@@ -74,4 +80,11 @@ void Camera::Render() const
 
 	// Generate the view matrix from the three updated vectors.
     mViewMatrix = DirectX::XMMatrixLookAtLH(position, lookAt, up);
+}
+
+void Camera::RegenerateProjectionMatrix()
+{
+    // Create the projection matrix. The projection matrix will be used to translate the 3d scene into a 2d viewport
+    // space that was created above. We need to keep a copy of this matrix so we can pass it to our shaders.
+    mProjectionMatrix = DirectX::XMMatrixPerspectiveFovLH(mFieldOfView, mAspectRatio, mScreenNear, mScreenDepth);
 }

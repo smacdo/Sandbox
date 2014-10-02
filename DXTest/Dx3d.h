@@ -52,7 +52,6 @@ public:
 	ID3D11Device * GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
 
-	DirectX::SimpleMath::Matrix GetProjectionMatrix() const;
 	DirectX::SimpleMath::Matrix GetWorldMatrix() const;
 	DirectX::SimpleMath::Matrix GetOrthoMatrix() const;
 	std::string GetVideoCardInfo() const;
@@ -138,7 +137,6 @@ private:
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState> mDepthStencilState;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> mDepthStencilView;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> mRasterState;
-	DirectX::SimpleMath::Matrix mProjectionMatrix;
 	DirectX::SimpleMath::Matrix mWorldMatrix;
 	DirectX::SimpleMath::Matrix mOrthoMatrix;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState> mDepthDisabledStencilState;

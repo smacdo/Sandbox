@@ -10,6 +10,7 @@
 #include "Light.h"
 #include "Text.h"
 #include "SimpleMath.h"
+#include "size.h"
 
 using namespace DirectX::SimpleMath;
 
@@ -33,6 +34,8 @@ Graphics::~Graphics()
 
 void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
+    Size screenSize = { screenWidth, screenHeight };
+
 	if (mInitialized)
 	{
 		return;
@@ -43,12 +46,12 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	mpD3d->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 
 	// Initialize the camera.
-	mpCamera = new Camera();
+	mpCamera = new Camera(screenSize, SCREEN_NEAR, SCREEN_DEPTH);
 	mpCamera->SetPosition(Vector3(0.0f, 0.0f, -10.0f));
 
     // Set up a base view matrix for 2d user interface rendering.
     //  TODO: Rename referneces to "Base view matrix" to "2d ui view matrix" or "ui view matrix".
-    mpUiCamera = new Camera();
+    mpUiCamera = new Camera(screenSize, SCREEN_NEAR, SCREEN_DEPTH);
     
     mpUiCamera->SetPosition(Vector3(0.0f, 0.0f, -1.0f));
     mpUiCamera->Render();
@@ -154,7 +157,7 @@ void Graphics::Render(float rotation)
 
 	Matrix viewMatrix = mpCamera->ViewMatrix();
 	Matrix worldMatrix = mpD3d->GetWorldMatrix();
-	Matrix projectionMatrix = mpD3d->GetProjectionMatrix();
+	Matrix projectionMatrix = mpCamera->ProjectionMatrix();
 
     // Rotate the world a little bit to show off.
     worldMatrix = Matrix::CreateRotationY(rotation) * worldMatrix;
