@@ -14,6 +14,8 @@
 
 Dx3d::Dx3d()
 : mVysncEnabled(false),
+  mHwnd(0),
+  mBackgroundColor(1.0f, 1.0f, 1.0f),
   mSwapChain(),
   mDevice(),
   mDeviceContext(),
@@ -542,26 +544,18 @@ void Dx3d::OnShutdown()
     }
 }
 
-/// Initialize buffers to be blank and ready.
-void Dx3d::BeginScene(float red, float green, float blue, float alpha)
+/// Initialize buffers to be blank and ready. Clear the back buffer and the depth buffer.
+void Dx3d::BeginScene()
 {
     if (!IsInitialized()) { return; }
 
-	float color[4];
-
-	color[0] = red;
-	color[1] = green;
-	color[2] = blue;
-	color[3] = alpha;
-
-	// Clear back buffer and the depth buffer.
-	mDeviceContext->ClearRenderTargetView(mRenderTargetView.Get(), color);
+	mDeviceContext->ClearRenderTargetView(mRenderTargetView.Get(), mBackgroundColor);
 	mDeviceContext->ClearDepthStencilView(mDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 void Dx3d::EndScene()
 {
-	// Verify mInitialized, and BeginScene called.
+    if (!IsInitialized()) { return; }       // TODO: Verify BeginScene() was called.
 	mSwapChain->Present((mVysncEnabled ? 1 : 0), 0);
 }
 
@@ -576,31 +570,24 @@ ID3D11DeviceContext * Dx3d::GetDeviceContext()
 	return mDeviceContext.Get();
 }
 
-void Dx3d::EnableZBuffer(bool zEnabled)
+void Dx3d::SetZBufferEnabled(bool zEnabled)
 {
-    VerifyNotNull(mDeviceContext.Get());
+    if (!IsInitialized()) { return; }
 
     if (zEnabled)
     {
-        VerifyNotNull(mDepthStencilState.Get());
         mDeviceContext->OMSetDepthStencilState(mDepthStencilState.Get(), 1);
     }
     else
     {
-        VerifyNotNull(mDepthDisabledStencilState.Get());
         mDeviceContext->OMSetDepthStencilState(mDepthDisabledStencilState.Get(), 1);
     }
 }
 
-void Dx3d::EnableAlphaBlending(bool alphaBlendEnabled)
+void Dx3d::SetAlphaBlendingEnabled(bool alphaBlendEnabled)
 {
-    VerifyNotNull(mDeviceContext.Get());
-    float blendFactor[4];
-
-    blendFactor[0] = 0.0f;
-    blendFactor[1] = 0.0f;
-    blendFactor[2] = 0.0f;
-    blendFactor[3] = 0.0f;
+    if (!IsInitialized()) { return; }
+    float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
     if (alphaBlendEnabled)
     {
@@ -612,14 +599,17 @@ void Dx3d::EnableAlphaBlending(bool alphaBlendEnabled)
     }
 }
 
+void Dx3d::SetBackgroundColor(const DirectX::SimpleMath::Color& color)
+{
+    mBackgroundColor = color;
+}
+
 vram_info_t Dx3d::GetVRamInfo() const
 {
-    // Create a DirectX graphics interface factory.
+    vram_info_t info = { 0 };
+
     Microsoft::WRL::ComPtr<IDXGIFactory> factory;
     HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), &factory);
-
-    // Find out how much video memory is available from our primary video card.
-    vram_info_t info = { 0 };
 
     if (SUCCEEDED(hr))
     {

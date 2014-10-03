@@ -50,16 +50,16 @@ public:
         float screenDepth,
         float screenNear);
 
-	void BeginScene(float red, float green, float blue, float alpha);
+	void BeginScene();
 	void EndScene();
 
 	ID3D11Device * GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
-
-    void EnableZBuffer(bool zEnabled);
-    void EnableAlphaBlending(bool alphaBlendEnabled);
-
     vram_info_t GetVRamInfo() const;
+
+    void SetBackgroundColor(const DirectX::SimpleMath::Color& backgroundColor);
+    void SetZBufferEnabled(bool zEnabled);
+    void SetAlphaBlendingEnabled(bool alphaBlendEnabled);
 
 protected:
     virtual void OnShutdown() override;
@@ -125,6 +125,7 @@ private:
 private:
 	bool mVysncEnabled;
     HWND mHwnd;                     // TODO: Stop storing this?
+    DirectX::SimpleMath::Color mBackgroundColor;
     Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
     Microsoft::WRL::ComPtr<ID3D11Device> mDevice;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> mDeviceContext;

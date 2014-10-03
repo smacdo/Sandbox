@@ -51,6 +51,8 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
         SCREEN_DEPTH,
         SCREEN_NEAR);
 
+    mpD3d->SetBackgroundColor(Color(0.0f, 0.0f, 0.25f));
+
 	// Initialize the camera.
 	mpCamera = new Camera(screenSize, SCREEN_NEAR, SCREEN_DEPTH);
 	mpCamera->SetPosition(Vector3(0.0f, 0.0f, -10.0f));
@@ -155,7 +157,7 @@ void Graphics::Render(float rotation)
     AssertNotNull(mpCamera);
 
 	// Clear graphics buffers before beginning scene rendering.
-	mpD3d->BeginScene(0.0f, 0.0f, 0.25f, 1.0f);
+	mpD3d->BeginScene();
 
 	// Generate the view matrix based on the camera's position. Grab the world, view and projection matrices from the
 	// camera and d3d objects.
@@ -218,13 +220,13 @@ void Graphics::RenderUi()
     Matrix worldMatrix = DirectX::XMMatrixIdentity();
     Matrix orthoMatrix = mpUiCamera->OrthoMatrix();
 
-    mpD3d->EnableZBuffer(false);
-    mpD3d->EnableAlphaBlending(true);
+    mpD3d->SetZBufferEnabled(false);
+    mpD3d->SetAlphaBlendingEnabled(true);
 
     mpText->Render(mpD3d->GetDeviceContext(), worldMatrix, orthoMatrix);
 
-    mpD3d->EnableZBuffer(true);
-    mpD3d->EnableAlphaBlending(false);
+    mpD3d->SetZBufferEnabled(true);
+    mpD3d->SetAlphaBlendingEnabled(false);
 
     mpD3d->EndScene();
 }
