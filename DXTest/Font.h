@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <memory>
 #include "IInitializable.h"
 
 struct ID3D11Device;
@@ -12,24 +14,19 @@ class Font : public IInitializable
 public:
     Font();
     Font(const Font& font) = delete;
-    ~Font();
+    virtual ~Font() override;
 
     Font& operator =(const Font& rhs) = delete;
 
-    void Initialize(ID3D11Device * pDevice, const std::string& layoutFile, const std::string& textureFile);
+    void Initialize(ID3D11Device * pDevice, const std::wstring& layoutFile, const std::wstring& textureFile);
 
-    // TODO: Return the texture object, not the contained shader view.
-    ID3D11ShaderResourceView * GetTexture() const;
+    ID3D11ShaderResourceView * GetTexture();
 
     // Seriously, WTF. TODO: Fix this abomination.
     void BuildVertexArray(void*, const std::string&, float, float) const;
 
 protected:
     virtual void OnShutdown() override;
-
-private:
-    void LoadFontLayout(const std::string& layoutFile);
-    void LoadTexture(ID3D11Device *pDevice, const std::string& textureFile);
 
 private:
     struct font_char_t
@@ -39,7 +36,10 @@ private:
     };
 
 private:
-    font_char_t * mpCharInfo;
-    Texture * mpTexture;
+    std::vector<font_char_t> LoadFontLayout(const std::wstring& layoutFile) const;
+
+private:
+    std::vector<font_char_t> mCharInfo;
+    std::unique_ptr<Texture> mTexture;
 };
 

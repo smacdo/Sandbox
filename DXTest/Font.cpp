@@ -4,8 +4,12 @@
 #include "DXTestException.h"
 #include "Utils.h"
 #include "SimpleMath.h"
+
 #include <d3d11.h>
+
 #include <fstream>
+#include <vector>
+#include <memory>
 
 const int FONT_CHAR_COUNT = 95;
 
@@ -19,8 +23,8 @@ struct font_vertex_t        // TODO: Use the Texture::vertex_t data type instead
 
 Font::Font()
 : IInitializable(),
-  mpCharInfo(nullptr),
-  mpTexture(nullptr)
+  mCharInfo(),
+  mTexture()
 {
 }
 
@@ -28,19 +32,22 @@ Font::~Font()
 {
 }
 
-void Font::Initialize(ID3D11Device *pDevice, const std::string& layoutFile, const std::string& textureFile)
+void Font::Initialize(ID3D11Device *pDevice, const std::wstring& layoutFile, const std::wstring& textureFile)
 {
+    if (IsInitialized()) { return; }
     VerifyNotNull(pDevice);
 
-    LoadFontLayout(layoutFile);
-    LoadTexture(pDevice, textureFile);
+    mCharInfo = LoadFontLayout(layoutFile);
+    
+    mTexture.reset(new Texture());
+    mTexture->InitializeFromFile(pDevice, textureFile);
 }
 
-void Font::LoadFontLayout(const std::string& layoutFile)
+std::vector<Font::font_char_t> Font::LoadFontLayout(const std::wstring& layoutFile) const
 {
     // Font format layout:
     // [Character ascii value] [Character] [Left tu coord] [Right tu cord] [Pixel width]
-    mpCharInfo = new font_char_t[FONT_CHAR_COUNT];
+    std::vector<Font::font_char_t> fontInfo(FONT_CHAR_COUNT);
 
     // Read the font layout values from the text file.
     std::fstream layoutStream(layoutFile.c_str());
@@ -48,7 +55,7 @@ void Font::LoadFontLayout(const std::string& layoutFile)
 
     if (layoutStream.fail())
     {
-        throw FileLoadException(Utils::ConvertUtf8ToWString(layoutFile));
+        throw FileLoadException(layoutFile);
     }
 
     for (int i = 0; i < FONT_CHAR_COUNT; ++i)
@@ -61,24 +68,19 @@ void Font::LoadFontLayout(const std::string& layoutFile)
         while (temp != ' ') { layoutStream.get(temp); }
 
         // Now read values.
-        layoutStream >> mpCharInfo[i].left;
-        layoutStream >> mpCharInfo[i].right;
-        layoutStream >> mpCharInfo[i].size;
+        layoutStream >> fontInfo[i].left;
+        layoutStream >> fontInfo[i].right;
+        layoutStream >> fontInfo[i].size;
     }
 
     layoutStream.close();
-}
-
-void Font::LoadTexture(ID3D11Device *pDevice, const std::string& textureFile)
-{
-    mpTexture = new Texture();
-    mpTexture->InitializeFromFile(pDevice, Utils::ConvertUtf8ToWString(textureFile));
+    return fontInfo;
 }
 
 void Font::OnShutdown()
 {
-    SafeDeleteArray(mpCharInfo);
-    SafeDelete(mpTexture);
+    mCharInfo.resize(0);
+    mTexture.reset();
 }
 
 // BuildVertexArray is called by the Text class to build vertex buffers out of text sentences. This way each sentence
@@ -92,7 +94,7 @@ void Font::BuildVertexArray(void* pVertices, const std::string& text, float star
     float currentX = startX, currentY = startY;
     int index = 0;
 
-    for (int i = 0; i < text.size(); ++i)
+    for (size_t i = 0; i < text.size(); ++i)
     {
         int letter = ((int)text[i]) - 32;       // TODO: magic numbers, bad.
 
@@ -104,9 +106,9 @@ void Font::BuildVertexArray(void* pVertices, const std::string& text, float star
         else
         {
             // TODO: Way too many magic numbers in here.
-            float letterSize = mpCharInfo[letter].size;
-            float letterLeft = mpCharInfo[letter].left;
-            float letterRight = mpCharInfo[letter].right;
+            float letterSize = static_cast<float>(mCharInfo[letter].size);
+            float letterLeft = mCharInfo[letter].left;
+            float letterRight = mCharInfo[letter].right;
 
             // First triangle in quad.
             pVerts[index].position = Vector3(currentX, currentY, 0.0f);  // top left.
@@ -140,7 +142,7 @@ void Font::BuildVertexArray(void* pVertices, const std::string& text, float star
     }
 }
 
-ID3D11ShaderResourceView * Font::GetTexture() const
+ID3D11ShaderResourceView * Font::GetTexture()
 {
-    return mpTexture->GetTexture();
+    return mTexture->GetTexture();
 }

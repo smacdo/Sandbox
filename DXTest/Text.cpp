@@ -42,7 +42,7 @@ void Text::Initialize(ID3D11Device *pDevice,
 
     // Create font object and shader.
     mpFont = new Font();
-    mpFont->Initialize(pDevice, ".\\Fonts\\rastertek.txt", ".\\Fonts\\rastertek.dds");
+    mpFont->Initialize(pDevice, L".\\Fonts\\rastertek.txt", L".\\Fonts\\rastertek.dds");
 
     mpFontShader = new FontShader();
     mpFontShader->Initialize(pDevice);
@@ -151,7 +151,7 @@ void Text::UpdateSentence(Text::sentence_t& text,
                           float r, float g, float b,
                           ID3D11DeviceContext *pDeviceContext) const
 {
-    Verify(text.maxLength > inputText.size());
+    Verify(static_cast<unsigned int>(text.maxLength) > inputText.size());
 
     // Store the requested color.
     text.red = r;
