@@ -90,7 +90,7 @@ void Graphics::Initialize(const Size& screenSize, HWND hwnd)
 
     // Create a light and a light shader for the model.
     mLightShader.reset(new LightShader());
-    mLightShader->Initialize(mD3d->GetDevice());
+    mLightShader->Initialize(*mD3d.get());
 
     mLight.reset(new Light());
 

@@ -14,6 +14,8 @@
 
 const int VIDEO_CARD_DESC_LENGTH = 128;
 class Size;
+class Dx3d;
+class BinaryBlob;
 
 struct refresh_rate_t
 {
@@ -60,6 +62,21 @@ public:
     void SetBackgroundColor(const DirectX::SimpleMath::Color& backgroundColor);
     void SetZBufferEnabled(bool zEnabled);
     void SetAlphaBlendingEnabled(bool alphaBlendEnabled);
+
+    HRESULT CreateVertexShader(
+        const BinaryBlob& shaderBlob,
+        ID3D11VertexShader **ppVertexShaderOut) const;
+
+    HRESULT CreatePixelShader(
+        const BinaryBlob& shaderBlob,
+        ID3D11PixelShader **ppPixelShaderOut) const;
+
+    HRESULT CreateTextureSamplerState(ID3D11SamplerState **ppSamplerStateOut) const;
+
+    // Create a constant buffer.
+    HRESULT CreateConstantBuffer(
+        size_t elementSize,
+        ID3D11Buffer **ppConstantBufferOut) const;
 
 protected:
     virtual void OnShutdown() override;

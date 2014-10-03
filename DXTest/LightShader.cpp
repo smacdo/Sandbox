@@ -61,51 +61,79 @@ LightShader::~LightShader()
 {
 }
 
-void LightShader::Initialize(ID3D11Device *pDevice)
+void LightShader::Initialize(Dx3d& dx)
 {
-    VerifyNotNull(pDevice);
-
     if (!IsInitialized())
     {
-        InitializeShader(pDevice, LightVertexShaderFilePath, LightPixelShaderFilePath);
+        HRESULT hr = InitializeShader(dx);
+        VerifyDXResult(hr);
+
         SetInitialized();
     }
 }
 
 // break this into two functions LoadPixelShader, LoadVertexShader
 // change WCHAR to std::wstring or std::string and convert last second
-void LightShader::InitializeShader(
-    ID3D11Device *pDevice,
-    const std::wstring& vertexShaderFile,
-    const std::wstring& pixelShaderFile)
+HRESULT LightShader::InitializeShader(Dx3d& dx)
 {
-    // Load the pixel and vertex shaders.
-    BinaryBlob vertexShaderBlob = BinaryBlob::LoadFromFile(vertexShaderFile);
-    BinaryBlob pixelShaderBlob = BinaryBlob::LoadFromFile(pixelShaderFile);
+    HRESULT hr = S_OK;
 
-    // Create the vertex shader object.
-    HRESULT result;
+    // Load and create the pixel and vertex shaders.
+    {
+        BinaryBlob vertexShaderBlob = BinaryBlob::LoadFromFile(LightVertexShaderFilePath);
+        BinaryBlob pixelShaderBlob = BinaryBlob::LoadFromFile(LightPixelShaderFilePath);
 
-    result = pDevice->CreateVertexShader(
-        vertexShaderBlob.BufferPointer(),
-        static_cast<SIZE_T>(vertexShaderBlob.BufferSize()),
-        NULL,
-        &mVertexShader);
+        hr = dx.CreateVertexShader(vertexShaderBlob, &mVertexShader);
 
-    VerifyDXResult(result);
+        if (SUCCEEDED(hr))
+        {
+            hr = dx.CreatePixelShader(pixelShaderBlob, &mPixelShader);
+        }
 
-    // Create the pixel shader object.
-    result = pDevice->CreatePixelShader(
-        pixelShaderBlob.BufferPointer(),
-        static_cast<SIZE_T>(pixelShaderBlob.BufferSize()),
-        NULL,
-        &mPixelShader);
+        // Now that we vertex shader is created, we can create the vertex input layout.
+        if (SUCCEEDED(hr))
+        {
+            hr = CreateInputLayout(dx, vertexShaderBlob, &mLayout);
+        }
+    }
 
-    VerifyDXResult(result);
+    // Create constant buffers for MVP camera projection, camera position, and lighting information.
+    if (SUCCEEDED(hr))
+    {
+        hr = dx.CreateConstantBuffer(sizeof(matrix_buffer_t), &mMatrixBuffer);
+    }
+    
+    if (SUCCEEDED(hr))
+    {
+        hr = dx.CreateConstantBuffer(sizeof(camera_buffer_t), &mCameraBuffer);
+    }
+
+    if (SUCCEEDED(hr))
+    {
+        hr = dx.CreateConstantBuffer(sizeof(light_buffer_t), &mLightBuffer);
+    }
+
+    // Create a texture sampler state description.
+    if (SUCCEEDED(hr))
+    {
+        hr = dx.CreateTextureSamplerState(&mSamplerState);
+    }
+
+    return hr;
+}
+
+HRESULT LightShader::CreateInputLayout(
+    Dx3d& dx,
+    const BinaryBlob& vertexShaderBlob,
+    ID3D11InputLayout **ppLayoutOut) const
+{
+    VerifyNotNull(ppLayoutOut);
+    *ppLayoutOut = nullptr;
 
     // Describe the layout of data that will be fed to this shader.
     // This layout needs to match the vertex type structure defined in the model class and shader.
-    D3D11_INPUT_ELEMENT_DESC polygonLayout[3];
+    const size_t INPUT_ELEMENT_COUNT = 3;
+    D3D11_INPUT_ELEMENT_DESC polygonLayout[INPUT_ELEMENT_COUNT];
 
     polygonLayout[0].SemanticName = "POSITION";
     polygonLayout[0].SemanticIndex = 0;
@@ -131,85 +159,22 @@ void LightShader::InitializeShader(
     polygonLayout[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
     polygonLayout[2].InstanceDataStepRate = 0;
 
-    // Number of elements in the layout
-    unsigned int numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);	// XXX: FIXME TODO!!!
-
     // Create the vertex input.
-    result = pDevice->CreateInputLayout(
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+
+    HRESULT hr = dx.GetDevice()->CreateInputLayout(
         polygonLayout,
-        numElements,
+        INPUT_ELEMENT_COUNT,
         vertexShaderBlob.BufferPointer(),
         static_cast<SIZE_T>(vertexShaderBlob.BufferSize()),
-        &mLayout);
+        &inputLayout);
 
-    VerifyDXResult(result);
+    if (SUCCEEDED(hr))
+    {
+        *ppLayoutOut = inputLayout.Detach();
+    }
 
-    // Describe the dynamic matrix constant buffer that will be fed to the vertex shader.
-    D3D11_BUFFER_DESC matrixBufferDesc;
-
-    matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-    matrixBufferDesc.ByteWidth = sizeof(matrix_buffer_t);
-    matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    matrixBufferDesc.MiscFlags = 0;
-    matrixBufferDesc.StructureByteStride = 0;
-
-    // Create the matrix buffer.
-    result = pDevice->CreateBuffer(&matrixBufferDesc, NULL, &mMatrixBuffer);
-
-    VerifyDXResult(result);
-
-    // Describe a dynamic constant bufffer for the camera.
-    D3D11_BUFFER_DESC cameraBufferDesc;
-
-    cameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-    cameraBufferDesc.ByteWidth = sizeof(camera_buffer_t);
-    cameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    cameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    cameraBufferDesc.MiscFlags = 0;
-    cameraBufferDesc.StructureByteStride = 0;
-
-    // Create the camera buffer.
-    result = pDevice->CreateBuffer(&cameraBufferDesc, NULL, &mCameraBuffer);
-
-    VerifyDXResult(result);
-
-    // Create a texture sampler state description.
-    D3D11_SAMPLER_DESC samplerDesc;
-
-    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-    samplerDesc.MipLODBias = 0.0f;
-    samplerDesc.MaxAnisotropy = 1;
-    samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-    samplerDesc.BorderColor[0] = 0;
-    samplerDesc.BorderColor[1] = 0;
-    samplerDesc.BorderColor[2] = 0;
-    samplerDesc.BorderColor[3] = 0;
-    samplerDesc.MinLOD = 0;
-    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-    // Create the texture sampler state.
-    result = pDevice->CreateSamplerState(&samplerDesc, &mSamplerState);
-
-    VerifyDXResult(result);
-
-    // Describe the buffer we will use to send lighting information to the light shader.
-    D3D11_BUFFER_DESC lightBufferDesc;
-
-    lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-    lightBufferDesc.ByteWidth = sizeof(light_buffer_t); // must always be multiple of 16.
-    lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    lightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    lightBufferDesc.MiscFlags = 0;
-    lightBufferDesc.StructureByteStride = 0;
-
-    // Now create the light information buffer.
-    result = pDevice->CreateBuffer(&lightBufferDesc, nullptr, &mLightBuffer);
-
-    VerifyDXResult(result);
+    return hr;
 }
 
 void LightShader::Render(

@@ -1,5 +1,6 @@
 #include "Dx3d.h"
 #include "DXSandbox.h"
+#include "BinaryBlob.h"
 
 #include <wrl\wrappers\corewrappers.h>      // ComPtr
 #include <wrl\client.h>
@@ -619,4 +620,114 @@ vram_info_t Dx3d::GetVRamInfo() const
     }
 
     return info;
+}
+
+HRESULT Dx3d::CreateVertexShader(
+    const BinaryBlob& shaderBlob,
+    ID3D11VertexShader **ppVertexShaderOut) const
+{
+    VerifyNotNull(ppVertexShaderOut);
+    *ppVertexShaderOut = nullptr;
+
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+
+    HRESULT hr = mDevice->CreateVertexShader(
+        shaderBlob.BufferPointer(),
+        static_cast<SIZE_T>(shaderBlob.BufferSize()),
+        nullptr,
+        &vertexShader);
+
+    if (SUCCEEDED(hr))
+    {
+        *ppVertexShaderOut = vertexShader.Detach();
+    }
+
+    return hr;
+}
+
+HRESULT Dx3d::CreatePixelShader(
+    const BinaryBlob& shaderBlob,
+    ID3D11PixelShader **ppPixelShaderOut) const
+{
+    VerifyNotNull(ppPixelShaderOut);
+    *ppPixelShaderOut = nullptr;
+
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
+
+    HRESULT hr = mDevice->CreatePixelShader(
+        shaderBlob.BufferPointer(),
+        static_cast<SIZE_T>(shaderBlob.BufferSize()),
+        nullptr,
+        &pixelShader);
+
+    if (SUCCEEDED(hr))
+    {
+        *ppPixelShaderOut = pixelShader.Detach();
+    }
+
+    return hr;
+}
+
+HRESULT Dx3d::CreateTextureSamplerState(ID3D11SamplerState **ppSamplerStateOut) const
+{
+    VerifyNotNull(ppSamplerStateOut);
+    *ppSamplerStateOut = nullptr;
+
+    // Describe the texture sampler that is to be created.
+    D3D11_SAMPLER_DESC samplerDesc;
+
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.MipLODBias = 0.0f;
+    samplerDesc.MaxAnisotropy = 1;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+    samplerDesc.BorderColor[0] = 0;
+    samplerDesc.BorderColor[1] = 0;
+    samplerDesc.BorderColor[2] = 0;
+    samplerDesc.BorderColor[3] = 0;
+    samplerDesc.MinLOD = 0;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+    // Create and return the texture sampler.
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
+    HRESULT hr = mDevice->CreateSamplerState(&samplerDesc, &samplerState);
+
+    if (SUCCEEDED(hr))
+    {
+        *ppSamplerStateOut = samplerState.Detach();
+    }
+
+    return hr;
+}
+
+HRESULT Dx3d::CreateConstantBuffer(
+    size_t elementSize,                         // Number of bytes for each item in the buffer.
+    ID3D11Buffer **ppConstantBufferOut) const
+{
+    VerifyNotNull(ppConstantBufferOut);
+    Verify(elementSize > 0);
+    *ppConstantBufferOut = nullptr;
+
+    // Describe the dynamic matrix constant buffer that will be fed to the vertex shader.
+    D3D11_BUFFER_DESC bufferDesc;
+
+    bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+    bufferDesc.ByteWidth = elementSize;  // sizeof(matrix_buffer_t)
+    bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    bufferDesc.MiscFlags = 0;
+    bufferDesc.StructureByteStride = 0;
+
+    // Create the matrix buffer.
+    Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
+    HRESULT hr = mDevice->CreateBuffer(&bufferDesc, nullptr, &constantBuffer);
+
+    if (SUCCEEDED(hr))
+    {
+        *ppConstantBufferOut = constantBuffer.Detach();
+    }
+
+    return hr;
 }

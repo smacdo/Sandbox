@@ -1,6 +1,7 @@
 #pragma once
 #include "SimpleMath.h"
 #include "IInitializable.h"
+#include "Dx3d.h"
 
 #include <wrl\wrappers\corewrappers.h>      // ComPtr
 #include <wrl\client.h>
@@ -16,6 +17,7 @@ struct ID3D11ShaderResourceView;
 struct ID3D11SamplerState;
 class Light;
 class Camera;
+class BinaryBlob;
 
 class LightShader : public IInitializable
 {
@@ -26,7 +28,7 @@ public:
 
     LightShader& operator =(const LightShader&) = delete;
 
-    void Initialize(ID3D11Device *pDevice);
+    void Initialize(Dx3d& dx);
     void Render(
         ID3D11DeviceContext *pContext,
         int indexCount,
@@ -41,10 +43,11 @@ protected:
     virtual void OnShutdown() override;
 
 private:
-    void InitializeShader(
-        ID3D11Device* pDevice,
-        const std::wstring& vertexShaderFile,
-        const std::wstring& pixelShaderFile);
+    HRESULT InitializeShader(Dx3d& dx);
+    HRESULT CreateInputLayout(
+        Dx3d& dx,
+        const BinaryBlob& vertexShaderBlob,
+        ID3D11InputLayout **ppLayoutOut) const;
     
     void SetShaderParameters(
         ID3D11DeviceContext *pContext,
