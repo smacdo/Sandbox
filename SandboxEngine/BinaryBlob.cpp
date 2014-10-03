@@ -92,12 +92,17 @@ std::streamsize BinaryBlob::BufferSize() const
 
 BinaryBlob BinaryBlob::LoadFromFile(const std::string& filepath)
 {
+    return LoadFromFile(Utils::ConvertUtf8ToWString(filepath));
+}
+
+BinaryBlob BinaryBlob::LoadFromFile(const std::wstring& filepath)
+{
 	// Open the shader file.
 	std::ifstream inputStream(filepath.c_str(), std::ios::binary);
 
 	if (!inputStream.is_open())
 	{
-        throw FileLoadException(Utils::ConvertUtf8ToWString(filepath));
+        throw FileLoadException(filepath);
 	}
 
 	// Get number of bytes in binary file.

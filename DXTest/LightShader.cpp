@@ -2,12 +2,23 @@
 #include "BinaryBlob.h"
 #include "DXSandbox.h"
 #include "SimpleMath.h"
+#include "DXTestException.h"
 #include "Light.h"
 #include "Camera.h"
+
+#include <wrl\wrappers\corewrappers.h>      // ComPtr
+#include <wrl\client.h>
+#include <memory>
 
 #include <d3d11.h>
 
 using namespace DirectX::SimpleMath;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Light shader constants
+///////////////////////////////////////////////////////////////////////////////////////////////////
+static const wchar_t LightVertexShaderFilePath[] = L".\\Shaders\\SimpleLightVertexShader.cso";
+static const wchar_t LightPixelShaderFilePath[] = L".\\Shaders\\SimpleLightPixelShader.cso";
 
 struct matrix_buffer_t
 {
@@ -31,15 +42,18 @@ struct light_buffer_t
     Vector4 specularColor;
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Light shader implementation
+///////////////////////////////////////////////////////////////////////////////////////////////////
 LightShader::LightShader()
-: IInitializable(),
-  mpVertexShader(nullptr),
-  mpPixelShader(nullptr),
-  mpLayout(nullptr),
-  mpMatrixBuffer(nullptr),
-  mpCameraBuffer(nullptr),
-  mpSamplerState(nullptr),
-  mpLightBuffer(nullptr)
+    : IInitializable(),
+      mVertexShader(),
+      mPixelShader(),
+      mLayout(),
+      mMatrixBuffer(),
+      mCameraBuffer(),
+      mSamplerState(),
+      mLightBuffer()
 {
 }
 
@@ -53,7 +67,7 @@ void LightShader::Initialize(ID3D11Device *pDevice)
 
     if (!IsInitialized())
     {
-        InitializeShader(pDevice, ".\\Shaders\\SimpleLightVertexShader.cso", ".\\Shaders\\SimpleLightPixelShader.cso");
+        InitializeShader(pDevice, LightVertexShaderFilePath, LightPixelShaderFilePath);
         SetInitialized();
     }
 }
@@ -62,8 +76,8 @@ void LightShader::Initialize(ID3D11Device *pDevice)
 // change WCHAR to std::wstring or std::string and convert last second
 void LightShader::InitializeShader(
     ID3D11Device *pDevice,
-    const std::string& vertexShaderFile,
-    const std::string& pixelShaderFile)
+    const std::wstring& vertexShaderFile,
+    const std::wstring& pixelShaderFile)
 {
     // Load the pixel and vertex shaders.
     BinaryBlob vertexShaderBlob = BinaryBlob::LoadFromFile(vertexShaderFile);
@@ -76,20 +90,18 @@ void LightShader::InitializeShader(
         vertexShaderBlob.BufferPointer(),
         static_cast<SIZE_T>(vertexShaderBlob.BufferSize()),
         NULL,
-        &mpVertexShader);
+        &mVertexShader);
 
     VerifyDXResult(result);
-    VerifyNotNull(mpVertexShader);
 
     // Create the pixel shader object.
     result = pDevice->CreatePixelShader(
         pixelShaderBlob.BufferPointer(),
         static_cast<SIZE_T>(pixelShaderBlob.BufferSize()),
         NULL,
-        &mpPixelShader);
+        &mPixelShader);
 
     VerifyDXResult(result);
-    VerifyNotNull(mpPixelShader);
 
     // Describe the layout of data that will be fed to this shader.
     // This layout needs to match the vertex type structure defined in the model class and shader.
@@ -128,10 +140,9 @@ void LightShader::InitializeShader(
         numElements,
         vertexShaderBlob.BufferPointer(),
         static_cast<SIZE_T>(vertexShaderBlob.BufferSize()),
-        &mpLayout);
+        &mLayout);
 
     VerifyDXResult(result);
-    VerifyNotNull(mpLayout);
 
     // Describe the dynamic matrix constant buffer that will be fed to the vertex shader.
     D3D11_BUFFER_DESC matrixBufferDesc;
@@ -144,10 +155,9 @@ void LightShader::InitializeShader(
     matrixBufferDesc.StructureByteStride = 0;
 
     // Create the matrix buffer.
-    result = pDevice->CreateBuffer(&matrixBufferDesc, NULL, &mpMatrixBuffer);
+    result = pDevice->CreateBuffer(&matrixBufferDesc, NULL, &mMatrixBuffer);
 
     VerifyDXResult(result);
-    VerifyNotNull(mpMatrixBuffer);
 
     // Describe a dynamic constant bufffer for the camera.
     D3D11_BUFFER_DESC cameraBufferDesc;
@@ -160,10 +170,9 @@ void LightShader::InitializeShader(
     cameraBufferDesc.StructureByteStride = 0;
 
     // Create the camera buffer.
-    result = pDevice->CreateBuffer(&cameraBufferDesc, NULL, &mpCameraBuffer);
+    result = pDevice->CreateBuffer(&cameraBufferDesc, NULL, &mCameraBuffer);
 
     VerifyDXResult(result);
-    VerifyNotNull(mpCameraBuffer);
 
     // Create a texture sampler state description.
     D3D11_SAMPLER_DESC samplerDesc;
@@ -183,10 +192,9 @@ void LightShader::InitializeShader(
     samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
     // Create the texture sampler state.
-    result = pDevice->CreateSamplerState(&samplerDesc, &mpSamplerState);
+    result = pDevice->CreateSamplerState(&samplerDesc, &mSamplerState);
 
     VerifyDXResult(result);
-    VerifyNotNull(mpSamplerState);
 
     // Describe the buffer we will use to send lighting information to the light shader.
     D3D11_BUFFER_DESC lightBufferDesc;
@@ -199,10 +207,9 @@ void LightShader::InitializeShader(
     lightBufferDesc.StructureByteStride = 0;
 
     // Now create the light information buffer.
-    result = pDevice->CreateBuffer(&lightBufferDesc, nullptr, &mpLightBuffer);
+    result = pDevice->CreateBuffer(&lightBufferDesc, nullptr, &mLightBuffer);
 
     VerifyDXResult(result);
-    VerifyNotNull(mpSamplerState);
 }
 
 void LightShader::Render(
@@ -215,7 +222,7 @@ void LightShader::Render(
     const Camera& camera,
     const Light& light)
 {
-    Verify(IsInitialized());
+    if (!IsInitialized()) { throw NotInitializedException(L"LightShader"); }
     VerifyNotNull(pDeviceContext);
     VerifyNotNull(pTexture);
 
@@ -249,7 +256,7 @@ void LightShader::SetShaderParameters(
 
     // Lock the constant buffer so we can write to it.
     D3D11_MAPPED_SUBRESOURCE mappedResource;
-    HRESULT result = pDeviceContext->Map(mpMatrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    HRESULT result = pDeviceContext->Map(mMatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 
     VerifyDXResult(result);
     VerifyNotNull(mappedResource.pData);
@@ -263,14 +270,15 @@ void LightShader::SetShaderParameters(
     pMatrixData->projection = projectionMatrix;
 
     // Unlock the constant buffer.
-    pDeviceContext->Unmap(mpMatrixBuffer, 0);
+    pDeviceContext->Unmap(mMatrixBuffer.Get(), 0);
 
     // Now set the updated matrix buffer in the HLSL vertex shader.
+    ID3D11Buffer * VertexConstantBuffers[2] = { mMatrixBuffer.Get(), mCameraBuffer.Get() };
     unsigned int bufferNumber = 0;
-    pDeviceContext->VSSetConstantBuffers(bufferNumber, 1, &mpMatrixBuffer);
+    pDeviceContext->VSSetConstantBuffers(bufferNumber, 1, VertexConstantBuffers);
 
     // Lock the camera buffer, write updated values to it and then unlock the buffer.
-    result = pDeviceContext->Map(mpCameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    result = pDeviceContext->Map(mCameraBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 
     VerifyDXResult(result);
     VerifyNotNull(mappedResource.pData);
@@ -280,17 +288,17 @@ void LightShader::SetShaderParameters(
     pCameraData->cameraPosition = camera.Position();
     pCameraData->padding = 0.0f;
 
-    pDeviceContext->Unmap(mpCameraBuffer, 0);
+    pDeviceContext->Unmap(mCameraBuffer.Get(), 0);
 
     // Attach camera constant buffer to pixel shader.
     bufferNumber = 1;
-    pDeviceContext->VSSetConstantBuffers(bufferNumber, 1, &mpCameraBuffer);
+    pDeviceContext->VSSetConstantBuffers(bufferNumber, 1, VertexConstantBuffers);
 
     // Set up shader texture resource in the pixel shader.
     pDeviceContext->PSSetShaderResources(0, 1, &pTexture);
 
     // Lock the light constants buffer for writing.
-    result = pDeviceContext->Map(mpLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    result = pDeviceContext->Map(mLightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 
     VerifyDXResult(result);
     VerifyNotNull(mappedResource.pData);
@@ -305,11 +313,13 @@ void LightShader::SetShaderParameters(
     pLightData->specularColor = light.SpecularColor();
 
     // Unlock the constant buffer now that we are done writing values to it.
-    pDeviceContext->Unmap(mpLightBuffer, 0);
+    pDeviceContext->Unmap(mLightBuffer.Get(), 0);
 
     // Attach the constant buffer to the pixel shader, in the right position.
+    ID3D11Buffer* constantBuffers[1] = { mLightBuffer.Get() };
     bufferNumber = 0;
-    pDeviceContext->PSSetConstantBuffers(bufferNumber, 1, &mpLightBuffer);
+
+    pDeviceContext->PSSetConstantBuffers(bufferNumber, 1, constantBuffers);
 }
 
 void LightShader::RenderShader(ID3D11DeviceContext *pDeviceContext, int indexCount)
@@ -317,14 +327,16 @@ void LightShader::RenderShader(ID3D11DeviceContext *pDeviceContext, int indexCou
     AssertNotNull(pDeviceContext);
 
     // Set the vertex input layout.
-    pDeviceContext->IASetInputLayout(mpLayout);
+    pDeviceContext->IASetInputLayout(mLayout.Get());
 
     // Set the color vertex and pixel shader.
-    pDeviceContext->VSSetShader(mpVertexShader, NULL, 0);
-    pDeviceContext->PSSetShader(mpPixelShader, NULL, 0);
+    pDeviceContext->VSSetShader(mVertexShader.Get(), NULL, 0);
+    pDeviceContext->PSSetShader(mPixelShader.Get(), NULL, 0);
 
     // Set the texture sampler state in the pixel shader.
-    pDeviceContext->PSSetSamplers(0, 1, &mpSamplerState);
+    ID3D11SamplerState* samplerStates[1] = { mSamplerState.Get() };
+
+    pDeviceContext->PSSetSamplers(0, 1, samplerStates);
 
     // Render the object.
     pDeviceContext->DrawIndexed(indexCount, 0, 0);
@@ -332,16 +344,4 @@ void LightShader::RenderShader(ID3D11DeviceContext *pDeviceContext, int indexCou
 
 void LightShader::OnShutdown()
 {
-    ShutdownShader();
-}
-
-void LightShader::ShutdownShader()
-{
-    SafeRelease(mpLightBuffer);
-    SafeRelease(mpCameraBuffer);
-    SafeRelease(mpSamplerState);
-    SafeRelease(mpMatrixBuffer);
-    SafeRelease(mpLayout);
-    SafeRelease(mpPixelShader);
-    SafeRelease(mpVertexShader);
 }

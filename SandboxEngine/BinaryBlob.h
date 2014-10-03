@@ -30,7 +30,8 @@ public:
 
 	std::streamsize BufferSize() const;
 
-	static BinaryBlob LoadFromFile(const std::string& filepath);
+	static BinaryBlob LoadFromFile(const std::string& filepath);    // TODO: Remove this.
+    static BinaryBlob LoadFromFile(const std::wstring& filepath);
 	
 private:
 	std::unique_ptr<char> mpBuffer;

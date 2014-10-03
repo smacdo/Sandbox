@@ -2,6 +2,10 @@
 #include "SimpleMath.h"
 #include "IInitializable.h"
 
+#include <wrl\wrappers\corewrappers.h>      // ComPtr
+#include <wrl\client.h>
+#include <memory>
+
 struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct ID3D11VertexShader;
@@ -33,13 +37,15 @@ public:
         const Camera& camera,
         const Light& light);
 
+protected:
+    virtual void OnShutdown() override;
+
 private:
     void InitializeShader(
         ID3D11Device* pDevice,
-        const std::string& vertexShaderFile,
-        const std::string& pixelShaderFile);
-    virtual void OnShutdown() override;
-    void ShutdownShader();
+        const std::wstring& vertexShaderFile,
+        const std::wstring& pixelShaderFile);
+    
     void SetShaderParameters(
         ID3D11DeviceContext *pContext,
         const DirectX::SimpleMath::Matrix&,
@@ -48,15 +54,16 @@ private:
         ID3D11ShaderResourceView * pTexture,
         const Camera& camera,
         const Light& light);
+
     void RenderShader(ID3D11DeviceContext*, int);
 
 private:
-    ID3D11VertexShader *mpVertexShader;
-    ID3D11PixelShader * mpPixelShader;
-    ID3D11InputLayout * mpLayout;
-    ID3D11Buffer * mpMatrixBuffer;
-    ID3D11Buffer * mpCameraBuffer;
-    ID3D11SamplerState * mpSamplerState;
-    ID3D11Buffer * mpLightBuffer;
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> mLayout;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> mMatrixBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> mCameraBuffer;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> mSamplerState;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> mLightBuffer;
 };
 
