@@ -12,6 +12,11 @@
 
 using namespace DirectX::SimpleMath;
 
+// TODO: Split the s_mesh* and LoadModel code into a new class called SoftwareMesh (or something).
+//  - It holds mesh data loaded from disk.
+//  - Can load / save mesh data.
+//  - Contains type info to assist in coverted from it to DX hardware mesh for uploading
+
 struct vertex_type_t
 {
 	Vector3 position;
@@ -19,17 +24,12 @@ struct vertex_type_t
     Vector3 normal;
 };
 
-// TODO: Not sure why the author all of a sudden started using functions, only to have them be empty shells to
-// forward methods calls to. Merge them together, and then consider splitting them correctly.
-
 Model::Model()
 : mEnabled(true),
   mVertexCount(0u),
   mIndexCount(0u),
   mVertexBuffer(),
   mIndexBuffer(),
-  mMeshVertices(),
-  mMeshIndices(),
   mTexture(),
   mPosition(0, 0, 0),
   mColor(1, 1, 1, 1),
@@ -49,9 +49,12 @@ void Model::Initialize(
 	if (IsInitialized()) { return; }
 	VerifyNotNull(pDevice);
 
-    LoadModel(modelFile);
-	InitializeBuffers(pDevice);
-	
+    s_mesh_data_t meshData;
+    LoadModel(modelFile, &meshData);
+
+    // TODO: Remember to set vertex/index count somewhere now that we put it into smesh_data_T.
+    InitializeBuffers(pDevice, meshData);
+
     // Load requested texture.
     mTexture.reset(new Texture());
     mTexture->Initialize(pDevice, textureFile);
@@ -59,27 +62,33 @@ void Model::Initialize(
     SetInitialized();
 }
 
-void Model::InitializeBuffers(ID3D11Device *pDevice)
+void Model::InitializeBuffers(
+    ID3D11Device *pDevice,
+    const s_mesh_data_t& meshData)  // TODO: Make this const, set values from caller makes more sense. less state.
 {
 	AssertNotNull(pDevice);
 
 	// Create two arrays to temporarily hold vertex and index data.
-	std::vector<vertex_type_t> vertices(mVertexCount);
-	std::vector<unsigned long> indices(mIndexCount);
+    //  TODO: Explain conversion, uploading, etc.
+    std::vector<vertex_type_t> vertices(meshData.vertices.size());
+    std::vector<unsigned long> indices(meshData.indices.size());
 
 	// Fill the temporary arrays with our vertex and index data.
 	//  - NOTE: Vertices need to be in clock wise order.
-    for (unsigned int i = 0; i < mVertexCount; ++i)
+    for (unsigned int i = 0; i < meshData.vertices.size(); ++i)
     {
-        vertices[i].position = Vector3(mMeshVertices[i].x, mMeshVertices[i].y, mMeshVertices[i].z);
-        vertices[i].texture = Vector2(mMeshVertices[i].tu, mMeshVertices[i].tv);
-        vertices[i].normal = Vector3(mMeshVertices[i].nx, mMeshVertices[i].ny, mMeshVertices[i].nz);
+        vertices[i].position = Vector3(meshData.vertices[i].x, meshData.vertices[i].y, meshData.vertices[i].z);
+        vertices[i].texture = Vector2(meshData.vertices[i].tu, meshData.vertices[i].tv);
+        vertices[i].normal = Vector3(meshData.vertices[i].nx, meshData.vertices[i].ny, meshData.vertices[i].nz);
     }
 
-    for (unsigned int i = 0; i < mIndexCount; ++i)
+    for (unsigned int i = 0; i < meshData.indices.size(); ++i)
     {
-        indices[i] = static_cast<unsigned long>(mMeshIndices[i]);
+        indices[i] = static_cast<unsigned long>(meshData.indices[i]);
     }
+
+    mVertexCount = meshData.vertices.size();
+    mIndexCount = meshData.indices.size();
 
 	// Set up static vertex buffer description.
 	D3D11_BUFFER_DESC vertexBufferDesc;
@@ -130,21 +139,25 @@ void Model::InitializeBuffers(ID3D11Device *pDevice)
 }
 
 // TODO: Vastly improve this code loading.
-void Model::LoadModel(const std::wstring& filepath)
+void Model::LoadModel(const std::wstring& filepath, s_mesh_data_t *pMeshDataOut) const
 {
+    AssertNotNull(pMeshDataOut);
+
     if (Utils::EndsWith(filepath, L".txt"))
     {
-        LoadTxtModelv1(filepath);
+        LoadTxtModelv1(filepath, pMeshDataOut);
     }
     else
     {
-        LoadTxtModelv2(filepath);
+        LoadTxtModelv2(filepath, pMeshDataOut);
     }
 }
 
 // TODO: Vastly improve this code loading.
-void Model::LoadTxtModelv1(const std::wstring& filepath)
+void Model::LoadTxtModelv1(const std::wstring& filepath, s_mesh_data_t *pMeshDataOut) const
 {
+    AssertNotNull(pMeshDataOut);
+
     // Load the text file containing mesh data.
     std::ifstream meshStream(filepath.c_str());
 
@@ -153,30 +166,34 @@ void Model::LoadTxtModelv1(const std::wstring& filepath)
         throw FileLoadException(filepath);
     }
 
-    // Get the vertex count.
-    meshStream >> mVertexCount;
-    mIndexCount = mVertexCount;
+    // Get the vertex count. (Index count is the same since one to one mapping).
+    unsigned int vertexCount;
+    meshStream >> vertexCount;
 
     // Read the vertex buffer into memory.
-    mMeshVertices.resize(mVertexCount);
-    mMeshIndices.resize(mVertexCount);
+    pMeshDataOut->vertices.resize(vertexCount);
+    pMeshDataOut->indices.resize(vertexCount);
 
-    for (unsigned int i = 0; i < mVertexCount; ++i)
+    std::vector<s_mesh_vertex_t>& verts = pMeshDataOut->vertices;   // alias to reduce typing.
+    std::vector<int>& indices = pMeshDataOut->indices;              // alias to reduce typing.
+
+    for (unsigned int i = 0; i < vertexCount; ++i)
     {
-        meshStream >> mMeshVertices[i].x >> mMeshVertices[i].y >> mMeshVertices[i].z;
-        meshStream >> mMeshVertices[i].tu >> mMeshVertices[i].tv;
-        meshStream >> mMeshVertices[i].nx >> mMeshVertices[i].ny >> mMeshVertices[i].nz;
+        meshStream >> verts[i].x >> verts[i].y >> verts[i].z;
+        meshStream >> verts[i].tu >> verts[i].tv;
+        meshStream >> verts[i].nx >> verts[i].ny >> verts[i].nz;
 
-        mMeshIndices[i] = i;
+        indices[i] = i;
     }
 
-    // All done.
     meshStream.close();
 }
 
 // TODO: Vastly improve this code loading.
-void Model::LoadTxtModelv2(const std::wstring& filepath)
+void Model::LoadTxtModelv2(const std::wstring& filepath, s_mesh_data_t *pMeshDataOut) const
 {
+    AssertNotNull(pMeshDataOut);
+
     // Load the text file containing mesh data.
     // Utils::ConvertUtf8ToWString(
     std::ifstream meshStream(filepath.c_str());
@@ -188,24 +205,28 @@ void Model::LoadTxtModelv2(const std::wstring& filepath)
     
     // Get mesh header.
     std::string fileType;
-    meshStream >> fileType >> mVertexCount >> mIndexCount;
+    unsigned int vertexCount = 0u, indexCount = 0u;
+
+    meshStream >> fileType >> vertexCount >> indexCount;
 
     // Read the vertex buffer into memory.
-    mMeshVertices.resize(mVertexCount);
+    std::vector<s_mesh_vertex_t>& verts = pMeshDataOut->vertices;   // alias to reduce typing.
+    verts.resize(vertexCount);
 
-    for (unsigned int i = 0; i < mVertexCount; ++i)
+    for (unsigned int i = 0; i < vertexCount; ++i)      // TODO: for each
     {
-        meshStream >> mMeshVertices[i].x >> mMeshVertices[i].y >> mMeshVertices[i].z;
-        meshStream >> mMeshVertices[i].tu >> mMeshVertices[i].tv;
-        meshStream >> mMeshVertices[i].nx >> mMeshVertices[i].ny >> mMeshVertices[i].nz;
+        meshStream >> verts[i].x >> verts[i].y >> verts[i].z;
+        meshStream >> verts[i].tu >> verts[i].tv;
+        meshStream >> verts[i].nx >> verts[i].ny >> verts[i].nz;
     }
 
     // Read the index buffer into memory.
-    mMeshIndices.resize(mIndexCount);
+    std::vector<int>& indices = pMeshDataOut->indices;              // alias to reduce typing.
+    indices.resize(indexCount);
 
-    for (unsigned int i = 0; i < mIndexCount; ++i)
+    for (unsigned int i = 0; i < indexCount; ++i)      // TODO: for each
     {
-        meshStream >> mMeshIndices[i];
+        meshStream >> indices[i];
     }
 
     // All done.
@@ -214,6 +235,7 @@ void Model::LoadTxtModelv2(const std::wstring& filepath)
 
 void Model::OnShutdown()
 {
+    // Empty.
 }
 
 // TODO: This needs to be combined with the shader render logic.
@@ -222,24 +244,18 @@ void Model::Render(ID3D11DeviceContext *pDeviceContext)
 {
     if (!IsInitialized()) { throw NotInitializedException(L"Model"); }
 	VerifyNotNull(pDeviceContext);
-	RenderBuffers(pDeviceContext);
-}
 
-void Model::RenderBuffers(ID3D11DeviceContext *pContext)
-{
-	AssertNotNull(pContext);
+    unsigned int stride = sizeof(vertex_type_t);
+    unsigned int offset = 0;
 
-	unsigned int stride = sizeof(vertex_type_t);
-	unsigned int offset = 0;
-
-	// Activate vertex and index buffers object for rendering.
+    // Activate vertex and index buffers object for rendering.
     ID3D11Buffer* vertexBuffers[1] = { mVertexBuffer.Get() };
 
-    pContext->IASetVertexBuffers(0, 1, vertexBuffers, &stride, &offset);
-    pContext->IASetIndexBuffer(mIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+    pDeviceContext->IASetVertexBuffers(0, 1, vertexBuffers, &stride, &offset);
+    pDeviceContext->IASetIndexBuffer(mIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	// Render the model using triangle primitives.
-	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    // Render the model using triangle primitives.
+    pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 ID3D11ShaderResourceView * Model::GetTexture()

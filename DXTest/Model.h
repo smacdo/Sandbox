@@ -47,22 +47,6 @@ public:
     DirectX::SimpleMath::Vector3 BoundingSphereCenter() const { return mPosition; }
     float BoundingSphereRadius() const { return mBoundingSphereRadius; }
 
-protected:
-    virtual void OnShutdown() override;
-
-private:
-	void InitializeBuffers(ID3D11Device *pDevice);
-	void RenderBuffers(ID3D11DeviceContext *pContext);
-
-    // Load model from a file on disk.
-    void LoadModel(const std::wstring& filepath);
-
-    // Load model using v1 file format.
-    void LoadTxtModelv1(const std::wstring& filepath);
-
-    // Load model using v2 file format.
-    void LoadTxtModelv2(const std::wstring& filepath);
-
 private:
     // in-memory software mesh format.
     struct s_mesh_vertex_t
@@ -72,6 +56,27 @@ private:
         float nx, ny, nz;
     };
 
+    struct s_mesh_data_t
+    {
+        std::vector<s_mesh_vertex_t> vertices;      // TODO: If changing these, need to update aliases in .cpp
+        std::vector<int> indices;
+    };
+
+protected:
+    virtual void OnShutdown() override;
+
+private:
+    void InitializeBuffers(ID3D11Device *pDevice, const s_mesh_data_t& meshData);
+
+    // Load model from a file on disk.
+    void LoadModel(const std::wstring& filepath, s_mesh_data_t *pMeshDataOut) const;
+
+    // Load model using v1 file format.
+    void LoadTxtModelv1(const std::wstring& filepath, s_mesh_data_t *pMeshDataOut) const;
+
+    // Load model using v2 file format.
+    void LoadTxtModelv2(const std::wstring& filepath, s_mesh_data_t *pMeshDataOut) const;
+
 private:
     bool mEnabled;
 
@@ -80,9 +85,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
-
-    std::vector<s_mesh_vertex_t> mMeshVertices;     // TODO: pull this and indices out, put into special struct don't store it.
-    std::vector<int> mMeshIndices;
 
 	std::unique_ptr<Texture> mTexture;
     
