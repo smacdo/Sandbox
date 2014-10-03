@@ -110,3 +110,15 @@ class FileLoadException : public SandboxException
 public:
     FileLoadException(const std::wstring& filepath);
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Not initialized exception.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class NotInitializedException : public SandboxException
+{
+public:
+    NotInitializedException(const std::wstring& className)
+        : SandboxException(L"Object instance not initialized before using", className)
+    {
+    }
+};

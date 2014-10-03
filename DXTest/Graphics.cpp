@@ -71,7 +71,7 @@ void Graphics::Initialize(const Size& screenSize, HWND hwnd)
     for (auto i : MakeRange(0, 25))
     {
         Model *pModel = new Model();
-        pModel->Initialize(mD3d->GetDevice(), ".\\Models\\cube.model", ".\\Textures\\seafloor.dds");
+        pModel->Initialize(mD3d->GetDevice(), L".\\Models\\cube.model", L".\\Textures\\seafloor.dds");
 
         // Assign random position and color.
         Vector4 color(Utils::RandFloat(), Utils::RandFloat(), Utils::RandFloat(), 1.0f);
@@ -186,7 +186,7 @@ void Graphics::Render(float rotation)
         // Render the model using the color shader.
         mLightShader->Render(
             mD3d->GetDeviceContext(),
-            pModel->GetIndexCount(),
+            pModel->IndexCount(),
             objectWorldMatrix,
             viewMatrix,
             projectionMatrix,

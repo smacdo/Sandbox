@@ -5,6 +5,7 @@
 #include "SimpleMath.h"
 #include "DXTestException.h"
 
+#include <vector>
 #include <d3d11.h>
 #include <string>
 #include <fstream>
@@ -22,15 +23,14 @@ struct vertex_type_t
 // forward methods calls to. Merge them together, and then consider splitting them correctly.
 
 Model::Model()
-: mInitialized(false),
-  mEnabled(true),
-  mpVertexBuffer(nullptr),
-  mpIndexBuffer(nullptr),
-  mVertexCount(0),
-  mIndexCount(0),
-  mpMesh(nullptr),
-  mpMeshIndices(nullptr),
-  mpTexture(nullptr),
+: mEnabled(true),
+  mVertexCount(0u),
+  mIndexCount(0u),
+  mVertexBuffer(),
+  mIndexBuffer(),
+  mMeshVertices(),
+  mMeshIndices(),
+  mTexture(),
   mPosition(0, 0, 0),
   mColor(1, 1, 1, 1),
   mBoundingSphereRadius(2.0f)
@@ -39,47 +39,46 @@ Model::Model()
 
 Model::~Model()
 {
-	Shutdown();
 }
 
-void Model::Initialize(ID3D11Device *pDevice, const std::string& modelFile, const std::string& textureFile)
+void Model::Initialize(
+    ID3D11Device *pDevice,
+    const std::wstring& modelFile,
+    const std::wstring& textureFile)
 {
-	if (mInitialized)
-	{
-		return;
-	}
-
+	if (IsInitialized()) { return; }
 	VerifyNotNull(pDevice);
+
     LoadModel(modelFile);
 	InitializeBuffers(pDevice);
-	LoadTexture(pDevice, textureFile);
+	
+    // Load requested texture.
+    mTexture.reset(new Texture());
+    mTexture->Initialize(pDevice, textureFile);
 
-	mInitialized = true;
+    SetInitialized();
 }
 
 void Model::InitializeBuffers(ID3D11Device *pDevice)
 {
 	AssertNotNull(pDevice);
-	AssertIsFalse(mInitialized);
 
 	// Create two arrays to temporarily hold vertex and index data.
-	vertex_type_t * pVertices = new vertex_type_t[mVertexCount];
-	unsigned long * pIndices = new unsigned long[mIndexCount];
+	std::vector<vertex_type_t> vertices(mVertexCount);
+	std::vector<unsigned long> indices(mIndexCount);
 
 	// Fill the temporary arrays with our vertex and index data.
 	//  - NOTE: Vertices need to be in clock wise order.
-    for (int i = 0; i < mVertexCount; ++i)
+    for (unsigned int i = 0; i < mVertexCount; ++i)
     {
-        pVertices[i].position = Vector3(mpMesh[i].x, mpMesh[i].y, mpMesh[i].z);
-        pVertices[i].texture = Vector2(mpMesh[i].tu, mpMesh[i].tv);
-        pVertices[i].normal = Vector3(mpMesh[i].nx, mpMesh[i].ny, mpMesh[i].nz);
-
-//        pIndices[i] = i;
+        vertices[i].position = Vector3(mMeshVertices[i].x, mMeshVertices[i].y, mMeshVertices[i].z);
+        vertices[i].texture = Vector2(mMeshVertices[i].tu, mMeshVertices[i].tv);
+        vertices[i].normal = Vector3(mMeshVertices[i].nx, mMeshVertices[i].ny, mMeshVertices[i].nz);
     }
 
-    for (int i = 0; i < mIndexCount; ++i)
+    for (unsigned int i = 0; i < mIndexCount; ++i)
     {
-        pIndices[i] = static_cast<unsigned long>(mpMeshIndices[i]);
+        indices[i] = static_cast<unsigned long>(mMeshIndices[i]);
     }
 
 	// Set up static vertex buffer description.
@@ -97,15 +96,14 @@ void Model::InitializeBuffers(ID3D11Device *pDevice)
 	D3D11_SUBRESOURCE_DATA vertexData;
 	ZeroMemory(&vertexData, sizeof(vertexData));
 
-	vertexData.pSysMem = pVertices;
+	vertexData.pSysMem = &vertices[0];
 	vertexData.SysMemPitch = 0;
 	vertexData.SysMemSlicePitch = 0;
 
 	// Create the vertex buffer.
-	HRESULT result = pDevice->CreateBuffer(&vertexBufferDesc, &vertexData, &mpVertexBuffer);
+	HRESULT result = pDevice->CreateBuffer(&vertexBufferDesc, &vertexData, &mVertexBuffer);
 	
 	VerifyDXResult(result);
-	VerifyNotNull(mpVertexBuffer);
 
 	// Set up the static index buffer description.
 	D3D11_BUFFER_DESC indexBufferDesc;
@@ -122,24 +120,19 @@ void Model::InitializeBuffers(ID3D11Device *pDevice)
 	D3D11_SUBRESOURCE_DATA indexData;
 	ZeroMemory(&indexData, sizeof(indexData));
 
-	indexData.pSysMem = pIndices;
+	indexData.pSysMem = &indices[0];
 	indexData.SysMemPitch = 0;
 	indexData.SysMemSlicePitch = 0;
 
-	result = pDevice->CreateBuffer(&indexBufferDesc, &indexData, &mpIndexBuffer);
+	result = pDevice->CreateBuffer(&indexBufferDesc, &indexData, &mIndexBuffer);
 
 	VerifyDXResult(result);
-	VerifyNotNull(mpIndexBuffer);
-
-	// Release temporary vertex and index buffers.
-	SafeDeleteArray(pVertices);
-	SafeDeleteArray(pIndices);
 }
 
 // TODO: Vastly improve this code loading.
-void Model::LoadModel(const std::string& filepath)
+void Model::LoadModel(const std::wstring& filepath)
 {
-    if (Utils::EndsWith(filepath, ".txt"))
+    if (Utils::EndsWith(filepath, L".txt"))
     {
         LoadTxtModelv1(filepath);
     }
@@ -150,14 +143,14 @@ void Model::LoadModel(const std::string& filepath)
 }
 
 // TODO: Vastly improve this code loading.
-void Model::LoadTxtModelv1(const std::string& filepath)
+void Model::LoadTxtModelv1(const std::wstring& filepath)
 {
     // Load the text file containing mesh data.
     std::ifstream meshStream(filepath.c_str());
 
     if (meshStream.fail())
     {
-        throw FileLoadException(Utils::ConvertUtf8ToWString(filepath));
+        throw FileLoadException(filepath);
     }
 
     // Get the vertex count.
@@ -165,16 +158,16 @@ void Model::LoadTxtModelv1(const std::string& filepath)
     mIndexCount = mVertexCount;
 
     // Read the vertex buffer into memory.
-    mpMesh = new Model::s_mesh_vertex_t[mVertexCount];
-    mpMeshIndices = new int[mVertexCount];
+    mMeshVertices.resize(mVertexCount);
+    mMeshIndices.resize(mVertexCount);
 
-    for (int i = 0; i < mVertexCount; ++i)
+    for (unsigned int i = 0; i < mVertexCount; ++i)
     {
-        meshStream >> mpMesh[i].x >> mpMesh[i].y >> mpMesh[i].z;
-        meshStream >> mpMesh[i].tu >> mpMesh[i].tv;
-        meshStream >> mpMesh[i].nx >> mpMesh[i].ny >> mpMesh[i].nz;
+        meshStream >> mMeshVertices[i].x >> mMeshVertices[i].y >> mMeshVertices[i].z;
+        meshStream >> mMeshVertices[i].tu >> mMeshVertices[i].tv;
+        meshStream >> mMeshVertices[i].nx >> mMeshVertices[i].ny >> mMeshVertices[i].nz;
 
-        mpMeshIndices[i] = i;
+        mMeshIndices[i] = i;
     }
 
     // All done.
@@ -182,14 +175,15 @@ void Model::LoadTxtModelv1(const std::string& filepath)
 }
 
 // TODO: Vastly improve this code loading.
-void Model::LoadTxtModelv2(const std::string& filepath)
+void Model::LoadTxtModelv2(const std::wstring& filepath)
 {
     // Load the text file containing mesh data.
+    // Utils::ConvertUtf8ToWString(
     std::ifstream meshStream(filepath.c_str());
 
     if (meshStream.fail())
     {
-        throw FileLoadException(Utils::ConvertUtf8ToWString(filepath));
+        throw FileLoadException(filepath);
     }
     
     // Get mesh header.
@@ -197,69 +191,36 @@ void Model::LoadTxtModelv2(const std::string& filepath)
     meshStream >> fileType >> mVertexCount >> mIndexCount;
 
     // Read the vertex buffer into memory.
-    mpMesh = new Model::s_mesh_vertex_t[mVertexCount];
+    mMeshVertices.resize(mVertexCount);
 
-    for (int i = 0; i < mVertexCount; ++i)
+    for (unsigned int i = 0; i < mVertexCount; ++i)
     {
-        meshStream >> mpMesh[i].x >> mpMesh[i].y >> mpMesh[i].z;
-        meshStream >> mpMesh[i].tu >> mpMesh[i].tv;
-        meshStream >> mpMesh[i].nx >> mpMesh[i].ny >> mpMesh[i].nz;
+        meshStream >> mMeshVertices[i].x >> mMeshVertices[i].y >> mMeshVertices[i].z;
+        meshStream >> mMeshVertices[i].tu >> mMeshVertices[i].tv;
+        meshStream >> mMeshVertices[i].nx >> mMeshVertices[i].ny >> mMeshVertices[i].nz;
     }
 
     // Read the index buffer into memory.
-    mpMeshIndices = new int[mIndexCount];
+    mMeshIndices.resize(mIndexCount);
 
-    for (int i = 0; i < mIndexCount; ++i)
+    for (unsigned int i = 0; i < mIndexCount; ++i)
     {
-        meshStream >> mpMeshIndices[i];
+        meshStream >> mMeshIndices[i];
     }
 
     // All done.
     meshStream.close();
 }
 
-void Model::LoadTexture(ID3D11Device *pDevice, const std::string& filepath)
+void Model::OnShutdown()
 {
-	mpTexture = new Texture();
-    mpTexture->Initialize(pDevice, Utils::ConvertUtf8ToWString(filepath));
 }
-
-void Model::Shutdown()
-{
-	if (!mInitialized)
-	{
-		return;
-	}
-
-	ShutdownBuffers();
-	ReleaseTexture();
-    ReleaseModel();
-
-	mInitialized = false;
-}
-
-void Model::ShutdownBuffers()
-{
-	SafeRelease(mpIndexBuffer);
-	SafeRelease(mpVertexBuffer);
-}
-
-void Model::ReleaseTexture()
-{
-	SafeDelete(mpTexture);
-}
-
-void Model::ReleaseModel()
-{
-    SafeDeleteArray(mpMesh);
-    SafeDeleteArray(mpIndexBuffer);
-}
-
 
 // TODO: This needs to be combined with the shader render logic.
 //  - Right now this method is better called "BindModelBuffersForRendering".
 void Model::Render(ID3D11DeviceContext *pDeviceContext)
 {
+    if (!IsInitialized()) { throw NotInitializedException(L"Model"); }
 	VerifyNotNull(pDeviceContext);
 	RenderBuffers(pDeviceContext);
 }
@@ -272,19 +233,16 @@ void Model::RenderBuffers(ID3D11DeviceContext *pContext)
 	unsigned int offset = 0;
 
 	// Activate vertex and index buffers object for rendering.
-	pContext->IASetVertexBuffers(0, 1, &mpVertexBuffer, &stride, &offset);
-	pContext->IASetIndexBuffer(mpIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    ID3D11Buffer* vertexBuffers[1] = { mVertexBuffer.Get() };
+
+    pContext->IASetVertexBuffers(0, 1, vertexBuffers, &stride, &offset);
+    pContext->IASetIndexBuffer(mIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	// Render the model using triangle primitives.
 	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-int Model::GetIndexCount() const
-{
-	return mIndexCount;
-}
-
 ID3D11ShaderResourceView * Model::GetTexture()
 {
-	return mpTexture->GetTexture();
+	return mTexture->GetTexture();
 }
