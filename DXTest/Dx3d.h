@@ -93,12 +93,14 @@ private:
 
     // Get monitor refresh info for selected screen size.
     HRESULT GetRefreshRateInfo(
+        DXGI_FORMAT displaySurfaceFormat,
         IDXGIOutput * pOutputAdapter,
         const Size& screenSize,
         refresh_rate_t *pRefreshRateOut) const;
 
     // Create and return the device swap chain.
     HRESULT CreateDeviceAndSwapChain(
+        DXGI_FORMAT displaySurfaceFormat,
         const refresh_rate_t& refreshRate,
         const Size& screenSize,
         bool isFullScreenMode,

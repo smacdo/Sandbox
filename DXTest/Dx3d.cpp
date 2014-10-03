@@ -59,12 +59,13 @@ void Dx3d::Initialize(const Size& screenSize,
 
     // Get monitor refresh information.
     refresh_rate_t refreshRate = { 0 };
-    result = GetRefreshRateInfo(adapterOutput.Get(), screenSize, &refreshRate);
+    result = GetRefreshRateInfo(DXGI_FORMAT_R8G8B8A8_UNORM, adapterOutput.Get(), screenSize, &refreshRate);
 
     VerifyDXResult(result);
 
 	// Create the swap chain, direct3d device and direct3d device context all at once.
     result = CreateDeviceAndSwapChain(
+        DXGI_FORMAT_R8G8B8A8_UNORM,
         refreshRate,
         screenSize,
         isFullScreenMode,
@@ -326,6 +327,7 @@ HRESULT Dx3d::GetPrimaryVideoAdapterOutput(IDXGIFactory *pDxgiFactory, IDXGIOutp
  * Retrieve monitor refresh rate information for the request display resolution.
  */
 HRESULT Dx3d::GetRefreshRateInfo(
+    DXGI_FORMAT displaySurfaceFormat,
     IDXGIOutput * pOutputAdapter,
     const Size& screenSize,
     refresh_rate_t *pRefreshRateOut) const
@@ -335,11 +337,11 @@ HRESULT Dx3d::GetRefreshRateInfo(
 
     refresh_rate_t refreshRate;
 
-    // Get the number of modes that fit the DXGI_FORMAT_R8G8B8A8_UNORM display format for the monitor.
+    // Get a list of display modes that have the same display format for the monitor.
     unsigned int numModes = 0;
 
     HRESULT hr = pOutputAdapter->GetDisplayModeList(
-        DXGI_FORMAT_R8G8B8A8_UNORM,         // TODO: Put this in a variable to track since it's used elsewhere.
+        displaySurfaceFormat,
         DXGI_ENUM_MODES_INTERLACED,
         &numModes,
         NULL);
@@ -347,11 +349,10 @@ HRESULT Dx3d::GetRefreshRateInfo(
     if (SUCCEEDED(hr))
     {
         // Create a list to hold all the possible display modes for this monitor / video card combination.
-//        std::unique_ptr<DXGI_MODE_DESC[]> displayModeList(new DXGI_MODE_DESC[numModes]);
         std::vector<DXGI_MODE_DESC> displayModeList(numModes);
 
         hr = pOutputAdapter->GetDisplayModeList(
-            DXGI_FORMAT_R8G8B8A8_UNORM,         // TODO: Put this in a variable to track since it's used elsewhere.
+            displaySurfaceFormat,
             DXGI_ENUM_MODES_INTERLACED,
             &numModes,
             &displayModeList[0]);
@@ -366,7 +367,7 @@ HRESULT Dx3d::GetRefreshRateInfo(
                 {
                     refreshRate.numerator = displayModeList[i].RefreshRate.Numerator;
                     refreshRate.denominator = displayModeList[i].RefreshRate.Denominator;
-                    break;      // TODO: Confirm??
+                    break;
                 }
             }
         }
@@ -380,6 +381,7 @@ HRESULT Dx3d::GetRefreshRateInfo(
  * Create, initialize and return the d3d device, context and swap chain.
  */
 HRESULT Dx3d::CreateDeviceAndSwapChain(
+    DXGI_FORMAT displaySurfaceFormat,
     const refresh_rate_t& refreshRate,
     const Size& screenSize,
     bool isFullScreenMode,
@@ -397,13 +399,13 @@ HRESULT Dx3d::CreateDeviceAndSwapChain(
     swapChainDesc.BufferCount = 1;	// Single back buffer.
     swapChainDesc.BufferDesc.Width = screenSize.width;
     swapChainDesc.BufferDesc.Height = screenSize.height;
-    swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;       // TODO: Make this a variable that is tracked.
+    swapChainDesc.BufferDesc.Format = displaySurfaceFormat;
     swapChainDesc.BufferDesc.RefreshRate.Numerator = (mVysncEnabled ? refreshRate.numerator : 0);
     swapChainDesc.BufferDesc.RefreshRate.Denominator = (mVysncEnabled ? refreshRate.denominator : 1);
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	// Backbuffer renders to target.
-    swapChainDesc.OutputWindow = mHwnd;         // TODO: Pass this, don't store it.
-    swapChainDesc.SampleDesc.Count = 1;		// Turn multi-sampling off :(
-    swapChainDesc.SampleDesc.Quality = 0;	// Turn multi-sampling off :(   XXX: Fix this, make this configurable.
+    swapChainDesc.OutputWindow = mHwnd;                             // TODO: Pass this, don't store it.
+    swapChainDesc.SampleDesc.Count = 1;		                        // Turn multi-sampling off :(
+    swapChainDesc.SampleDesc.Quality = 0;	                        // Turn multi-sampling off :(   XXX: Fix this, make this configurable.
     swapChainDesc.Windowed = !isFullScreenMode;
     swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED; // XXX: ???
     swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;	// XXX: ???
