@@ -30,6 +30,7 @@ public:
 
     void Initialize(Dx3d& dx);
     void Render(
+        Dx3d& dx,
         ID3D11DeviceContext *pContext,
         int indexCount,
         const DirectX::SimpleMath::Matrix&,
@@ -50,6 +51,7 @@ private:
         ID3D11InputLayout **ppLayoutOut) const;
     
     void SetShaderParameters(
+        Dx3d& dx,
         ID3D11DeviceContext *pContext,
         const DirectX::SimpleMath::Matrix&,
         const DirectX::SimpleMath::Matrix&,

@@ -1,5 +1,6 @@
 #include "Dx3d.h"
 #include "DXSandbox.h"
+#include "DXTestException.h"
 #include "BinaryBlob.h"
 
 #include <wrl\wrappers\corewrappers.h>      // ComPtr
@@ -730,4 +731,49 @@ HRESULT Dx3d::CreateConstantBuffer(
     }
 
     return hr;
+}
+
+// Promises that if HRESULT = S_OK, then the mapped pointer will be non-null.
+HRESULT Dx3d::StartUpdatedBuffer(
+    ID3D11Buffer *pBufferToUpdate,
+    D3D11_MAPPED_SUBRESOURCE *pMappedChunkOut) const
+{
+    VerifyNotNull(pBufferToUpdate);
+    VerifyNotNull(pMappedChunkOut);
+
+    HRESULT hr = mDeviceContext->Map(pBufferToUpdate, 0, D3D11_MAP_WRITE_DISCARD, 0, pMappedChunkOut);
+
+    if (SUCCEEDED(hr))
+    {
+        VerifyNotNull(pMappedChunkOut->pData);
+    }
+
+    return hr;
+}
+
+void Dx3d::FinishUpdateBuffer(
+    ShaderType shaderType,
+    int slotIndex,
+    ID3D11Buffer *pBufferToUpdate) const
+{
+    // Unlock buffer.
+    VerifyNotNull(pBufferToUpdate);
+    mDeviceContext->Unmap(pBufferToUpdate, 0);
+
+    // Update the constant buffer.
+    ID3D11Buffer * constantBuffers[1] = { pBufferToUpdate };
+
+    switch (shaderType)
+    {
+        case ShaderType::Vertex:
+            mDeviceContext->VSSetConstantBuffers(slotIndex, 1, constantBuffers);
+            break;
+
+        case ShaderType::Pixel:
+            mDeviceContext->PSSetConstantBuffers(slotIndex, 1, constantBuffers);
+            break;
+
+        default:
+            throw SandboxException(L"Unknown shader type specified when updating constant buffer");
+    }
 }

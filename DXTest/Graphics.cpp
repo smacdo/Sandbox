@@ -185,6 +185,7 @@ void Graphics::Render(float rotation)
 
         // Render the model using the color shader.
         mLightShader->Render(
+            *mD3d.get(),
             mD3d->GetDeviceContext(),
             pModel->IndexCount(),
             objectWorldMatrix,

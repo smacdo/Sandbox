@@ -6,6 +6,7 @@
 #include <d3d11.h>
 #include <SimpleMath.h>
 #include <string>
+#include <functional>
 #include "IInitializable.h"
 
 #include <wrl\wrappers\corewrappers.h>      // ComPtr
@@ -28,6 +29,13 @@ struct vram_info_t      // values in MB
     size_t dedicatedVideoMemory;
     size_t dedicatedSystemMemory;
     size_t sharedSystemMemory;
+};
+
+enum ShaderType
+{
+    None,
+    Vertex,
+    Pixel
 };
 
 // TODO: Convert screenWidth / screenHeight to screen_size_t.
@@ -77,6 +85,29 @@ public:
     HRESULT CreateConstantBuffer(
         size_t elementSize,
         ID3D11Buffer **ppConstantBufferOut) const;
+
+    template<typename T>
+    HRESULT UpdateConstantBuffer(
+        ID3D11Buffer * pBufferToUpdate,
+        ShaderType shaderType,
+        int slotIndex,
+        std::function<void(T& buffer)> updateFunction) const
+    {
+        D3D11_MAPPED_SUBRESOURCE mappedChunk;   // TODO: Convert the lock/unlock into a RAII object.
+        HRESULT hr = StartUpdatedBuffer(pBufferToUpdate, &mappedChunk);
+
+        if (SUCCEEDED(hr))
+        {
+            // Let user callback update the buffer.
+            T * pTypedPointer = reinterpret_cast<T*>(mappedChunk.pData);
+            updateFunction(*pTypedPointer);
+
+            // Unlock the constant buffer.
+            FinishUpdateBuffer(shaderType, slotIndex, pBufferToUpdate);
+        }
+
+        return hr;
+    }
 
 protected:
     virtual void OnShutdown() override;
@@ -140,6 +171,15 @@ private:
         ID3D11BlendState **ppBlendState) const;
 
     void SetViewport(const Size& screenSize);
+
+    HRESULT StartUpdatedBuffer(
+        ID3D11Buffer *pBufferToUpdate,
+        D3D11_MAPPED_SUBRESOURCE *pMappedChunkOut) const;
+
+    void FinishUpdateBuffer(
+        ShaderType shaderType,
+        int slotIndex,
+        ID3D11Buffer *pBufferToUpdate) const;
 
 private:
 	bool mVysncEnabled;

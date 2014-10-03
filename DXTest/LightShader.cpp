@@ -178,6 +178,7 @@ HRESULT LightShader::CreateInputLayout(
 }
 
 void LightShader::Render(
+    Dx3d& dx,
     ID3D11DeviceContext *pDeviceContext,
     int indexCount,
     const Matrix& worldMatrix,
@@ -192,6 +193,7 @@ void LightShader::Render(
     VerifyNotNull(pTexture);
 
     SetShaderParameters(
+        dx,
         pDeviceContext,
         worldMatrix,
         viewMatrix,
@@ -204,6 +206,7 @@ void LightShader::Render(
 }
 
 void LightShader::SetShaderParameters(
+    Dx3d& dx,
     ID3D11DeviceContext *pDeviceContext,
     const Matrix& inWorldMatrix,
     const Matrix& inViewMatrix,
@@ -213,78 +216,51 @@ void LightShader::SetShaderParameters(
     const Light& light)
 {
     AssertNotNull(pDeviceContext);
+    HRESULT hr = S_OK;
 
+    // Update the camera matrices in the MVP constants buffer.
     // Transpose the matrices to prepare them for the shader. This is a requirement for DirectX 11.
-    Matrix worldMatrix = inWorldMatrix.Transpose();
-    Matrix viewMatrix = inViewMatrix.Transpose();
-    Matrix projectionMatrix = inProjectionMatrix.Transpose();
+    hr = dx.UpdateConstantBuffer<matrix_buffer_t>(
+        mMatrixBuffer.Get(),
+        ShaderType::Vertex,
+        0,
+        [&](matrix_buffer_t& m) {
+            m.world = inWorldMatrix.Transpose();
+            m.view = inViewMatrix.Transpose();
+            m.projection = inProjectionMatrix.Transpose();
+    });
 
-    // Lock the constant buffer so we can write to it.
-    D3D11_MAPPED_SUBRESOURCE mappedResource;
-    HRESULT result = pDeviceContext->Map(mMatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    VerifyDXResult(hr);
 
-    VerifyDXResult(result);
-    VerifyNotNull(mappedResource.pData);
+    // Update camera position constant buffer with new camera positioning information.
+    hr = dx.UpdateConstantBuffer<camera_buffer_t>(
+        mCameraBuffer.Get(),
+        ShaderType::Vertex,
+        1,
+        [&](camera_buffer_t& c) {
+            c.cameraPosition = camera.Position();
+            c.padding = 0.0f;
+    });
 
-    // Get a pointer to the data in the constant buffer.
-    matrix_buffer_t *pMatrixData = (matrix_buffer_t*)mappedResource.pData;
+    VerifyDXResult(hr);
 
-    // Copy the matrices into the constant buffer.
-    pMatrixData->world = worldMatrix;
-    pMatrixData->view = viewMatrix;
-    pMatrixData->projection = projectionMatrix;
+    // Update pixel shader with lighting information.
+    hr = dx.UpdateConstantBuffer<light_buffer_t>(
+        mLightBuffer.Get(),
+        ShaderType::Pixel,
+        0,
+        [&](light_buffer_t& l) {
+            l.ambientColor = light.AmbientColor();
+            l.diffuseColor = light.DiffuseColor();
+            l.lightDirection = light.Direction();
+            l.specularPower = light.SpecularPower();
+            l.specularColor = light.SpecularColor();
+    });
 
-    // Unlock the constant buffer.
-    pDeviceContext->Unmap(mMatrixBuffer.Get(), 0);
-
-    // Now set the updated matrix buffer in the HLSL vertex shader.
-    ID3D11Buffer * VertexConstantBuffers[2] = { mMatrixBuffer.Get(), mCameraBuffer.Get() };
-    unsigned int bufferNumber = 0;
-    pDeviceContext->VSSetConstantBuffers(bufferNumber, 1, VertexConstantBuffers);
-
-    // Lock the camera buffer, write updated values to it and then unlock the buffer.
-    result = pDeviceContext->Map(mCameraBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-
-    VerifyDXResult(result);
-    VerifyNotNull(mappedResource.pData);
-
-    camera_buffer_t * pCameraData = reinterpret_cast<camera_buffer_t*>(mappedResource.pData);
-
-    pCameraData->cameraPosition = camera.Position();
-    pCameraData->padding = 0.0f;
-
-    pDeviceContext->Unmap(mCameraBuffer.Get(), 0);
-
-    // Attach camera constant buffer to pixel shader.
-    bufferNumber = 1;
-    pDeviceContext->VSSetConstantBuffers(bufferNumber, 1, VertexConstantBuffers);
+    VerifyDXResult(hr);
 
     // Set up shader texture resource in the pixel shader.
     pDeviceContext->PSSetShaderResources(0, 1, &pTexture);
-
-    // Lock the light constants buffer for writing.
-    result = pDeviceContext->Map(mLightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-
-    VerifyDXResult(result);
-    VerifyNotNull(mappedResource.pData);
-
-    // Copy our lighting variables into the locked constant buffer.
-    light_buffer_t * pLightData = reinterpret_cast<light_buffer_t*>(mappedResource.pData);
-
-    pLightData->ambientColor = light.AmbientColor();
-    pLightData->diffuseColor = light.DiffuseColor();
-    pLightData->lightDirection = light.Direction();
-    pLightData->specularPower = light.SpecularPower();
-    pLightData->specularColor = light.SpecularColor();
-
-    // Unlock the constant buffer now that we are done writing values to it.
-    pDeviceContext->Unmap(mLightBuffer.Get(), 0);
-
-    // Attach the constant buffer to the pixel shader, in the right position.
-    ID3D11Buffer* constantBuffers[1] = { mLightBuffer.Get() };
-    bufferNumber = 0;
-
-    pDeviceContext->PSSetConstantBuffers(bufferNumber, 1, constantBuffers);
 }
 
 void LightShader::RenderShader(ID3D11DeviceContext *pDeviceContext, int indexCount)
