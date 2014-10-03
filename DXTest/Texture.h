@@ -1,7 +1,12 @@
 #pragma once
 #include "IInitializable.h"
 
+#include <wrl\wrappers\corewrappers.h>      // ComPtr
+#include <wrl\client.h>
+#include <memory>
+
 #include <string>
+
 struct ID3D11Device;
 struct ID3D11Resource;
 struct ID3D11ShaderResourceView;
@@ -14,20 +19,21 @@ public:
 	Texture(const Texture& texture) = delete;
 	virtual ~Texture() override;
 
+    Texture& operator =(const Texture& rhs) = delete;
+
 	// texture must be dds
 	// TODO: convert to use BinaryBlob* rather than manually loading
-	void Initialize(ID3D11Device *pDevice, const std::wstring& filepath);
+    void InitializeFromFile(ID3D11Device *pDevice, const std::wstring& filepath);
 
 	// TODO: bad name
 	ID3D11ShaderResourceView * GetTexture();
-
-	Texture& operator =(const Texture& rhs) = delete;
 
 private:
 	virtual void OnShutdown() override;
 
 private:
-	ID3D11Resource * mpResource;
-	ID3D11ShaderResourceView * mpTexture;
+    std::wstring mName;
+	Microsoft::WRL::ComPtr<ID3D11Resource> mResource;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mTexture;
 };
 

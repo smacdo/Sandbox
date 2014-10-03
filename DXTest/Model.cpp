@@ -57,7 +57,7 @@ void Model::Initialize(
 
     // Load requested texture.
     mTexture.reset(new Texture());
-    mTexture->Initialize(pDevice, textureFile);
+    mTexture->InitializeFromFile(pDevice, textureFile);
 
     SetInitialized();
 }

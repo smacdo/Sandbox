@@ -72,7 +72,7 @@ void Font::LoadFontLayout(const std::string& layoutFile)
 void Font::LoadTexture(ID3D11Device *pDevice, const std::string& textureFile)
 {
     mpTexture = new Texture();
-    mpTexture->Initialize(pDevice, Utils::ConvertUtf8ToWString(textureFile));
+    mpTexture->InitializeFromFile(pDevice, Utils::ConvertUtf8ToWString(textureFile));
 }
 
 void Font::OnShutdown()

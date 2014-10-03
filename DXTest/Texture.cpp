@@ -1,14 +1,17 @@
 #include "Texture.h"
 #include "BinaryBlob.h"
 #include "DXSandbox.h"
+#include "DXTestException.h"
+
 #include <d3d11.h>
 #include "DDSTextureLoader.h"
 
 using namespace DirectX;
 
 Texture::Texture()
-: mpResource(nullptr),
-  mpTexture(nullptr)
+    : mName(),
+      mResource(),
+      mTexture()
 {
 }
 
@@ -16,34 +19,42 @@ Texture::~Texture()
 {
 }
 
-void Texture::Initialize(ID3D11Device *pDevice, const std::wstring& filepath)
+void Texture::InitializeFromFile(ID3D11Device *pDevice, const std::wstring& filepath)
 {
+    if (IsInitialized()) { return; }
 	VerifyNotNull(pDevice);
 
-	if (!IsInitialized())
-	{
-		HRESULT result = CreateDDSTextureFromFile(pDevice, filepath.c_str(), nullptr, &mpTexture);
-		
-		VerifyDXResult(result);
-		VerifyNotNull(mpTexture);
+    Microsoft::WRL::ComPtr<ID3D11Resource> textureResource;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
+
+    HRESULT hr = CreateDDSTextureFromFile(pDevice, filepath.c_str(), &textureResource, &shaderResourceView);
+
+    if (SUCCEEDED(hr))
+    {
+        mName = filepath;
+        mResource.Swap(textureResource);
+        mTexture.Swap(shaderResourceView);
 
         // Set an identifier on this texture file for easier debug tracking.
-        //  TODO: Broken, probably because filepath.c_str() is not valid later.
-        mpTexture->SetPrivateData(WKPDID_D3DDebugObjectName,
-                                  sizeof(std::string::value_type) * filepath.size(),
-                                  filepath.c_str());
+        //  TODO: Confirm this works.
+        mTexture->SetPrivateData(WKPDID_D3DDebugObjectName,
+                                 sizeof(std::wstring::value_type) * mName.size(),
+                                 mName.c_str());
 
-		SetInitialized();
-	}
+        SetInitialized();
+    }
+    else
+    {
+        throw DirectXException(hr, filepath);
+    }
 }
 
 void Texture::OnShutdown()
 {
-	SafeRelease(mpTexture);
-	SafeRelease(mpResource);
 }
 
 ID3D11ShaderResourceView * Texture::GetTexture()
 {
-	return mpTexture;
+    if (!IsInitialized()) { throw NotInitializedException(L"Texture"); }
+	return mTexture.Get();
 }

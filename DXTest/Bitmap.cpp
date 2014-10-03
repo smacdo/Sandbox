@@ -237,7 +237,7 @@ void Bitmap::RenderBuffers(ID3D11DeviceContext *pDeviceContext)
 void Bitmap::LoadTexture(ID3D11Device *pDevice, const std::string& filename)
 {
     mpTexture = new Texture();
-    mpTexture->Initialize(pDevice, Utils::ConvertUtf8ToWString(filename));
+    mpTexture->InitializeFromFile(pDevice, Utils::ConvertUtf8ToWString(filename));
 }
 
 ID3D11ShaderResourceView * Bitmap::GetTexture() const
