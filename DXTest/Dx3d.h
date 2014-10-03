@@ -42,7 +42,13 @@ public:
 
     Dx3d& operator = (const Dx3d& rhs) = delete;
 
-	void Initialize(const Size& screenSize, bool, HWND, bool, float, float);
+    void Initialize(
+        const Size& screenSize,
+        HWND hwnd,
+        bool isVsyncEnabled,
+        bool isFullScreenMode,
+        float screenDepth,
+        float screenNear);
 
 	void BeginScene(float red, float green, float blue, float alpha);
 	void EndScene();
@@ -52,6 +58,8 @@ public:
 
     void EnableZBuffer(bool zEnabled);
     void EnableAlphaBlending(bool alphaBlendEnabled);
+
+    vram_info_t GetVRamInfo() const;
 
 protected:
     virtual void OnShutdown() override;
@@ -93,6 +101,7 @@ private:
     HRESULT CreateDeviceAndSwapChain(
         const refresh_rate_t& refreshRate,
         const Size& screenSize,
+        bool isFullScreenMode,
         ID3D11Device **ppDeviceOut,
         ID3D11DeviceContext **ppDeviceContextOut,
         IDXGISwapChain **ppSwapChainOut) const;
@@ -115,9 +124,7 @@ private:
 
 private:
 	bool mVysncEnabled;
-    bool mIsFullScreenMode;
     HWND mHwnd;                     // TODO: Stop storing this?
-    vram_info_t mVideoRamInfo;
     Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
     Microsoft::WRL::ComPtr<ID3D11Device> mDevice;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> mDeviceContext;

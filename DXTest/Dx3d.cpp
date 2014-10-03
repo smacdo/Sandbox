@@ -14,7 +14,6 @@
 
 Dx3d::Dx3d()
 : mVysncEnabled(false),
-  mVideoRamInfo(),
   mSwapChain(),
   mDevice(),
   mDeviceContext(),
@@ -33,21 +32,17 @@ Dx3d::~Dx3d()
 {
 }
 
-void Dx3d::Initialize(const Size& screenSize,
-					  bool vsync,
+void Dx3d::Initialize(const Size& screenSize,					  
 					  HWND hwnd,
-					  bool fullscreen,
+                      bool isVsyncEnabled,
+					  bool isFullScreenMode,
 					  float screenDepth,
 					  float screenNear)
 {
-    if (IsInitialized())
-    {
-        return;
-    }
+    if (IsInitialized()) { return; }
 
 	// Store settings.
-	mVysncEnabled = vsync;
-    mIsFullScreenMode = fullscreen;
+    mVysncEnabled = isVsyncEnabled;
     mHwnd = hwnd;
 
 	// Create a DirectX graphics interface factory.
@@ -66,14 +61,11 @@ void Dx3d::Initialize(const Size& screenSize,
 
     VerifyDXResult(result);
 
-    // Find out how much video memory is available from our primary video card.
-    result = GetPrimaryVideoVRAM(factory.Get(), &mVideoRamInfo);
-    VerifyDXResult(result);
-
 	// Create the swap chain, direct3d device and direct3d device context all at once.
     result = CreateDeviceAndSwapChain(
         refreshRate,
         screenSize,
+        isFullScreenMode,
         &mDevice,
         &mDeviceContext,
         &mSwapChain);
@@ -388,6 +380,7 @@ HRESULT Dx3d::GetRefreshRateInfo(
 HRESULT Dx3d::CreateDeviceAndSwapChain(
     const refresh_rate_t& refreshRate,
     const Size& screenSize,
+    bool isFullScreenMode,
     ID3D11Device **ppDeviceOut,
     ID3D11DeviceContext **ppDeviceContextOut,
     IDXGISwapChain **ppSwapChainOut) const
@@ -409,7 +402,7 @@ HRESULT Dx3d::CreateDeviceAndSwapChain(
     swapChainDesc.OutputWindow = mHwnd;         // TODO: Pass this, don't store it.
     swapChainDesc.SampleDesc.Count = 1;		// Turn multi-sampling off :(
     swapChainDesc.SampleDesc.Quality = 0;	// Turn multi-sampling off :(   XXX: Fix this, make this configurable.
-    swapChainDesc.Windowed = !mIsFullScreenMode;
+    swapChainDesc.Windowed = !isFullScreenMode;
     swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED; // XXX: ???
     swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;	// XXX: ???
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;				// Discard back buffer contents after presenting.
@@ -617,4 +610,21 @@ void Dx3d::EnableAlphaBlending(bool alphaBlendEnabled)
     {
         mDeviceContext->OMSetBlendState(mAlphaDisabledBlendingState.Get(), blendFactor, 0xFFFFFFFF);
     }
+}
+
+vram_info_t Dx3d::GetVRamInfo() const
+{
+    // Create a DirectX graphics interface factory.
+    Microsoft::WRL::ComPtr<IDXGIFactory> factory;
+    HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), &factory);
+
+    // Find out how much video memory is available from our primary video card.
+    vram_info_t info = { 0 };
+
+    if (SUCCEEDED(hr))
+    {
+        hr = GetPrimaryVideoVRAM(factory.Get(), &info);
+    }
+
+    return info;
 }
