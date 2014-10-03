@@ -6,6 +6,7 @@
 #include <d3d11.h>
 #include <SimpleMath.h>
 #include <string>
+#include "IInitializable.h"
 
 #include <wrl\wrappers\corewrappers.h>      // ComPtr
 #include <wrl\client.h>
@@ -32,29 +33,30 @@ struct vram_info_t      // values in MB
 // TODO: Give class better name (right now trying to conform closer to tutorial)
 //  - maybe DirectXDriver? D3dDriver? hmmm
 // TODO: Stop exposing so many DirectX primitives. Wrap them up in proxy objects.
-class Dx3d
+class Dx3d : public IInitializable
 {
 public:
 	Dx3d();
-	~Dx3d();
+    Dx3d(const Dx3d& rhs) = delete;
+	virtual ~Dx3d();
+
+    Dx3d& operator = (const Dx3d& rhs) = delete;
 
 	void Initialize(const Size& screenSize, bool, HWND, bool, float, float);
-	void Shutdown();
 
-	void BeginScene(float, float, float, float);
+	void BeginScene(float red, float green, float blue, float alpha);
 	void EndScene();
 
 	ID3D11Device * GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
 
-    // TODO: Merge these functions with a bool parameter.
     void EnableZBuffer(bool zEnabled);
     void EnableAlphaBlending(bool alphaBlendEnabled);
 
-private:
-	Dx3d(const Dx3d&);
-	Dx3d& operator= (const Dx3d&);
+protected:
+    virtual void OnShutdown() override;
 
+private:
     HRESULT InitializeDepthBuffer(
         ID3D11Device *pDevice,
         const Size& screenSize);
@@ -112,7 +114,6 @@ private:
     void SetViewport(const Size& screenSize);
 
 private:
-	bool mInitialized;
 	bool mVysncEnabled;
     bool mIsFullScreenMode;
     HWND mHwnd;                     // TODO: Stop storing this?

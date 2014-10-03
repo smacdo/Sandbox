@@ -13,8 +13,7 @@
 //#pragma comment(lib, "d3dx10.lib")
 
 Dx3d::Dx3d()
-: mInitialized(false),
-  mVysncEnabled(false),
+: mVysncEnabled(false),
   mVideoRamInfo(),
   mSwapChain(),
   mDevice(),
@@ -32,7 +31,6 @@ Dx3d::Dx3d()
 
 Dx3d::~Dx3d()
 {
-	Shutdown();
 }
 
 void Dx3d::Initialize(const Size& screenSize,
@@ -42,10 +40,10 @@ void Dx3d::Initialize(const Size& screenSize,
 					  float screenDepth,
 					  float screenNear)
 {
-	if (mInitialized)
-	{
-		return;
-	}
+    if (IsInitialized())
+    {
+        return;
+    }
 
 	// Store settings.
 	mVysncEnabled = vsync;
@@ -108,7 +106,7 @@ void Dx3d::Initialize(const Size& screenSize,
     VerifyDXResult(result);
 
 	// All done... finally!
-	mInitialized = true;
+    SetInitialized();
 
     // TODO: Convert all &mXXX comptr base references to local comptr<t> and only on final success asssign them!
 }
@@ -542,26 +540,19 @@ void Dx3d::SetViewport(const Size& screenSize)
     mDeviceContext->RSSetViewports(1, &viewport);
 }
 
-void Dx3d::Shutdown()
+void Dx3d::OnShutdown()
 {
-	if (!mInitialized)
-	{
-		return;
-	}
-
-	// Make sure to switch to windowed mode before releasing the swap chain. Otherwise an exceptiong gets thrown!
-	if (mSwapChain.Get() != nullptr)
-	{
-		mSwapChain->SetFullscreenState(false, NULL);
-	}
-
-	mInitialized = false;
+	// Make sure to switch to windowed mode before releasing the swap chain, otherwise DirectX will freak out.
+    if (mSwapChain)
+    {
+        mSwapChain->SetFullscreenState(false, NULL);
+    }
 }
 
 /// Initialize buffers to be blank and ready.
 void Dx3d::BeginScene(float red, float green, float blue, float alpha)
 {
-	// TODO: Check mInitialized is true.
+    if (!IsInitialized()) { return; }
 
 	float color[4];
 
