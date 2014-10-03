@@ -15,8 +15,7 @@
 using namespace DirectX::SimpleMath;
 
 Graphics::Graphics()
-: mInitialized(false),
-  mFrustum(),
+: mFrustum(),
   mpD3d(nullptr),
   mpCamera(nullptr),
   mpUiCamera(nullptr),
@@ -29,17 +28,12 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
-	Shutdown();
 }
 
 void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
+    if (IsInitialized()) { return; }
     Size screenSize = { screenWidth, screenHeight };
-
-	if (mInitialized)
-	{
-		return;
-	}
 
 	// Initialize DirectX D3D.
 	mpD3d = new Dx3d();
@@ -107,26 +101,23 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
     mpLight->SetDirection(Vector3(0.0f, 0.0f, 1.0f));
 
-	mInitialized = true;
+    SetInitialized();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Shutdown the graphics system.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void Graphics::Shutdown()
+void Graphics::OnShutdown()
 {
-	if (mInitialized)
-	{
-        SafeDelete(mpLight);
-        SafeDelete(mpLightShader);
-        SafeDeleteContainer(mModels);
-		SafeDelete(mpText);
-		SafeDelete(mpCamera);
-        SafeDelete(mpUiCamera);
+    SafeDelete(mpLight);
+    SafeDelete(mpLightShader);
+    SafeDeleteContainer(mModels);
+	SafeDelete(mpText);
+	SafeDelete(mpCamera);
+    SafeDelete(mpUiCamera);
 
-		mpD3d->Shutdown();
-		SafeDelete(mpD3d);
-	}
+	mpD3d->Shutdown();
+	SafeDelete(mpD3d);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,6 +125,8 @@ void Graphics::Shutdown()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void Graphics::Frame()
 {
+    if (!IsInitialized()) { return; }
+
     const float pi = 3.14159f;
     const float halfPi = 3.14159f / 2.0f;
     static float rotation = 0.0f;
@@ -153,6 +146,8 @@ void Graphics::Frame()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void Graphics::Render(float rotation)
 {
+    if (!IsInitialized()) { return; }
+
 	AssertNotNull(mpD3d);
     AssertNotNull(mpCamera);
 
