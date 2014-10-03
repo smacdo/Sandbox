@@ -3,6 +3,7 @@
 #include "Graphics.h"
 #include "DXSandbox.h"
 #include "DXTestException.h"
+#include "size.h"
 
 #include <cstdlib>      //  srand
 #include <ctime>        // time
@@ -33,15 +34,14 @@ void Application::Initialize()
     srand((unsigned int) time(NULL));
 
 	// Initialize app with windows.
-	int screenWidth = 0, screenHeight = 0;
-	InitializeWindows(screenWidth, screenHeight);
-
+    Size screenSize = InitializeWindows();
+	
 	// Create system objects.
 	mpInput = new Input();
-	mpInput->Initialize(mInstance, mHwnd, screenWidth, screenHeight);
+	mpInput->Initialize(mInstance, mHwnd, screenSize.width, screenSize.height);
 	
 	mpGraphics = new Graphics();
-	mpGraphics->Initialize(screenWidth, screenHeight, mHwnd);
+	mpGraphics->Initialize(screenSize, mHwnd);
 
 	mInitialized = true;
 }
@@ -106,7 +106,7 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-void Application::InitializeWindows(int& screenWidth, int& screenHeight)
+Size Application::InitializeWindows()
 {
 	mInstance = GetModuleHandle(NULL);
 	mApplicationName = "DirectX Tests by Scott";
@@ -132,8 +132,8 @@ void Application::InitializeWindows(int& screenWidth, int& screenHeight)
 	// Determine rsolution of client's desktop screen.
 	int posX = 0, posY = 0;
 
-	screenWidth = GetSystemMetrics(SM_CXSCREEN);
-	screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	if (FULL_SCREEN)
 	{
@@ -175,6 +175,9 @@ void Application::InitializeWindows(int& screenWidth, int& screenHeight)
 	SetFocus(mHwnd);
 
 	// ShowCursor(false);
+
+    // TODO: Improve the screen size code above. It's nasty.
+    return Size { screenWidth, screenHeight };
 }
 
 void Application::ShutdownWindows()

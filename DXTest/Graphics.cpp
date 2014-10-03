@@ -16,13 +16,13 @@ using namespace DirectX::SimpleMath;
 
 Graphics::Graphics()
 : mFrustum(),
-  mpD3d(nullptr),
-  mpCamera(nullptr),
-  mpUiCamera(nullptr),
-  mpText(nullptr),
+  mD3d(),
+  mCamera(),
+  mUiCamera(),
+  mText(),
   mModels(),
-  mpLightShader(nullptr),
-  mpLight(nullptr)
+  mLightShader(),
+  mLight()
 {
 }
 
@@ -30,14 +30,16 @@ Graphics::~Graphics()
 {
 }
 
-void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Shutdown the graphics system.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void Graphics::Initialize(const Size& screenSize, HWND hwnd)
 {
     if (IsInitialized()) { return; }
-    Size screenSize = { screenWidth, screenHeight };
 
 	// Initialize DirectX D3D.
-	mpD3d = new Dx3d();
-	mpD3d->Initialize(
+    mD3d.reset(new Dx3d());
+    mD3d->Initialize(
         screenSize,
         hwnd,
         VSYNC_ENABLED,
@@ -45,33 +47,31 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
         SCREEN_DEPTH,
         SCREEN_NEAR);
 
-    mpD3d->SetBackgroundColor(Color(0.0f, 0.0f, 0.25f));
+    mD3d->SetBackgroundColor(Color(0.0f, 0.0f, 0.25f));
 
 	// Initialize the camera.
-	mpCamera = new Camera(screenSize, SCREEN_NEAR, SCREEN_DEPTH);
-	mpCamera->SetPosition(Vector3(0.0f, 0.0f, -10.0f));
+	mCamera.reset(new Camera(screenSize, SCREEN_NEAR, SCREEN_DEPTH));
+	mCamera->SetPosition(Vector3(0.0f, 0.0f, -10.0f));
 
     // Set up a base view matrix for 2d user interface rendering.
     //  TODO: Rename referneces to "Base view matrix" to "2d ui view matrix" or "ui view matrix".
-    mpUiCamera = new Camera(screenSize, SCREEN_NEAR, SCREEN_DEPTH);
+    mUiCamera.reset(new Camera(screenSize, SCREEN_NEAR, SCREEN_DEPTH));
     
-    mpUiCamera->SetPosition(Vector3(0.0f, 0.0f, -1.0f));
-    mpUiCamera->Render();
-    
-    Matrix baseViewMatrix = mpUiCamera->ViewMatrix();
+    mUiCamera->SetPosition(Vector3(0.0f, 0.0f, -1.0f));
+    mUiCamera->Render();
 
 	// Create the text manager class.
-	mpText = new Text();
-    mpText->Initialize(mpD3d->GetDevice(),
-                       mpD3d->GetDeviceContext(),
-                       screenWidth, screenHeight,
-                       baseViewMatrix);
+	mText.reset(new Text());
+    mText->Initialize(mD3d->GetDevice(),
+                      mD3d->GetDeviceContext(),
+                      screenSize.width, screenSize.height,
+                      mUiCamera->ViewMatrix());
 
     // Initialize and load models.
     for (auto i : MakeRange(0, 25))
     {
         Model *pModel = new Model();
-        pModel->Initialize(mpD3d->GetDevice(), ".\\Models\\cube.model", ".\\Textures\\seafloor.dds");
+        pModel->Initialize(mD3d->GetDevice(), ".\\Models\\cube.model", ".\\Textures\\seafloor.dds");
 
         // Assign random position and color.
         Vector4 color(Utils::RandFloat(), Utils::RandFloat(), Utils::RandFloat(), 1.0f);
@@ -89,17 +89,17 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
     }
 
     // Create a light and a light shader for the model.
-    mpLightShader = new LightShader();
-    mpLightShader->Initialize(mpD3d->GetDevice());
+    mLightShader.reset(new LightShader());
+    mLightShader->Initialize(mD3d->GetDevice());
 
-    mpLight = new Light();
+    mLight.reset(new Light());
 
-    mpLight->SetAmbientColor(Vector4(0.15f, 0.15f, 0.15f, 1.0f));
-    mpLight->SetDiffuseColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-    mpLight->SetSpecularColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-    mpLight->SetSpecularPower(32.0f);
+    mLight->SetAmbientColor(Vector4(0.15f, 0.15f, 0.15f, 1.0f));
+    mLight->SetDiffuseColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+    mLight->SetSpecularColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+    mLight->SetSpecularPower(32.0f);
 
-    mpLight->SetDirection(Vector3(0.0f, 0.0f, 1.0f));
+    mLight->SetDirection(Vector3(0.0f, 0.0f, 1.0f));
 
     SetInitialized();
 }
@@ -109,15 +109,7 @@ void Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void Graphics::OnShutdown()
 {
-    SafeDelete(mpLight);
-    SafeDelete(mpLightShader);
     SafeDeleteContainer(mModels);
-	SafeDelete(mpText);
-	SafeDelete(mpCamera);
-    SafeDelete(mpUiCamera);
-
-	mpD3d->Shutdown();
-	SafeDelete(mpD3d);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,19 +140,16 @@ void Graphics::Render(float rotation)
 {
     if (!IsInitialized()) { return; }
 
-	AssertNotNull(mpD3d);
-    AssertNotNull(mpCamera);
-
 	// Clear graphics buffers before beginning scene rendering.
-	mpD3d->BeginScene();
+	mD3d->BeginScene();
 
 	// Generate the view matrix based on the camera's position. Grab the world, view and projection matrices from the
 	// camera and d3d objects.
-	mpCamera->Render();
+	mCamera->Render();
 
-	Matrix viewMatrix = mpCamera->ViewMatrix();
+	Matrix viewMatrix = mCamera->ViewMatrix();
     Matrix worldMatrix = DirectX::XMMatrixIdentity();
-	Matrix projectionMatrix = mpCamera->ProjectionMatrix();
+	Matrix projectionMatrix = mCamera->ProjectionMatrix();
 
     // Rotate the world a little bit to show off.
     worldMatrix = Matrix::CreateRotationY(rotation) * worldMatrix;
@@ -192,18 +181,18 @@ void Graphics::Render(float rotation)
         Matrix objectWorldMatrix = Matrix::CreateTranslation(pModel->Position()) * worldMatrix;
 
         // This is really a "bind buffers for rendering" method call.
-        pModel->Render(mpD3d->GetDeviceContext());
+        pModel->Render(mD3d->GetDeviceContext());
 
         // Render the model using the color shader.
-        mpLightShader->Render(
-            mpD3d->GetDeviceContext(),
+        mLightShader->Render(
+            mD3d->GetDeviceContext(),
             pModel->GetIndexCount(),
             objectWorldMatrix,
             viewMatrix,
             projectionMatrix,
             pModel->GetTexture(),
-            *mpCamera,
-            *mpLight);
+            *mCamera,
+            *mLight);
     }
 }
 
@@ -213,15 +202,15 @@ void Graphics::Render(float rotation)
 void Graphics::RenderUi()
 {
     Matrix worldMatrix = DirectX::XMMatrixIdentity();
-    Matrix orthoMatrix = mpUiCamera->OrthoMatrix();
+    Matrix orthoMatrix = mUiCamera->OrthoMatrix();
 
-    mpD3d->SetZBufferEnabled(false);
-    mpD3d->SetAlphaBlendingEnabled(true);
+    mD3d->SetZBufferEnabled(false);
+    mD3d->SetAlphaBlendingEnabled(true);
 
-    mpText->Render(mpD3d->GetDeviceContext(), worldMatrix, orthoMatrix);
+    mText->Render(mD3d->GetDeviceContext(), worldMatrix, orthoMatrix);
 
-    mpD3d->SetZBufferEnabled(true);
-    mpD3d->SetAlphaBlendingEnabled(false);
+    mD3d->SetZBufferEnabled(true);
+    mD3d->SetAlphaBlendingEnabled(false);
 
-    mpD3d->EndScene();
+    mD3d->EndScene();
 }

@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include "Input.h"
 #include "Graphics.h"
+#include "Size.h"
 
 class Application
 {
@@ -17,8 +18,8 @@ public:
 	LRESULT CALLBACK MessageHandler(HWND, UINT, WPARAM, LPARAM);
 
 private:
-	void Frame();		// again, terrible name.
-	void InitializeWindows(int& screenWidth, int& screenHeight);	// TODO: change & and use std::pair<> instead.
+	void Frame();		// TODO: again, terrible name.
+    Size InitializeWindows();
 	void ShutdownWindows();
 
 private:

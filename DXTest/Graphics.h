@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h> // todo: hate having to include Windows.h, maybe use a PIMPL pattern?
 #include <vector>
+#include <memory>
 
 #include "Frustum.h"
 #include "IInitializable.h"
@@ -16,13 +17,18 @@ class Model;
 class Text;
 class Light;
 class LightShader;
+class Size;
 
 class Graphics : public IInitializable
 {
 public:
 	Graphics();
-	~Graphics();
-	void Initialize(int screenWidth, int screenHeight, HWND hwnd);
+    Graphics(const Graphics&) = delete;
+	virtual ~Graphics();
+
+    Graphics& operator = (const Graphics&) = delete;
+
+    void Initialize(const Size& screenSize, HWND hwnd);
 	void Frame();		// terrible name
 
 protected:
@@ -34,12 +40,12 @@ private:
 
 private:
     Frustum mFrustum;
-	Dx3d * mpD3d;
-	Camera * mpCamera;
-    Camera * mpUiCamera;
-    Text * mpText;
-    std::vector<Model *> mModels;
-    LightShader * mpLightShader;
-    Light * mpLight;
+	std::unique_ptr<Dx3d> mD3d;
+	std::unique_ptr<Camera> mCamera;
+    std::unique_ptr<Camera> mUiCamera;
+    std::unique_ptr<Text> mText;
+    std::vector<Model *> mModels;       // TODO: Make use unique_ptr or something.
+    std::unique_ptr<LightShader> mLightShader;
+    std::unique_ptr<Light> mLight;
 };
 
