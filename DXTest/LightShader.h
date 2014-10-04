@@ -1,7 +1,6 @@
 #pragma once
 #include "SimpleMath.h"
 #include "IInitializable.h"
-#include "Dx3d.h"
 
 #include <wrl\wrappers\corewrappers.h>      // ComPtr
 #include <wrl\client.h>
@@ -18,6 +17,7 @@ struct ID3D11SamplerState;
 class Light;
 class Camera;
 class BinaryBlob;
+class Dx3d;
 
 class LightShader : public IInitializable
 {
@@ -29,9 +29,9 @@ public:
     LightShader& operator =(const LightShader&) = delete;
 
     void Initialize(Dx3d& dx);
+
     void Render(
         Dx3d& dx,
-        ID3D11DeviceContext *pContext,
         int indexCount,
         const DirectX::SimpleMath::Matrix&,
         const DirectX::SimpleMath::Matrix&,
@@ -45,6 +45,7 @@ protected:
 
 private:
     HRESULT InitializeShader(Dx3d& dx);
+
     HRESULT CreateInputLayout(
         Dx3d& dx,
         const BinaryBlob& vertexShaderBlob,
@@ -52,7 +53,6 @@ private:
     
     void SetShaderParameters(
         Dx3d& dx,
-        ID3D11DeviceContext *pContext,
         const DirectX::SimpleMath::Matrix&,
         const DirectX::SimpleMath::Matrix&,
         const DirectX::SimpleMath::Matrix&,
@@ -60,7 +60,7 @@ private:
         const Camera& camera,
         const Light& light);
 
-    void RenderShader(ID3D11DeviceContext*, int);
+    void RenderShader(Dx3d& dx, int);
 
 private:
     Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;

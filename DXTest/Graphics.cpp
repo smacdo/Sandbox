@@ -62,8 +62,7 @@ void Graphics::Initialize(const Size& screenSize, HWND hwnd)
 
 	// Create the text manager class.
 	mText.reset(new Text());
-    mText->Initialize(mD3d->GetDevice(),
-                      mD3d->GetDeviceContext(),
+    mText->Initialize(*mD3d.get(),
                       screenSize.width, screenSize.height,
                       mUiCamera->ViewMatrix());
 
@@ -186,7 +185,6 @@ void Graphics::Render(float rotation)
         // Render the model using the color shader.
         mLightShader->Render(
             *mD3d.get(),
-            mD3d->GetDeviceContext(),
             pModel->IndexCount(),
             objectWorldMatrix,
             viewMatrix,
@@ -208,7 +206,7 @@ void Graphics::RenderUi()
     mD3d->SetZBufferEnabled(false);
     mD3d->SetAlphaBlendingEnabled(true);
 
-    mText->Render(mD3d->GetDeviceContext(), worldMatrix, orthoMatrix);
+    mText->Render(*mD3d.get(), worldMatrix, orthoMatrix);
 
     mD3d->SetZBufferEnabled(true);
     mD3d->SetAlphaBlendingEnabled(false);

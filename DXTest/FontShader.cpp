@@ -2,6 +2,10 @@
 #include "DXSandbox.h"
 #include "BinaryBlob.h"
 #include "SimpleMath.h"
+#include "DXTestException.h"
+#include "Dx3d.h"
+
+#include "ConstantBufferUpdater.h"
 
 #include <d3d11.h>
 
@@ -20,11 +24,14 @@ struct matrix_buffer_t
 	Matrix projection;
 };
 
-struct pixel_buffer_t
+struct pixel_buffer_t       // TODO: terrible name
 {
     Vector4 pixelColor;
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Font shader implementation
+///////////////////////////////////////////////////////////////////////////////////////////////////
 FontShader::FontShader()
 : IInitializable(),
   mVertexShader(),
@@ -40,132 +47,109 @@ FontShader::~FontShader()
 {
 }
 
-void FontShader::Initialize(ID3D11Device *pDevice)
+void FontShader::Initialize(Dx3d& dx)
 {
-	VerifyNotNull(pDevice);
-
 	if (!IsInitialized())
 	{
-		InitializeShader(pDevice);
+		HRESULT hr = InitializeShader(dx);
+        VerifyDXResult(hr);
+
 		SetInitialized();
 	}
 }
 
-// break this into two functions LoadPixelShader, LoadVertexShader
-// change WCHAR to std::wstring or std::string and convert last second
-void FontShader::InitializeShader(ID3D11Device *pDevice)
+HRESULT FontShader::InitializeShader(Dx3d& dx)
 {
-	// Load the pixel and vertex shaders.
-    BinaryBlob vertexShaderBlob = BinaryBlob::LoadFromFile(FontVertexShaderFilePath);
-    BinaryBlob pixelShaderBlob = BinaryBlob::LoadFromFile(FontPixelShaderFilePath);
+    HRESULT hr = S_OK;
 
-	// Create the vertex shader object.
-	HRESULT result;
+    // Load and create the pixel and vertex shaders.
+    {
+        BinaryBlob vertexShaderBlob = BinaryBlob::LoadFromFile(FontVertexShaderFilePath);
+        BinaryBlob pixelShaderBlob = BinaryBlob::LoadFromFile(FontPixelShaderFilePath);
 
-	result = pDevice->CreateVertexShader(
-		vertexShaderBlob.BufferPointer(),
-		static_cast<SIZE_T>(vertexShaderBlob.BufferSize()),
-		NULL,
-		&mVertexShader);
+        hr = dx.CreateVertexShader(vertexShaderBlob, &mVertexShader);
 
-	VerifyDXResult(result);
+        if (SUCCEEDED(hr))
+        {
+            hr = dx.CreatePixelShader(pixelShaderBlob, &mPixelShader);
+        }
 
-	// Create the pixel shader object.
-	result = pDevice->CreatePixelShader(
-		pixelShaderBlob.BufferPointer(),
-		static_cast<SIZE_T>(pixelShaderBlob.BufferSize()),
-		NULL,
-		&mPixelShader);
+        // Now that we vertex shader is created, we can create the vertex input layout.
+        if (SUCCEEDED(hr))
+        {
+            hr = CreateInputLayout(dx, vertexShaderBlob, &mLayout);
+        }
+    }
 
-	VerifyDXResult(result);
+    // Create constant buffers for MVP camera projection and pixel shader info.
+    if (SUCCEEDED(hr))
+    {
+        hr = dx.CreateConstantBuffer(sizeof(matrix_buffer_t), &mMatrixBuffer);
+    }
 
-	// Describe the layout of data that will be fed to this shader.
-	// This layout needs to match the vertex type structure defined in the model class and shader.
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[2];
+    if (SUCCEEDED(hr))
+    {
+        hr = dx.CreateConstantBuffer(sizeof(pixel_buffer_t), &mPixelBuffer);
+    }
 
-	polygonLayout[0].SemanticName = "POSITION";
-	polygonLayout[0].SemanticIndex = 0;
-	polygonLayout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	polygonLayout[0].InputSlot = 0;
-	polygonLayout[0].AlignedByteOffset = 0;
-	polygonLayout[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	polygonLayout[0].InstanceDataStepRate = 0;
+    // Create a texture sampler state description.
+    if (SUCCEEDED(hr))
+    {
+        hr = dx.CreateTextureSamplerState(&mSamplerState);
+    }
 
-	polygonLayout[1].SemanticName = "TEXCOORD";
-	polygonLayout[1].SemanticIndex = 0;
-	polygonLayout[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	polygonLayout[1].InputSlot = 0;
-	polygonLayout[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-	polygonLayout[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	polygonLayout[1].InstanceDataStepRate = 0;
+    return hr;
+}
 
-	// Number of elements in the layout
-	unsigned int numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);	// XXX: FIXME TODO!!!
+HRESULT FontShader::CreateInputLayout(
+    Dx3d& dx,
+    const BinaryBlob& vertexShaderBlob,
+    ID3D11InputLayout **ppLayoutOut) const
+{
+    VerifyNotNull(ppLayoutOut);
+    *ppLayoutOut = nullptr;
 
-	// Create the vertex input.
-	result = pDevice->CreateInputLayout(
-		polygonLayout,
-		numElements,
-		vertexShaderBlob.BufferPointer(),
-		static_cast<SIZE_T>(vertexShaderBlob.BufferSize()),
-		&mLayout);
+    // Describe the layout of data that will be fed to this shader.
+    // This layout needs to match the vertex type structure defined in the model class and shader.
+    const size_t INPUT_ELEMENT_COUNT = 2;
+    D3D11_INPUT_ELEMENT_DESC polygonLayout[INPUT_ELEMENT_COUNT];
 
-	VerifyDXResult(result);
+    polygonLayout[0].SemanticName = "POSITION";
+    polygonLayout[0].SemanticIndex = 0;
+    polygonLayout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+    polygonLayout[0].InputSlot = 0;
+    polygonLayout[0].AlignedByteOffset = 0;
+    polygonLayout[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+    polygonLayout[0].InstanceDataStepRate = 0;
 
-	// Describe the dynamic matrix constant buffer that will be fed to the vertex shader.
-	D3D11_BUFFER_DESC matrixBufferDesc;
+    polygonLayout[1].SemanticName = "TEXCOORD";
+    polygonLayout[1].SemanticIndex = 0;
+    polygonLayout[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+    polygonLayout[1].InputSlot = 0;
+    polygonLayout[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+    polygonLayout[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+    polygonLayout[1].InstanceDataStepRate = 0;
 
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(matrix_buffer_t);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
+    // Create the vertex input.
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 
-	// Create the matrix buffer.
-	result = pDevice->CreateBuffer(&matrixBufferDesc, NULL, &mMatrixBuffer);
-	VerifyDXResult(result);
+    HRESULT hr = dx.GetDevice()->CreateInputLayout(
+        polygonLayout,
+        INPUT_ELEMENT_COUNT,
+        vertexShaderBlob.BufferPointer(),
+        static_cast<SIZE_T>(vertexShaderBlob.BufferSize()),
+        &inputLayout);
 
-	// Create a texture sampler state description.
-	D3D11_SAMPLER_DESC samplerDesc;
+    if (SUCCEEDED(hr))
+    {
+        *ppLayoutOut = inputLayout.Detach();
+    }
 
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.MipLODBias = 0.0f;
-	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDesc.BorderColor[0] = 0;
-	samplerDesc.BorderColor[1] = 0;
-	samplerDesc.BorderColor[2] = 0;
-	samplerDesc.BorderColor[3] = 0;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	// Create the texture sampler state.
-	result = pDevice->CreateSamplerState(&samplerDesc, &mSamplerState);
-
-	VerifyDXResult(result);
-
-    // Set up description of pixel buffer in pixel shader.
-    D3D11_BUFFER_DESC pbd;
-
-    pbd.Usage = D3D11_USAGE_DYNAMIC;
-    pbd.ByteWidth = sizeof(pixel_buffer_t);
-    pbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    pbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    pbd.MiscFlags = 0;
-    pbd.StructureByteStride = 0;
-
-    // Create the pixel buffer.
-    result = pDevice->CreateBuffer(&pbd, nullptr, &mPixelBuffer);
-
-    VerifyDXResult(result);
+    return hr;
 }
 
 void FontShader::Render(
-	ID3D11DeviceContext *pDeviceContext,
+	Dx3d& dx,
 	int indexCount,
 	const Matrix& worldMatrix,
 	const Matrix& viewMatrix,
@@ -173,90 +157,65 @@ void FontShader::Render(
 	ID3D11ShaderResourceView *pTexture,
     const Vector4& pixelColor)
 {
-	Verify(IsInitialized());
-	VerifyNotNull(pDeviceContext);
+    if (!IsInitialized()) { throw NotInitializedException(L"FontShader"); }
 	VerifyNotNull(pTexture);
 
-	SetShaderParameters(pDeviceContext, worldMatrix, viewMatrix, projectionMatrix, pTexture, pixelColor);
-	RenderShader(pDeviceContext, indexCount);
+    SetShaderParameters(dx, worldMatrix, viewMatrix, projectionMatrix, pTexture, pixelColor);
+	RenderShader(dx, indexCount);
 }
 
 void FontShader::SetShaderParameters(
-	ID3D11DeviceContext *pDeviceContext,
+	Dx3d& dx,
 	const Matrix& inWorldMatrix,
 	const Matrix& inViewMatrix,
 	const Matrix& inProjectionMatrix,
 	ID3D11ShaderResourceView *pTexture,
     const Vector4& pixelColor)
 {
-	AssertNotNull(pDeviceContext);
+    AssertNotNull(pTexture);
+    HRESULT hr = S_OK;
 
-	// Transpose the matrices to prepare them for the shader. This is a requirement for DirectX 11.
-	Matrix worldMatrix = inWorldMatrix.Transpose();
-	Matrix viewMatrix = inViewMatrix.Transpose();
-	Matrix projectionMatrix = inProjectionMatrix.Transpose();
+    // Update the camera matrices in the MVP constants buffer.
+    // Transpose the matrices to prepare them for the shader. This is a requirement for DirectX 11.
+    hr = UpdateConstantsBuffer<matrix_buffer_t, ShaderType::Vertex, 0>(
+        dx.GetDeviceContext(),
+        mMatrixBuffer.Get(),
+        [&](matrix_buffer_t& m) {
+            m.world = inWorldMatrix.Transpose();
+            m.view = inViewMatrix.Transpose();
+            m.projection = inProjectionMatrix.Transpose();
+    });
 
-	// Lock the constant buffer so we can write to it.
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	HRESULT result = pDeviceContext->Map(mMatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    VerifyDXResult(hr);
 
-	VerifyDXResult(result);
-    VerifyNotNull(mappedResource.pData);
+    // Update the pixel shader constant buffer to have the latest pixel color.
+    hr = UpdateConstantsBuffer<pixel_buffer_t, ShaderType::Pixel, 0>(
+        dx.GetDeviceContext(),
+        mPixelBuffer.Get(),
+        [&](pixel_buffer_t& p)
+        {
+            p.pixelColor = pixelColor;
+    });
 
-	// Get a pointer to the data in the constant buffer.
-	matrix_buffer_t *pMatrixData = (matrix_buffer_t*)mappedResource.pData;
-
-	// Copy the matrices into the constant buffer.
-	pMatrixData->world = worldMatrix;
-	pMatrixData->view = viewMatrix;
-	pMatrixData->projection = projectionMatrix;
-
-	// Unlock the constant buffer.
-	pDeviceContext->Unmap(mMatrixBuffer.Get(), 0);
-
-	// Now set the updated matrix buffer in the HLSL vertex shader.
-    ID3D11Buffer * vertexConstantBuffers[1] = { mMatrixBuffer.Get() };
-	unsigned int bufferNumber = 0;
-    pDeviceContext->VSSetConstantBuffers(bufferNumber, 1, vertexConstantBuffers);
-
-	// Set up shader texture resource in the pixel shader.
-	pDeviceContext->PSSetShaderResources(0, 1, &pTexture);
-
-    // Lock the pixel constant buffer, and write the chosen pixel color value.
-    result = pDeviceContext->Map(mPixelBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-
-    VerifyDXResult(result);
-    VerifyNotNull(mappedResource.pData);
-
-    pixel_buffer_t *pPixelData = reinterpret_cast<pixel_buffer_t*>(mappedResource.pData);
-
-    pPixelData->pixelColor = pixelColor;
-
-    pDeviceContext->Unmap(mPixelBuffer.Get(), 0);
-
-    // Set the pixel data constant buffer into the pixel shader.
-    ID3D11Buffer * pixelConstantBuffers[1] = { mPixelBuffer.Get() };
-    bufferNumber = 0;
-    pDeviceContext->PSSetConstantBuffers(bufferNumber, 1, pixelConstantBuffers);
+    // Set up shader texture resource in the pixel shader.
+    dx.GetDeviceContext()->PSSetShaderResources(0, 1, &pTexture);
 }
 
-void FontShader::RenderShader(ID3D11DeviceContext *pDeviceContext, int indexCount)
+void FontShader::RenderShader(Dx3d& dx, int indexCount)
 {
-	AssertNotNull(pDeviceContext);
-
 	// Set the vertex input layout.
-	pDeviceContext->IASetInputLayout(mLayout.Get());
+    dx.GetDeviceContext()->IASetInputLayout(mLayout.Get());
 
 	// Set the color vertex and pixel shader.
-	pDeviceContext->VSSetShader(mVertexShader.Get(), NULL, 0);
-	pDeviceContext->PSSetShader(mPixelShader.Get(), NULL, 0);
+    dx.GetDeviceContext()->VSSetShader(mVertexShader.Get(), NULL, 0);
+    dx.GetDeviceContext()->PSSetShader(mPixelShader.Get(), NULL, 0);
 
 	// Set the texture sampler state in the pixel shader.
     ID3D11SamplerState* samplerStates[1] = { mSamplerState.Get() };
-    pDeviceContext->PSSetSamplers(0, 1, samplerStates);
+    dx.GetDeviceContext()->PSSetSamplers(0, 1, samplerStates);
 
 	// Render the object.
-	pDeviceContext->DrawIndexed(indexCount, 0, 0);
+    dx.GetDeviceContext()->DrawIndexed(indexCount, 0, 0);
 }
 
 void FontShader::OnShutdown()

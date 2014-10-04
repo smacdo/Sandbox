@@ -6,6 +6,7 @@
 #include "Light.h"
 #include "Camera.h"
 #include "ConstantBufferUpdater.h"
+#include "Dx3d.h"
 
 #include <wrl\wrappers\corewrappers.h>      // ComPtr
 #include <wrl\client.h>
@@ -180,7 +181,6 @@ HRESULT LightShader::CreateInputLayout(
 
 void LightShader::Render(
     Dx3d& dx,
-    ID3D11DeviceContext *pDeviceContext,
     int indexCount,
     const Matrix& worldMatrix,
     const Matrix& viewMatrix,
@@ -190,12 +190,10 @@ void LightShader::Render(
     const Light& light)
 {
     if (!IsInitialized()) { throw NotInitializedException(L"LightShader"); }
-    VerifyNotNull(pDeviceContext);
     VerifyNotNull(pTexture);
 
     SetShaderParameters(
         dx,
-        pDeviceContext,
         worldMatrix,
         viewMatrix,
         projectionMatrix,
@@ -203,12 +201,11 @@ void LightShader::Render(
         camera,
         light);
 
-    RenderShader(pDeviceContext, indexCount);
+    RenderShader(dx, indexCount);
 }
 
 void LightShader::SetShaderParameters(
     Dx3d& dx,
-    ID3D11DeviceContext *pDeviceContext,
     const Matrix& inWorldMatrix,
     const Matrix& inViewMatrix,
     const Matrix& inProjectionMatrix,
@@ -216,7 +213,7 @@ void LightShader::SetShaderParameters(
     const Camera& camera,
     const Light& light)
 {
-    AssertNotNull(pDeviceContext);
+    AssertNotNull(pTexture);
     HRESULT hr = S_OK;
 
     // Update the camera matrices in the MVP constants buffer.
@@ -258,27 +255,25 @@ void LightShader::SetShaderParameters(
     VerifyDXResult(hr);
 
     // Set up shader texture resource in the pixel shader.
-    pDeviceContext->PSSetShaderResources(0, 1, &pTexture);
+    dx.GetDeviceContext()->PSSetShaderResources(0, 1, &pTexture);
 }
 
-void LightShader::RenderShader(ID3D11DeviceContext *pDeviceContext, int indexCount)
+void LightShader::RenderShader(Dx3d& dx, int indexCount)
 {
-    AssertNotNull(pDeviceContext);
-
     // Set the vertex input layout.
-    pDeviceContext->IASetInputLayout(mLayout.Get());
+    dx.GetDeviceContext()->IASetInputLayout(mLayout.Get());
 
     // Set the color vertex and pixel shader.
-    pDeviceContext->VSSetShader(mVertexShader.Get(), NULL, 0);
-    pDeviceContext->PSSetShader(mPixelShader.Get(), NULL, 0);
+    dx.GetDeviceContext()->VSSetShader(mVertexShader.Get(), NULL, 0);
+    dx.GetDeviceContext()->PSSetShader(mPixelShader.Get(), NULL, 0);
 
     // Set the texture sampler state in the pixel shader.
     ID3D11SamplerState* samplerStates[1] = { mSamplerState.Get() };
 
-    pDeviceContext->PSSetSamplers(0, 1, samplerStates);
+    dx.GetDeviceContext()->PSSetSamplers(0, 1, samplerStates);
 
     // Render the object.
-    pDeviceContext->DrawIndexed(indexCount, 0, 0);
+    dx.GetDeviceContext()->DrawIndexed(indexCount, 0, 0);
 }
 
 void LightShader::OnShutdown()

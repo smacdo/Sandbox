@@ -2,6 +2,7 @@
 #include "Font.h"
 #include "FontShader.h"
 #include "DXSandbox.h"
+#include "Dx3d.h"
 
 #include "SimpleMath.h"
 #include <d3d11.h>
@@ -26,15 +27,11 @@ Text::~Text()
 {
 }
 
-void Text::Initialize(ID3D11Device *pDevice,
-                      ID3D11DeviceContext *pDeviceContext,
+void Text::Initialize(Dx3d& dx,
                       int screenWidth,
                       int screenHeight,
                       const DirectX::SimpleMath::Matrix& baseViewMatrix)
 {
-    VerifyNotNull(pDevice);
-    VerifyNotNull(pDeviceContext);
-
     // Store screen width and height.
     mScreenWidth = screenWidth;
     mScreenHeight = screenHeight;
@@ -42,19 +39,19 @@ void Text::Initialize(ID3D11Device *pDevice,
 
     // Create font object and shader.
     mpFont = new Font();
-    mpFont->Initialize(pDevice, L".\\Fonts\\rastertek.txt", L".\\Fonts\\rastertek.dds");
+    mpFont->Initialize(dx.GetDevice(), L".\\Fonts\\rastertek.txt", L".\\Fonts\\rastertek.dds");
 
     mpFontShader = new FontShader();
-    mpFontShader->Initialize(pDevice);
+    mpFontShader->Initialize(dx);
 
     // Initialize sentences.
     mpSentence1 = new Text::sentence_t;
-    InitializeSentence(*mpSentence1, 16, pDevice);
-    UpdateSentence(*mpSentence1, "Hello", 100, 100, 1.0f, 1.0f, 1.0f, pDeviceContext);
+    InitializeSentence(*mpSentence1, 16, dx);
+    UpdateSentence(*mpSentence1, "Hello", 100, 100, 1.0f, 1.0f, 1.0f, dx);
 
     mpSentence2 = new Text::sentence_t;
-    InitializeSentence(*mpSentence2, 16, pDevice);
-    UpdateSentence(*mpSentence2, "World", 100, 200, 1.0f, 1.0f, 0.0f, pDeviceContext);
+    InitializeSentence(*mpSentence2, 16, dx);
+    UpdateSentence(*mpSentence2, "World", 100, 200, 1.0f, 1.0f, 0.0f, dx);
 }
 
 void Text::OnShutdown()
@@ -68,17 +65,15 @@ void Text::OnShutdown()
     SafeDelete(mpFont);
 }
 
-void Text::Render(ID3D11DeviceContext *pDeviceContext,
+void Text::Render(Dx3d& dx,
                   const DirectX::SimpleMath::Matrix& worldMatrix,
                   const DirectX::SimpleMath::Matrix& orthoMatrix) const
-{
-    VerifyNotNull(pDeviceContext);
-    
-    RenderSentence(pDeviceContext, *mpSentence1, worldMatrix, orthoMatrix);
-    RenderSentence(pDeviceContext, *mpSentence2, worldMatrix, orthoMatrix);
+{    
+    RenderSentence(dx, *mpSentence1, worldMatrix, orthoMatrix);
+    RenderSentence(dx, *mpSentence2, worldMatrix, orthoMatrix);
 }
 
-void Text::InitializeSentence(Text::sentence_t& text, int maxLength, ID3D11Device *pDevice) const
+void Text::InitializeSentence(Text::sentence_t& text, int maxLength, Dx3d& dx) const
 {
     // Initialize values in text object.
     text.maxLength = maxLength;
@@ -114,7 +109,7 @@ void Text::InitializeSentence(Text::sentence_t& text, int maxLength, ID3D11Devic
     vertexData.SysMemPitch = 0;
     vertexData.SysMemSlicePitch = 0;
 
-    HRESULT result = pDevice->CreateBuffer(&vbd, &vertexData, &(text.pVertexBuffer));
+    HRESULT result = dx.GetDevice()->CreateBuffer(&vbd, &vertexData, &(text.pVertexBuffer));
 
     VerifyDXResult(result);
     VerifyNotNull(text.pVertexBuffer);
@@ -135,7 +130,7 @@ void Text::InitializeSentence(Text::sentence_t& text, int maxLength, ID3D11Devic
     indexData.SysMemPitch = 0;
     indexData.SysMemSlicePitch = 0;
 
-    result = pDevice->CreateBuffer(&ibd, &indexData, &(text.pIndexBuffer));
+    result = dx.GetDevice()->CreateBuffer(&ibd, &indexData, &(text.pIndexBuffer));
 
     VerifyDXResult(result);
     VerifyNotNull(text.pIndexBuffer);
@@ -149,7 +144,7 @@ void Text::UpdateSentence(Text::sentence_t& text,
                           const std::string& inputText,
                           int x, int y,
                           float r, float g, float b,
-                          ID3D11DeviceContext *pDeviceContext) const
+                          Dx3d& dx) const
 {
     Verify(static_cast<unsigned int>(text.maxLength) > inputText.size());
 
@@ -172,7 +167,7 @@ void Text::UpdateSentence(Text::sentence_t& text,
 
     // Lock the vertex buffer and copy the new vertex array into that buffer.
     D3D11_MAPPED_SUBRESOURCE resource;
-    HRESULT result = pDeviceContext->Map(text.pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+    HRESULT result = dx.GetDeviceContext()->Map(text.pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
 
     VerifyDXResult(result);
     VerifyNotNull(resource.pData);
@@ -180,7 +175,7 @@ void Text::UpdateSentence(Text::sentence_t& text,
     sentence_vertex_t * pVerts = reinterpret_cast<sentence_vertex_t*>(resource.pData);
     memcpy(pVerts, reinterpret_cast<void*>(pVertices), sizeof(sentence_vertex_t)* text.vertexCount);
 
-    pDeviceContext->Unmap(text.pVertexBuffer, 0);
+    dx.GetDeviceContext()->Unmap(text.pVertexBuffer, 0);
 
     // Clean up no longer needed vertex array.
     SafeDeleteArray(pVertices);
@@ -192,7 +187,7 @@ void Text::ReleaseSentence(Text::sentence_t& text) const
     SafeRelease(text.pIndexBuffer);
 }
 
-void Text::RenderSentence(ID3D11DeviceContext *pDeviceContext,
+void Text::RenderSentence(Dx3d& dx,
                           Text::sentence_t& text,
                           const DirectX::SimpleMath::Matrix& worldMatrix,
                           const DirectX::SimpleMath::Matrix& orthoMatrix) const
@@ -201,14 +196,14 @@ void Text::RenderSentence(ID3D11DeviceContext *pDeviceContext,
     unsigned int offset = 0;
 
     // Activate the vertex and index buffers for rendering.
-    pDeviceContext->IASetVertexBuffers(0, 1, &text.pVertexBuffer, &stride, &offset);
-    pDeviceContext->IASetIndexBuffer(text.pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-    pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    dx.GetDeviceContext()->IASetVertexBuffers(0, 1, &text.pVertexBuffer, &stride, &offset);
+    dx.GetDeviceContext()->IASetIndexBuffer(text.pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    dx.GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // Render the text by way of shader. TODO: Don't do it like this.
     Vector4 pixelColor(text.red, text.green, text.blue, 1.0f);
 
-    mpFontShader->Render(pDeviceContext,
+    mpFontShader->Render(dx,
                          text.indexCount,
                          worldMatrix,
                          mBaseViewMatrix,

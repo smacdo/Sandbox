@@ -14,6 +14,8 @@ struct ID3D11InputLayout;
 struct ID3D11Buffer;
 struct ID3D11ShaderResourceView;
 struct ID3D11SamplerState;
+class Dx3d;
+class BinaryBlob;
 
 // TODO: A lot of these values can be set as parameters since they will not vary frame to frame.
 //  -> font texture
@@ -27,9 +29,12 @@ public:
 	FontShader(const FontShader&) = delete;
 	virtual ~FontShader() override;
 
-	void Initialize(ID3D11Device *pDevice);
+    FontShader& operator =(const FontShader&) = delete;
+
+    void Initialize(Dx3d& dx);
+
 	void Render(
-		ID3D11DeviceContext *pContext,
+        Dx3d& dx,
 		int indexCount,
 		const DirectX::SimpleMath::Matrix&,
 		const DirectX::SimpleMath::Matrix&,
@@ -37,19 +42,25 @@ public:
 		ID3D11ShaderResourceView * pTexture,
         const DirectX::SimpleMath::Vector4& pixelColor);
 
-	FontShader& operator =(const FontShader&) = delete;
+protected:
+    virtual void OnShutdown() override;
 
 private:
-    void InitializeShader(ID3D11Device* pDevice);
-	virtual void OnShutdown() override;
+    HRESULT InitializeShader(Dx3d& dx);
+
+    HRESULT CreateInputLayout(
+        Dx3d& dx,
+        const BinaryBlob& vertexShaderBlob,
+        ID3D11InputLayout **ppLayoutOut) const;
+	
 	void SetShaderParameters(
-		ID3D11DeviceContext *pContext,
+		Dx3d& dx,
 		const DirectX::SimpleMath::Matrix&,
 		const DirectX::SimpleMath::Matrix&,
 		const DirectX::SimpleMath::Matrix&,
 		ID3D11ShaderResourceView * pTexture,
         const DirectX::SimpleMath::Vector4& pixelColor);
-	void RenderShader(ID3D11DeviceContext*, int);
+	void RenderShader(Dx3d& dx, int);
 
 private:
     Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
@@ -57,5 +68,5 @@ private:
     Microsoft::WRL::ComPtr<ID3D11InputLayout> mLayout;
     Microsoft::WRL::ComPtr<ID3D11Buffer> mMatrixBuffer;
     Microsoft::WRL::ComPtr<ID3D11SamplerState> mSamplerState;
-    Microsoft::WRL::ComPtr<ID3D11Buffer> mPixelBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> mPixelBuffer;          // TODO: terrible name
 };
