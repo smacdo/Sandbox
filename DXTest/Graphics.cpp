@@ -4,7 +4,7 @@
 #include "Dx3d.h"
 #include "Range.h"
 
-#include "camera.h"
+#include "Camera.h"
 #include "Model.h"
 #include "LightShader.h"
 #include "Light.h"
@@ -62,9 +62,7 @@ void Graphics::Initialize(const Size& screenSize, HWND hwnd)
 
 	// Create the text manager class.
 	mUiTextRenderer.reset(new UiTextRenderer());
-    mUiTextRenderer->Initialize(*mD3d.get(),
-                      screenSize.width, screenSize.height,
-                      mUiCamera->ViewMatrix());
+    mUiTextRenderer->Initialize(*mD3d.get(), screenSize);
 
     // Initialize and load models.
     for (auto i : MakeRange(0, 25))
@@ -200,13 +198,11 @@ void Graphics::Render(float rotation)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void Graphics::RenderUi()
 {
-    Matrix worldMatrix = DirectX::XMMatrixIdentity();
-    Matrix orthoMatrix = mUiCamera->OrthoMatrix();
-
     mD3d->SetZBufferEnabled(false);
     mD3d->SetAlphaBlendingEnabled(true);
 
-    mUiTextRenderer->Render(*mD3d.get(), worldMatrix, orthoMatrix);
+    Matrix worldMatrix = DirectX::XMMatrixIdentity();
+    mUiTextRenderer->Render(*mD3d.get(), *mUiCamera.get(), worldMatrix);
 
     mD3d->SetZBufferEnabled(true);
     mD3d->SetAlphaBlendingEnabled(false);

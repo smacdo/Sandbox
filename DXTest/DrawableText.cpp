@@ -5,6 +5,7 @@
 #include "Dx3d.h"
 #include "DrawableText.h"
 #include "Size.h"
+#include "Camera.h"
 
 #include "SimpleMath.h"
 #include <d3d11.h>
@@ -146,9 +147,8 @@ void DrawableText::Update(
 void DrawableText::Render(Dx3d& dx,
                           Font& font,
                           FontShader& fontShader,
-                          const DirectX::SimpleMath::Matrix& baseViewMatrix,
-                          const DirectX::SimpleMath::Matrix& worldMatrix,
-                          const DirectX::SimpleMath::Matrix& orthoMatrix) const
+                          const Camera& camera,
+                          const DirectX::SimpleMath::Matrix& worldMatrix) const
 {
     unsigned int stride = sizeof(vertex_t);
     unsigned int offset = 0;
@@ -164,10 +164,10 @@ void DrawableText::Render(Dx3d& dx,
     Vector4 pixelColor(mRed, mGreen, mBlue, 1.0f);
 
     fontShader.Render(dx,
-                         mIndexCount,
-                         worldMatrix,
-                         baseViewMatrix,
-                         orthoMatrix,
-                         font.GetTexture(),
-                         pixelColor);
+                      mIndexCount,
+                      worldMatrix,
+                      camera.ViewMatrix(),
+                      camera.OrthoMatrix(),
+                      font.GetTexture(),
+                      pixelColor);
 }
