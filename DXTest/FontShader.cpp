@@ -7,6 +7,12 @@
 
 using namespace DirectX::SimpleMath;
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Font shader constants
+///////////////////////////////////////////////////////////////////////////////////////////////////
+static const wchar_t FontVertexShaderFilePath[] = L".\\Shaders\\FontVertexShader.cso";
+static const wchar_t FontPixelShaderFilePath[] = L".\\Shaders\\FontPixelShader.cso";
+
 struct matrix_buffer_t
 {
 	Matrix world;
@@ -21,12 +27,12 @@ struct pixel_buffer_t
 
 FontShader::FontShader()
 : IInitializable(),
-  mpVertexShader(nullptr),
-  mpPixelShader(nullptr),
-  mpLayout(nullptr),
-  mpMatrixBuffer(nullptr),
-  mpSamplerState(nullptr),
-  mpPixelBuffer(nullptr)
+  mVertexShader(),
+  mPixelShader(),
+  mLayout(),
+  mMatrixBuffer(),
+  mSamplerState(),
+  mPixelBuffer()
 {
 }
 
@@ -40,21 +46,18 @@ void FontShader::Initialize(ID3D11Device *pDevice)
 
 	if (!IsInitialized())
 	{
-		InitializeShader(pDevice, ".\\Shaders\\FontVertexShader.cso", ".\\Shaders\\FontPixelShader.cso");
+		InitializeShader(pDevice);
 		SetInitialized();
 	}
 }
 
 // break this into two functions LoadPixelShader, LoadVertexShader
 // change WCHAR to std::wstring or std::string and convert last second
-void FontShader::InitializeShader(
-	ID3D11Device *pDevice,
-	const std::string& vertexShaderFile,
-	const std::string& pixelShaderFile)
+void FontShader::InitializeShader(ID3D11Device *pDevice)
 {
 	// Load the pixel and vertex shaders.
-	BinaryBlob vertexShaderBlob = BinaryBlob::LoadFromFile(vertexShaderFile);
-	BinaryBlob pixelShaderBlob = BinaryBlob::LoadFromFile(pixelShaderFile);
+    BinaryBlob vertexShaderBlob = BinaryBlob::LoadFromFile(FontVertexShaderFilePath);
+    BinaryBlob pixelShaderBlob = BinaryBlob::LoadFromFile(FontPixelShaderFilePath);
 
 	// Create the vertex shader object.
 	HRESULT result;
@@ -63,20 +66,18 @@ void FontShader::InitializeShader(
 		vertexShaderBlob.BufferPointer(),
 		static_cast<SIZE_T>(vertexShaderBlob.BufferSize()),
 		NULL,
-		&mpVertexShader);
+		&mVertexShader);
 
 	VerifyDXResult(result);
-	VerifyNotNull(mpVertexShader);
 
 	// Create the pixel shader object.
 	result = pDevice->CreatePixelShader(
 		pixelShaderBlob.BufferPointer(),
 		static_cast<SIZE_T>(pixelShaderBlob.BufferSize()),
 		NULL,
-		&mpPixelShader);
+		&mPixelShader);
 
 	VerifyDXResult(result);
-	VerifyNotNull(mpPixelShader);
 
 	// Describe the layout of data that will be fed to this shader.
 	// This layout needs to match the vertex type structure defined in the model class and shader.
@@ -107,10 +108,9 @@ void FontShader::InitializeShader(
 		numElements,
 		vertexShaderBlob.BufferPointer(),
 		static_cast<SIZE_T>(vertexShaderBlob.BufferSize()),
-		&mpLayout);
+		&mLayout);
 
 	VerifyDXResult(result);
-	VerifyNotNull(mpLayout);
 
 	// Describe the dynamic matrix constant buffer that will be fed to the vertex shader.
 	D3D11_BUFFER_DESC matrixBufferDesc;
@@ -123,10 +123,8 @@ void FontShader::InitializeShader(
 	matrixBufferDesc.StructureByteStride = 0;
 
 	// Create the matrix buffer.
-	result = pDevice->CreateBuffer(&matrixBufferDesc, NULL, &mpMatrixBuffer);
-
+	result = pDevice->CreateBuffer(&matrixBufferDesc, NULL, &mMatrixBuffer);
 	VerifyDXResult(result);
-	VerifyNotNull(mpMatrixBuffer);
 
 	// Create a texture sampler state description.
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -146,10 +144,9 @@ void FontShader::InitializeShader(
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	// Create the texture sampler state.
-	result = pDevice->CreateSamplerState(&samplerDesc, &mpSamplerState);
+	result = pDevice->CreateSamplerState(&samplerDesc, &mSamplerState);
 
 	VerifyDXResult(result);
-	VerifyNotNull(mpSamplerState);
 
     // Set up description of pixel buffer in pixel shader.
     D3D11_BUFFER_DESC pbd;
@@ -162,10 +159,9 @@ void FontShader::InitializeShader(
     pbd.StructureByteStride = 0;
 
     // Create the pixel buffer.
-    result = pDevice->CreateBuffer(&pbd, nullptr, &mpPixelBuffer);
+    result = pDevice->CreateBuffer(&pbd, nullptr, &mPixelBuffer);
 
     VerifyDXResult(result);
-    VerifyNotNull(mpPixelBuffer);
 }
 
 void FontShader::Render(
@@ -202,7 +198,7 @@ void FontShader::SetShaderParameters(
 
 	// Lock the constant buffer so we can write to it.
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	HRESULT result = pDeviceContext->Map(mpMatrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	HRESULT result = pDeviceContext->Map(mMatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 
 	VerifyDXResult(result);
     VerifyNotNull(mappedResource.pData);
@@ -216,17 +212,18 @@ void FontShader::SetShaderParameters(
 	pMatrixData->projection = projectionMatrix;
 
 	// Unlock the constant buffer.
-	pDeviceContext->Unmap(mpMatrixBuffer, 0);
+	pDeviceContext->Unmap(mMatrixBuffer.Get(), 0);
 
 	// Now set the updated matrix buffer in the HLSL vertex shader.
+    ID3D11Buffer * vertexConstantBuffers[1] = { mMatrixBuffer.Get() };
 	unsigned int bufferNumber = 0;
-	pDeviceContext->VSSetConstantBuffers(bufferNumber, 1, &mpMatrixBuffer);
+    pDeviceContext->VSSetConstantBuffers(bufferNumber, 1, vertexConstantBuffers);
 
 	// Set up shader texture resource in the pixel shader.
 	pDeviceContext->PSSetShaderResources(0, 1, &pTexture);
 
     // Lock the pixel constant buffer, and write the chosen pixel color value.
-    result = pDeviceContext->Map(mpPixelBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    result = pDeviceContext->Map(mPixelBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 
     VerifyDXResult(result);
     VerifyNotNull(mappedResource.pData);
@@ -235,11 +232,12 @@ void FontShader::SetShaderParameters(
 
     pPixelData->pixelColor = pixelColor;
 
-    pDeviceContext->Unmap(mpPixelBuffer, 0);
+    pDeviceContext->Unmap(mPixelBuffer.Get(), 0);
 
     // Set the pixel data constant buffer into the pixel shader.
+    ID3D11Buffer * pixelConstantBuffers[1] = { mPixelBuffer.Get() };
     bufferNumber = 0;
-    pDeviceContext->PSSetConstantBuffers(bufferNumber, 1, &mpPixelBuffer);
+    pDeviceContext->PSSetConstantBuffers(bufferNumber, 1, pixelConstantBuffers);
 }
 
 void FontShader::RenderShader(ID3D11DeviceContext *pDeviceContext, int indexCount)
@@ -247,14 +245,15 @@ void FontShader::RenderShader(ID3D11DeviceContext *pDeviceContext, int indexCoun
 	AssertNotNull(pDeviceContext);
 
 	// Set the vertex input layout.
-	pDeviceContext->IASetInputLayout(mpLayout);
+	pDeviceContext->IASetInputLayout(mLayout.Get());
 
 	// Set the color vertex and pixel shader.
-	pDeviceContext->VSSetShader(mpVertexShader, NULL, 0);
-	pDeviceContext->PSSetShader(mpPixelShader, NULL, 0);
+	pDeviceContext->VSSetShader(mVertexShader.Get(), NULL, 0);
+	pDeviceContext->PSSetShader(mPixelShader.Get(), NULL, 0);
 
 	// Set the texture sampler state in the pixel shader.
-	pDeviceContext->PSSetSamplers(0, 1, &mpSamplerState);
+    ID3D11SamplerState* samplerStates[1] = { mSamplerState.Get() };
+    pDeviceContext->PSSetSamplers(0, 1, samplerStates);
 
 	// Render the object.
 	pDeviceContext->DrawIndexed(indexCount, 0, 0);
@@ -262,15 +261,4 @@ void FontShader::RenderShader(ID3D11DeviceContext *pDeviceContext, int indexCoun
 
 void FontShader::OnShutdown()
 {
-	ShutdownShader();
-}
-
-void FontShader::ShutdownShader()
-{
-    SafeRelease(mpPixelBuffer);
-    SafeRelease(mpSamplerState);
-    SafeRelease(mpMatrixBuffer);
-    SafeRelease(mpLayout);
-    SafeRelease(mpPixelShader);
-    SafeRelease(mpVertexShader);
 }

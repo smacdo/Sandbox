@@ -2,6 +2,10 @@
 #include "SimpleMath.h"
 #include "IInitializable.h"
 
+#include <wrl\wrappers\corewrappers.h>      // ComPtr
+#include <wrl\client.h>
+#include <memory>
+
 struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct ID3D11VertexShader;
@@ -36,12 +40,8 @@ public:
 	FontShader& operator =(const FontShader&) = delete;
 
 private:
-	void InitializeShader(
-		ID3D11Device* pDevice,
-		const std::string& vertexShaderFile,
-		const std::string& pixelShaderFile );
+    void InitializeShader(ID3D11Device* pDevice);
 	virtual void OnShutdown() override;
-	void ShutdownShader();
 	void SetShaderParameters(
 		ID3D11DeviceContext *pContext,
 		const DirectX::SimpleMath::Matrix&,
@@ -52,10 +52,10 @@ private:
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:
-	ID3D11VertexShader *mpVertexShader;
-	ID3D11PixelShader * mpPixelShader;
-	ID3D11InputLayout * mpLayout;
-	ID3D11Buffer * mpMatrixBuffer;
-	ID3D11SamplerState * mpSamplerState;
-    ID3D11Buffer * mpPixelBuffer;
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> mLayout;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> mMatrixBuffer;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> mSamplerState;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> mPixelBuffer;
 };
