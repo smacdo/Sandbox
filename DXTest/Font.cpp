@@ -146,3 +146,8 @@ ID3D11ShaderResourceView * Font::GetTexture()
 {
     return mTexture->GetTexture();
 }
+
+ID3D11ShaderResourceView * Font::GetTexture() const  // TODO: Reconcile
+{
+    return mTexture->GetTexture();
+}

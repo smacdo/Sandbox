@@ -21,6 +21,7 @@ public:
     void Initialize(ID3D11Device * pDevice, const std::wstring& layoutFile, const std::wstring& textureFile);
 
     ID3D11ShaderResourceView * GetTexture();
+    ID3D11ShaderResourceView * GetTexture() const;
 
     // Seriously, WTF. TODO: Fix this abomination.
     void BuildVertexArray(void*, const std::string&, float, float) const;

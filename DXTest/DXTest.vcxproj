@@ -71,6 +71,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Bitmap.cpp" />
     <ClCompile Include="ColorShader.cpp" />
+    <ClCompile Include="DrawableText.cpp" />
     <ClCompile Include="Dx3d.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="FontShader.cpp" />
@@ -78,7 +79,7 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="LightShader.cpp" />
     <ClCompile Include="Model.cpp" />
-    <ClCompile Include="Text.cpp" />
+    <ClCompile Include="UiTextRenderer.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureShader.cpp" />
     <ClCompile Include="WinMain.cpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="Bitmap.h" />
     <ClInclude Include="ColorShader.h" />
     <ClInclude Include="ConstantBufferUpdater.h" />
+    <ClInclude Include="DrawableText.h" />
     <ClInclude Include="Dx3d.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="FontShader.h" />
@@ -95,7 +97,7 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="LightShader.h" />
     <ClInclude Include="Model.h" />
-    <ClInclude Include="Text.h" />
+    <ClInclude Include="UiTextRenderer.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureShader.h" />
     <ClInclude Include="typedefs.h" />

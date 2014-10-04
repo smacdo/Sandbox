@@ -8,7 +8,7 @@
 #include "Model.h"
 #include "LightShader.h"
 #include "Light.h"
-#include "Text.h"
+#include "UiTextRenderer.h"
 #include "SimpleMath.h"
 #include "size.h"
 
@@ -19,7 +19,7 @@ Graphics::Graphics()
   mD3d(),
   mCamera(),
   mUiCamera(),
-  mText(),
+  mUiTextRenderer(),
   mModels(),
   mLightShader(),
   mLight()
@@ -61,8 +61,8 @@ void Graphics::Initialize(const Size& screenSize, HWND hwnd)
     mUiCamera->Render();
 
 	// Create the text manager class.
-	mText.reset(new Text());
-    mText->Initialize(*mD3d.get(),
+	mUiTextRenderer.reset(new UiTextRenderer());
+    mUiTextRenderer->Initialize(*mD3d.get(),
                       screenSize.width, screenSize.height,
                       mUiCamera->ViewMatrix());
 
@@ -206,7 +206,7 @@ void Graphics::RenderUi()
     mD3d->SetZBufferEnabled(false);
     mD3d->SetAlphaBlendingEnabled(true);
 
-    mText->Render(*mD3d.get(), worldMatrix, orthoMatrix);
+    mUiTextRenderer->Render(*mD3d.get(), worldMatrix, orthoMatrix);
 
     mD3d->SetZBufferEnabled(true);
     mD3d->SetAlphaBlendingEnabled(false);

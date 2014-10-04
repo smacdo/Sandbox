@@ -8,3 +8,4 @@ TODO
 - Consider splitting SandboxEngine into two parts
 	- SandboxEngine - DirectX, windows and graphics parts
 	- SandboxCore - Non API specific code, like utils, math, etc.
+- Apply const to as many places as possible

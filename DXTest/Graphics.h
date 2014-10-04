@@ -14,7 +14,7 @@ const float SCREEN_NEAR = 0.1f;
 class Dx3d;
 class Camera;
 class Model;
-class Text;
+class UiTextRenderer;
 class Light;
 class LightShader;
 class Size;
@@ -43,7 +43,7 @@ private:
 	std::unique_ptr<Dx3d> mD3d;
 	std::unique_ptr<Camera> mCamera;
     std::unique_ptr<Camera> mUiCamera;
-    std::unique_ptr<Text> mText;
+    std::unique_ptr<UiTextRenderer> mUiTextRenderer;
     std::vector<Model *> mModels;       // TODO: Make use unique_ptr or something.
     std::unique_ptr<LightShader> mLightShader;
     std::unique_ptr<Light> mLight;
