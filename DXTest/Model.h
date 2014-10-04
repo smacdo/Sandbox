@@ -29,7 +29,7 @@ public:
 	void Initialize(ID3D11Device* pDevice,
                     const std::wstring& modelFile,
                     const std::wstring& textureFile);
-	void Render(ID3D11DeviceContext* pContext);
+    void BindModelBuffersForRendering(ID3D11DeviceContext* pContext);
 
     const int IndexCount() const { return mIndexCount; }
     const int VertexCount() const { return mVertexCount; }

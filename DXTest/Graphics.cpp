@@ -181,7 +181,7 @@ void Graphics::Render(float rotation)
         Matrix objectWorldMatrix = Matrix::CreateTranslation(pModel->Position()) * worldMatrix;
 
         // This is really a "bind buffers for rendering" method call.
-        pModel->Render(mD3d->GetDeviceContext());
+        pModel->BindModelBuffersForRendering(mD3d->GetDeviceContext());
 
         // Render the model using the color shader.
         mLightShader->Render(

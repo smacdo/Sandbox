@@ -5,6 +5,7 @@
 #include "DXTestException.h"
 #include "Light.h"
 #include "Camera.h"
+#include "ConstantBufferUpdater.h"
 
 #include <wrl\wrappers\corewrappers.h>      // ComPtr
 #include <wrl\client.h>
@@ -220,10 +221,9 @@ void LightShader::SetShaderParameters(
 
     // Update the camera matrices in the MVP constants buffer.
     // Transpose the matrices to prepare them for the shader. This is a requirement for DirectX 11.
-    hr = dx.UpdateConstantBuffer<matrix_buffer_t>(
+    hr = UpdateConstantsBuffer<matrix_buffer_t, ShaderType::Vertex, 0>(
+        dx.GetDeviceContext(),
         mMatrixBuffer.Get(),
-        ShaderType::Vertex,
-        0,
         [&](matrix_buffer_t& m) {
             m.world = inWorldMatrix.Transpose();
             m.view = inViewMatrix.Transpose();
@@ -233,10 +233,9 @@ void LightShader::SetShaderParameters(
     VerifyDXResult(hr);
 
     // Update camera position constant buffer with new camera positioning information.
-    hr = dx.UpdateConstantBuffer<camera_buffer_t>(
+    hr = UpdateConstantsBuffer<camera_buffer_t, ShaderType::Vertex, 1>(
+        dx.GetDeviceContext(),
         mCameraBuffer.Get(),
-        ShaderType::Vertex,
-        1,
         [&](camera_buffer_t& c) {
             c.cameraPosition = camera.Position();
             c.padding = 0.0f;
@@ -245,10 +244,9 @@ void LightShader::SetShaderParameters(
     VerifyDXResult(hr);
 
     // Update pixel shader with lighting information.
-    hr = dx.UpdateConstantBuffer<light_buffer_t>(
+    hr = UpdateConstantsBuffer<light_buffer_t, ShaderType::Pixel, 0>(
+        dx.GetDeviceContext(),
         mLightBuffer.Get(),
-        ShaderType::Pixel,
-        0,
         [&](light_buffer_t& l) {
             l.ambientColor = light.AmbientColor();
             l.diffuseColor = light.DiffuseColor();

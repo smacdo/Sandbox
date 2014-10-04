@@ -240,7 +240,7 @@ void Model::OnShutdown()
 
 // TODO: This needs to be combined with the shader render logic.
 //  - Right now this method is better called "BindModelBuffersForRendering".
-void Model::Render(ID3D11DeviceContext *pDeviceContext)
+void Model::BindModelBuffersForRendering(ID3D11DeviceContext *pDeviceContext)
 {
     if (!IsInitialized()) { throw NotInitializedException(L"Model"); }
 	VerifyNotNull(pDeviceContext);

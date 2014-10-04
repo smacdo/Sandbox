@@ -87,6 +87,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="Bitmap.h" />
     <ClInclude Include="ColorShader.h" />
+    <ClInclude Include="ConstantBufferUpdater.h" />
     <ClInclude Include="Dx3d.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="FontShader.h" />
@@ -97,6 +98,7 @@
     <ClInclude Include="Text.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureShader.h" />
+    <ClInclude Include="typedefs.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Notes.txt" />
