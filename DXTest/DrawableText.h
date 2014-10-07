@@ -22,7 +22,7 @@ struct ID3D11Buffer;
 class DrawableText : public IInitializable
 {
 public:
-    DrawableText();
+    DrawableText(const std::string& name);
     virtual ~DrawableText() override;
 
     void Initialize(Dx3d& dx, int maxLength);
@@ -31,8 +31,8 @@ public:
                 Font& font,
                 const std::string& inputText,
                 const Size& screenSize,
-                int x, int y,
-                float r, float g, float b);
+                const DirectX::SimpleMath::Vector2& position,
+                const DirectX::SimpleMath::Color& color);
 
     void Render(Dx3d& dx,
                 Font& font,
@@ -40,30 +40,43 @@ public:
                 const Camera& camera,
                 const DirectX::SimpleMath::Matrix& worldMatrix) const;
 
+    std::string Name() const { return mName; }
+
 protected:
     virtual void OnShutdown() override;
 
 private:
-    struct sentence_t
-    {
-        
-       
-        
-    };
-
     struct vertex_t     // TODO: do not duplicate, use shared bitmap_vertex_t.
     {
+        vertex_t()
+            : position(0.0f, 0.0f, 0.0f),
+              texture(0.0f, 0.0f)
+        {
+        }
+
         DirectX::SimpleMath::Vector3 position;
         DirectX::SimpleMath::Vector2 texture;
     };
 
 private:
+    HRESULT CreateTextVertexBuffer(
+        Dx3d& dx,
+        unsigned int vertexCount,
+        ID3D11Buffer **ppVertexBufferOut) const;
+
+    HRESULT CreateTextIndexBuffer(
+        Dx3d& dx,
+        unsigned int indexCount,
+        ID3D11Buffer **ppIndexBufferOut) const;
+
+private:
+    std::string mName;          // Name of the drawable text object.
+    DirectX::SimpleMath::Color mColor;
     unsigned int mMaxLength;
     unsigned int mIndexCount;
     unsigned int mVertexCount;
-    float mRed, mGreen, mBlue;
 
-    Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
-    Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> mTextIndexBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> mTextVertexBuffer;
 };
 

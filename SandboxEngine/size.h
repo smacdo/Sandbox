@@ -5,23 +5,48 @@ class Size
 {
 public:
     Size()
-        : width(0),
-          height(0)
+        : width(mWidth),
+          height(mHeight),
+          mWidth(0),
+          mHeight(0)
     {
     }
 
     Size(int width_, int height_)
-        : width(width_),
-          height(height_)
+        : width(mWidth),
+          height(mHeight),
+          mWidth(width_),
+          mHeight(height_)
     {
     }
 
     Size(unsigned int width_, unsigned int height_)
-        : width(width_),
-          height(height_)
+        : width(mWidth),
+          height(mHeight),
+          mWidth(width_),
+          mHeight(height_)
+    {
+    }
+    
+    Size(const Size& size)
+        : width(mWidth),
+          height(mHeight),
+          mWidth(size.mWidth),
+          mHeight(size.mHeight)
     {
     }
 
-    const unsigned int width;
-    const unsigned int height;
+    Size& operator =(const Size& size)
+    {
+        mWidth = size.mWidth;
+        mHeight = size.mHeight;
+        return *this;
+    }
+
+    const unsigned int& width;
+    const unsigned int& height;
+
+private:
+    unsigned int mWidth;
+    unsigned int mHeight;
 };
