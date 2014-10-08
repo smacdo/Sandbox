@@ -53,8 +53,14 @@ void Texture::OnShutdown()
 {
 }
 
-ID3D11ShaderResourceView * Texture::GetTexture()
+ID3D11ShaderResourceView * Texture::GetShaderResourceView()
 {
     if (!IsInitialized()) { throw NotInitializedException(L"Texture"); }
 	return mTexture.Get();
+}
+
+const ID3D11ShaderResourceView * Texture::GetShaderResourceView() const
+{
+    if (!IsInitialized()) { throw NotInitializedException(L"Texture"); }
+    return mTexture.Get();
 }

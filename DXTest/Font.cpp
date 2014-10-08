@@ -47,7 +47,6 @@ std::vector<font_char_t> Font::LoadFontLayout(const std::wstring& layoutFile) co
 
     // Read the font layout values from the text file.
     std::fstream layoutStream(layoutFile.c_str());
-    char temp;
 
     if (layoutStream.fail())
     {
@@ -76,7 +75,11 @@ std::vector<font_char_t> Font::LoadFontLayout(const std::wstring& layoutFile) co
 void Font::OnShutdown()
 {
     mCharInfo.resize(0);
-    mTexture.reset();
+}
+
+const Texture& Font::GetTexture() const
+{
+    return *mTexture.get();
 }
 
 font_char_t Font::GetCharInfo(char c) const
@@ -88,14 +91,4 @@ font_char_t Font::GetCharInfo(char c) const
     Assert(letter >= 0u && letter < mCharInfo.size());
 
     return mCharInfo[letter];
-}
-
-ID3D11ShaderResourceView * Font::GetTexture()
-{
-    return mTexture->GetTexture();
-}
-
-ID3D11ShaderResourceView * Font::GetTexture() const  // TODO: Reconcile
-{
-    return mTexture->GetTexture();
 }

@@ -260,5 +260,5 @@ void Model::BindModelBuffersForRendering(ID3D11DeviceContext *pDeviceContext)
 
 ID3D11ShaderResourceView * Model::GetTexture()
 {
-	return mTexture->GetTexture();
+    return mTexture->GetShaderResourceView();
 }

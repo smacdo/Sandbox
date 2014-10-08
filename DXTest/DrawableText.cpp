@@ -260,10 +260,10 @@ void DrawableText::Render(Dx3d& dx,
 
     // Render the text by way of shader. TODO: Don't do it like this.
     fontShader.Render(dx,
+                      font,
                       mIndexCount,
                       worldMatrix,
                       camera.ViewMatrix(),
                       camera.OrthoMatrix(),
-                      font.GetTexture(),
                       mColor.ToVector4());          // TODO: Make font shader accept color type.
 }

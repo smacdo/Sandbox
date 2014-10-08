@@ -243,7 +243,7 @@ void Bitmap::LoadTexture(ID3D11Device *pDevice, const std::string& filename)
 ID3D11ShaderResourceView * Bitmap::GetTexture() const
 {
     // TODO: Should return the texture! Or hold on the the shader resource view instance and return that.
-    return mpTexture->GetTexture();
+    return mpTexture->GetShaderResourceView();
 }
 
 int Bitmap::GetIndexCount() const

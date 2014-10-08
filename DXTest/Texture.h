@@ -25,8 +25,8 @@ public:
 	// TODO: convert to use BinaryBlob* rather than manually loading
     void InitializeFromFile(ID3D11Device *pDevice, const std::wstring& filepath);
 
-	// TODO: bad name
-	ID3D11ShaderResourceView * GetTexture();
+	ID3D11ShaderResourceView * GetShaderResourceView();
+    const ID3D11ShaderResourceView * GetShaderResourceView() const;
 
 private:
 	virtual void OnShutdown() override;

@@ -24,9 +24,7 @@ public:
     Font& operator =(const Font& rhs) = delete;
 
     void Initialize(ID3D11Device * pDevice, const std::wstring& layoutFile, const std::wstring& textureFile);
-
-    ID3D11ShaderResourceView * GetTexture();
-    ID3D11ShaderResourceView * GetTexture() const;
+    const Texture& GetTexture() const;
 
     font_char_t GetCharInfo(char c) const;
 

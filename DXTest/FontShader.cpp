@@ -1,4 +1,6 @@
 #include "FontShader.h"
+#include "Font.h"
+#include "Texture.h"
 #include "DXSandbox.h"
 #include "BinaryBlob.h"
 #include "SimpleMath.h"
@@ -150,29 +152,27 @@ HRESULT FontShader::CreateInputLayout(
 
 void FontShader::Render(
 	Dx3d& dx,
+    const Font& font,
 	int indexCount,
 	const Matrix& worldMatrix,
 	const Matrix& viewMatrix,
 	const Matrix& projectionMatrix,
-	ID3D11ShaderResourceView *pTexture,
     const Vector4& pixelColor)
 {
     if (!IsInitialized()) { throw NotInitializedException(L"FontShader"); }
-	VerifyNotNull(pTexture);
 
-    SetShaderParameters(dx, worldMatrix, viewMatrix, projectionMatrix, pTexture, pixelColor);
+    SetShaderParameters(dx, font, worldMatrix, viewMatrix, projectionMatrix, pixelColor);
 	RenderShader(dx, indexCount);
 }
 
 void FontShader::SetShaderParameters(
 	Dx3d& dx,
+    const Font& font,
 	const Matrix& inWorldMatrix,
 	const Matrix& inViewMatrix,
 	const Matrix& inProjectionMatrix,
-	ID3D11ShaderResourceView *pTexture,
     const Vector4& pixelColor)
 {
-    AssertNotNull(pTexture);
     HRESULT hr = S_OK;
 
     // Update the camera matrices in the MVP constants buffer.
@@ -198,7 +198,11 @@ void FontShader::SetShaderParameters(
     });
 
     // Set up shader texture resource in the pixel shader.
-    dx.GetDeviceContext()->PSSetShaderResources(0, 1, &pTexture);
+    const ID3D11ShaderResourceView* resourceViews[1] = { font.GetTexture().GetShaderResourceView() };
+    dx.GetDeviceContext()->PSSetShaderResources(
+        0,
+        1,
+        const_cast<ID3D11ShaderResourceView* const *>(resourceViews));  // TODO: Is there a way to avoid const cast?
 }
 
 void FontShader::RenderShader(Dx3d& dx, int indexCount)

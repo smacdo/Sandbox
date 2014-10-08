@@ -16,6 +16,7 @@ struct ID3D11ShaderResourceView;
 struct ID3D11SamplerState;
 class Dx3d;
 class BinaryBlob;
+class Font;
 
 // TODO: A lot of these values can be set as parameters since they will not vary frame to frame.
 //  -> font texture
@@ -35,11 +36,11 @@ public:
 
 	void Render(
         Dx3d& dx,
+        const Font& font,
 		int indexCount,
 		const DirectX::SimpleMath::Matrix&,
 		const DirectX::SimpleMath::Matrix&,
 		const DirectX::SimpleMath::Matrix&,
-		ID3D11ShaderResourceView * pTexture,
         const DirectX::SimpleMath::Vector4& pixelColor);
 
 protected:
@@ -55,10 +56,10 @@ private:
 	
 	void SetShaderParameters(
 		Dx3d& dx,
+        const Font& font,
 		const DirectX::SimpleMath::Matrix&,
 		const DirectX::SimpleMath::Matrix&,
 		const DirectX::SimpleMath::Matrix&,
-		ID3D11ShaderResourceView * pTexture,
         const DirectX::SimpleMath::Vector4& pixelColor);
 	void RenderShader(Dx3d& dx, int);
 
