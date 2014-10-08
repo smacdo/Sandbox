@@ -14,12 +14,17 @@
 #include <vector>
 #include <algorithm>
 
+// TODO: Don't encode position into the vertex data. Pass it as a shader param.
+
 using namespace DirectX::SimpleMath;
+const unsigned int RectVertexCount = 6;
+const float CharacterSpacing = 1.0f;
+const float CharacterHeight = 16;
 
 DrawableText::DrawableText(const std::string& name)
     : mName(name),
       mColor(),
-      mMaxLength(0),
+      mMaxTextLength(0),
       mIndexCount(0),
       mVertexCount(0),
       mTextIndexBuffer(),
@@ -31,15 +36,36 @@ DrawableText::~DrawableText()
 {
 }
 
-void DrawableText::Initialize(Dx3d& dx, int maxLength)
+void DrawableText::Initialize(
+    Dx3d& dx,
+    const std::string& inputText,
+    Font& font,         // TODO: Make const
+    const Size& screenSize,
+    const DirectX::SimpleMath::Vector2& position,
+    const DirectX::SimpleMath::Color& color)
+{
+    // Create the vertex and index buffers.
+    HRESULT hr = InitializeVertexAndIndexBuffers(dx, inputText.length());
+    VerifyDXResult(hr);         // Check for fatal errors.
+
+    // Calculate where we should draw the text, taking into account screen dimensions.
+    float drawX = static_cast<float>(((screenSize.width / 2.0f) * -1.0f) + position.x);
+    float drawY = static_cast<float>(((screenSize.height / 2.0f) - position.y));
+
+    // Update vertex buffer to correctly display the requested text.
+    hr = UpdateVertexBuffer(dx, font, inputText, Vector2(drawX, drawY));
+    VerifyDXResult(hr);
+
+    mColor = color;
+
+    SetInitialized();
+}
+
+HRESULT DrawableText::InitializeVertexAndIndexBuffers(Dx3d& dx, unsigned int maximumTextLength)
 {
     // Initialize values in text object.
-    unsigned int textVertexCount = maxLength * 6;        // TODO: Explain why 6.
+    unsigned int textVertexCount = maximumTextLength * RectVertexCount;
     unsigned int textIndexCount = textVertexCount;       // Because tutorial code, that's why.
-
-    mMaxLength = maxLength;             // TODO: set to zero, only set value if succeeded.
-    mVertexCount = 6 * maxLength;       // TODO: Magic number.
-    mIndexCount = mVertexCount;         // TODO: Same as above two
 
     // Create a dynamic vertex buffer and static index buffer. They will hold the vertices to a set of rectangles, and
     // each rectangle represents a textured letter.
@@ -56,11 +82,14 @@ void DrawableText::Initialize(Dx3d& dx, int maxLength)
         {
             mTextVertexBuffer = textVertexBuffer.Detach();
             mTextIndexBuffer = textIndexBuffer.Detach();
+
+            mMaxTextLength = maximumTextLength;
+            mVertexCount = textVertexCount;
+            mIndexCount = textIndexCount;
         }
     }
-    
-    VerifyDXResult(hr);         // Check for fatal errors.
-    SetInitialized();
+
+    return hr;
 }
 
 // Creates a dynamic vertex buffer to store the text vertices. This allows us to update the renderable text at any
@@ -136,46 +165,81 @@ HRESULT DrawableText::CreateTextIndexBuffer(
 
 void DrawableText::OnShutdown()
 {
-
 }
 
-void DrawableText::Update(
+HRESULT DrawableText::UpdateVertexBuffer(
     Dx3d& dx,
     Font& font,
     const std::string& inputText,
-    const Size& screenSize,
-    const DirectX::SimpleMath::Vector2& position,
-    const Color& color)
+    const DirectX::SimpleMath::Vector2& position)
 {
-    Verify(static_cast<unsigned int>(mMaxLength) > inputText.size());
-    mColor = color;
-
-    // Create a temporary vertex array.
-    //  TODO: Just use the mapped hardware array.
-    vertex_t * pVertices = new vertex_t[mVertexCount];
-    memset(pVertices, 0, sizeof(vertex_t) * mVertexCount);
-
-    // Calculate the x and y pixel position on screen to draw at.
-    float drawX = static_cast<float>(((screenSize.width / 2.0f) * -1.0f) + position.x);
-    float drawY = static_cast<float>(((screenSize.height / 2.0f) - position.y));
-
-    // Use the font class to build the vertex array.
-    font.BuildVertexArray(reinterpret_cast<void*>(pVertices), inputText, drawX, drawY);
-
-    // Lock the vertex buffer and copy the new vertex array into that buffer.
+    // Lock and get access to the vertex buffer. Update each rect in the vertex buffer with the position and UV coords
+    // of the character in each slot of the string.
     D3D11_MAPPED_SUBRESOURCE resource;
-    HRESULT result = dx.GetDeviceContext()->Map(mTextVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+    HRESULT hr = dx.GetDeviceContext()->Map(mTextVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+    
+    if (SUCCEEDED(hr))
+    {
+        vertex_t * pVerts = reinterpret_cast<vertex_t*>(resource.pData);
+        UpdateVertexBufferWithNewText(font, inputText, position, pVerts);
 
-    VerifyDXResult(result);
-    VerifyNotNull(resource.pData);
+        // Unlock the buffer and return.
+        dx.GetDeviceContext()->Unmap(mTextVertexBuffer.Get(), 0);
+    }
 
-    vertex_t * pVerts = reinterpret_cast<vertex_t*>(resource.pData);
-    memcpy(pVerts, reinterpret_cast<void*>(pVertices), sizeof(vertex_t)* mVertexCount);
+    return hr;
+}
 
-    dx.GetDeviceContext()->Unmap(mTextVertexBuffer.Get(), 0);
+void DrawableText::UpdateVertexBufferWithNewText(
+    const Font& font,
+    const std::string& inputText,
+    const DirectX::SimpleMath::Vector2& position,
+    vertex_t * pVertices) const
+{
+    VerifyNotNull(pVertices);
 
-    // Clean up no longer needed vertex array.
-    SafeDeleteArray(pVertices);
+    float currentX = position.x, currentY = position.y;
+    int index = 0;
+
+    for (size_t i = 0; i < inputText.size(); ++i)
+    {
+        char letter = inputText[i];
+
+        font_char_t characterInfo = font.GetCharInfo(letter);
+
+        float letterSize = static_cast<float>(characterInfo.size);
+        float letterLeft = characterInfo.left;
+        float letterRight = characterInfo.right;
+
+        // First triangle in quad.
+        pVertices[index].position = Vector3(currentX, currentY, 0.0f);  // top left.
+        pVertices[index].texture = Vector2(letterLeft, 0.0f);
+        index++;
+
+        pVertices[index].position = Vector3((currentX + letterSize), (currentY - CharacterHeight), 0.0f);  // bottom right.
+        pVertices[index].texture = Vector2(letterRight, 1.0f);
+        index++;
+
+        pVertices[index].position = Vector3(currentX, (currentY - CharacterHeight), 0.0f);  // bottom left.
+        pVertices[index].texture = Vector2(letterLeft, 1.0f);
+        index++;
+
+        // Second triangle in quad.
+        pVertices[index].position = Vector3(currentX, currentY, 0.0f);  // top left.
+        pVertices[index].texture = Vector2(letterLeft, 0.0f);
+        index++;
+
+        pVertices[index].position = Vector3(currentX + letterSize, currentY, 0.0f);  // top right.
+        pVertices[index].texture = Vector2(letterRight, 0.0f);
+        index++;
+
+        pVertices[index].position = Vector3((currentX + letterSize), (currentY - CharacterHeight), 0.0f);  // Bottom right.
+        pVertices[index].texture = Vector2(letterRight, 1.0f);
+        index++;
+
+        // Move to the right to accomodate next character.
+        currentX += letterSize + CharacterSpacing;
+    }
 }
 
 void DrawableText::Render(Dx3d& dx,

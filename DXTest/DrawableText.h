@@ -3,6 +3,7 @@
 #include "IInitializable.h"
 #include "SimpleMath.h"
 #include <string>
+#include <vector>
 
 #include <wrl\wrappers\corewrappers.h>      // ComPtr
 #include <wrl\client.h>
@@ -25,14 +26,13 @@ public:
     DrawableText(const std::string& name);
     virtual ~DrawableText() override;
 
-    void Initialize(Dx3d& dx, int maxLength);
-
-    void Update(Dx3d& dx,
-                Font& font,
-                const std::string& inputText,
-                const Size& screenSize,
-                const DirectX::SimpleMath::Vector2& position,
-                const DirectX::SimpleMath::Color& color);
+    void Initialize(
+        Dx3d& dx,
+        const std::string& inputText,
+        Font& font,         // TODO: Make const
+        const Size& screenSize,
+        const DirectX::SimpleMath::Vector2& position,
+        const DirectX::SimpleMath::Color& color);
 
     void Render(Dx3d& dx,
                 Font& font,
@@ -59,6 +59,8 @@ private:
     };
 
 private:
+    HRESULT InitializeVertexAndIndexBuffers(Dx3d& dx, unsigned int maximumTextLength);
+
     HRESULT CreateTextVertexBuffer(
         Dx3d& dx,
         unsigned int vertexCount,
@@ -69,10 +71,22 @@ private:
         unsigned int indexCount,
         ID3D11Buffer **ppIndexBufferOut) const;
 
+    HRESULT UpdateVertexBuffer(
+        Dx3d& dx,
+        Font& font,
+        const std::string& inputText,
+        const DirectX::SimpleMath::Vector2& position);
+
+    void UpdateVertexBufferWithNewText(
+        const Font& font,
+        const std::string& inputText,
+        const DirectX::SimpleMath::Vector2& position,
+        vertex_t * pVertices) const;
+
 private:
     std::string mName;          // Name of the drawable text object.
     DirectX::SimpleMath::Color mColor;
-    unsigned int mMaxLength;
+    unsigned int mMaxTextLength;
     unsigned int mIndexCount;
     unsigned int mVertexCount;
 

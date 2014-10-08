@@ -18,9 +18,7 @@ UiTextRenderer::UiTextRenderer()
       mScreenSize(),
       mFont(),
       mFontShader(),
-      mTexts(),
-      mSentence1(),
-      mSentence2()
+      mTexts()
 {
 }
 
@@ -39,14 +37,8 @@ void UiTextRenderer::Initialize(Dx3d& dx, const Size& screenSize)
     mFontShader.reset(new FontShader());
     mFontShader->Initialize(dx);
 
-    // Initialize sentences.
-    mSentence1.reset(new DrawableText("name1"));
-    mSentence1->Initialize(dx, 16);
-    mSentence1->Update(dx, *mFont.get(), "Hello", screenSize, Vector2(100, 100), Color(1.0f, 1.0f, 1.0f));
-
-    mSentence2.reset(new DrawableText("name2"));
-    mSentence2->Initialize(dx, 16);
-    mSentence2->Update(dx, *mFont.get(), "World", screenSize, Vector2(100, 200), Color(1.0f, 1.0f, 0.0f));
+    Add(dx, "name1", "Hello", Vector2(100, 100), Color(1.0f, 1.0f, 1.0f));
+    Add(dx, "name1", "World", Vector2(100, 200), Color(1.0f, 1.0f, 0.0f));
 }
 
 void UiTextRenderer::Add(
@@ -57,11 +49,19 @@ void UiTextRenderer::Add(
     const DirectX::SimpleMath::Color& color)
 {
     std::unique_ptr<DrawableText> drawableText(new DrawableText(name));
-    drawableText->Initialize(dx, name.length());
+    /*drawableText->Initialize(dx, name.length());
     drawableText->Update(
         dx,
         *mFont.get(),
         text,
+        mScreenSize,
+        position,
+        color);*/
+
+    drawableText->Initialize(
+        dx,
+        text,
+        *mFont.get(),
         mScreenSize,
         position,
         color);
@@ -80,7 +80,4 @@ void UiTextRenderer::Render(Dx3d& dx, const Camera& camera, const Matrix& worldM
     {
         drawableText->Render(dx, *mFont.get(), *mFontShader.get(), camera, worldMatrix);
     }
-
-    mSentence1->Render(dx, *mFont.get(), *mFontShader.get(), camera, worldMatrix);
-    mSentence2->Render(dx, *mFont.get(), *mFontShader.get(), camera, worldMatrix);
 }

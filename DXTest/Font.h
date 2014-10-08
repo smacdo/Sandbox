@@ -9,12 +9,17 @@ struct ID3D11Device;
 struct ID3D11ShaderResourceView;
 class Texture;
 
+struct font_char_t      // TODO: Document this struct.
+{
+    float left, right;      // these are texture UV coordinates for the char texture.
+    int size;        // pixel width
+};
+
 class Font : public IInitializable
 {
 public:
     Font();
     Font(const Font& font) = delete;
-    virtual ~Font() override;
 
     Font& operator =(const Font& rhs) = delete;
 
@@ -23,18 +28,10 @@ public:
     ID3D11ShaderResourceView * GetTexture();
     ID3D11ShaderResourceView * GetTexture() const;
 
-    // Seriously, WTF. TODO: Fix this abomination.
-    void BuildVertexArray(void*, const std::string&, float, float) const;
+    font_char_t GetCharInfo(char c) const;
 
 protected:
     virtual void OnShutdown() override;
-
-private:
-    struct font_char_t
-    {
-        float left, right;
-        int size;        // pixel width
-    };
 
 private:
     std::vector<font_char_t> LoadFontLayout(const std::wstring& layoutFile) const;

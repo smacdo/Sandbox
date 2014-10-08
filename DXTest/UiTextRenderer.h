@@ -49,6 +49,4 @@ private:
     std::unique_ptr<Font> mFont;
     std::unique_ptr<FontShader> mFontShader;
     std::vector<std::unique_ptr<DrawableText>> mTexts;
-    std::unique_ptr<DrawableText> mSentence1;
-    std::unique_ptr<DrawableText> mSentence2;
 };
