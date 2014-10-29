@@ -14,6 +14,11 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\RotatingSceneRendererBase.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.cpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\RotatingSceneRendererBase.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
@@ -24,17 +29,19 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\DeviceResources.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\DirectXHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\StepTimer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\SampleFpsTextRenderer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\Sample3DSceneRenderer.h" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\SampleFpsTextRenderer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\Sample3DSceneRenderer.cpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\ColoredCubeSceneRenderer.h" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeSceneRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Content\SamplePixelShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubePixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
+      <FileType>Document</FileType>
     </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Content\SampleVertexShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
+      <FileType>Document</FileType>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

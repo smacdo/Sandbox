@@ -1,7 +1,10 @@
 ﻿#include "pch.h"
-#include "Sample3DSceneRenderer.h"
+#include "ColoredCubeSceneRenderer.h"
+#include "Common\DeviceResources.h"
+#include "Common\StepTimer.h"
+#include "Common\DirectXHelper.h"
 
-#include "..\Common\DirectXHelper.h"
+#include <memory>
 
 using namespace DXSandboxApp;
 
@@ -9,19 +12,19 @@ using namespace DirectX;
 using namespace Windows::Foundation;
 
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
-Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
-	m_loadingComplete(false),
-	m_degreesPerSecond(45),
-	m_indexCount(0),
-	m_tracking(false),
-	m_deviceResources(deviceResources)
+ColoredCubeSceneRenderer::ColoredCubeSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources)
+    : m_loadingComplete(false),
+	  m_degreesPerSecond(45),
+	  m_indexCount(0),
+	  m_tracking(false),
+	  m_deviceResources(deviceResources)
 {
 	CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
 }
 
 // Initializes view parameters when the window size changes.
-void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
+void ColoredCubeSceneRenderer::CreateWindowSizeDependentResources()
 {
 	Size outputSize = m_deviceResources->GetOutputSize();
 	float aspectRatio = outputSize.Width / outputSize.Height;
@@ -66,7 +69,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 }
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
-void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
+void ColoredCubeSceneRenderer::Update(DX::StepTimer const& timer)
 {
 	if (!m_tracking)
 	{
@@ -80,19 +83,19 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 }
 
 // Rotate the 3D cube model a set amount of radians.
-void Sample3DSceneRenderer::Rotate(float radians)
+void ColoredCubeSceneRenderer::Rotate(float radians)
 {
 	// Prepare to pass the updated model matrix to the shader
 	XMStoreFloat4x4(&m_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
 }
 
-void Sample3DSceneRenderer::StartTracking()
+void ColoredCubeSceneRenderer::StartTracking()
 {
 	m_tracking = true;
 }
 
 // When tracking, the 3D cube can be rotated around its Y axis by tracking pointer position relative to the output screen width.
-void Sample3DSceneRenderer::TrackingUpdate(float positionX)
+void ColoredCubeSceneRenderer::TrackingUpdate(float positionX)
 {
 	if (m_tracking)
 	{
@@ -101,13 +104,13 @@ void Sample3DSceneRenderer::TrackingUpdate(float positionX)
 	}
 }
 
-void Sample3DSceneRenderer::StopTracking()
+void ColoredCubeSceneRenderer::StopTracking()
 {
 	m_tracking = false;
 }
 
 // Renders one frame using the vertex and pixel shaders.
-void Sample3DSceneRenderer::Render()
+void ColoredCubeSceneRenderer::Render()
 {
 	// Loading is asynchronous. Only draw geometry after it's loaded.
 	if (!m_loadingComplete)
@@ -177,11 +180,11 @@ void Sample3DSceneRenderer::Render()
 		);
 }
 
-void Sample3DSceneRenderer::CreateDeviceDependentResources()
+void ColoredCubeSceneRenderer::CreateDeviceDependentResources()
 {
 	// Load shaders asynchronously.
-	auto loadVSTask = DX::ReadDataAsync(L"SampleVertexShader.cso");
-	auto loadPSTask = DX::ReadDataAsync(L"SamplePixelShader.cso");
+	auto loadVSTask = DX::ReadDataAsync(L"ColoredCubeVertexShader.cso");
+	auto loadPSTask = DX::ReadDataAsync(L"ColoredCubePixelShader.cso");
 
 	// After the vertex shader file is loaded, create the shader and input layout.
 	auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData) {
@@ -309,7 +312,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 	});
 }
 
-void Sample3DSceneRenderer::ReleaseDeviceDependentResources()
+void ColoredCubeSceneRenderer::ReleaseDeviceDependentResources()
 {
 	m_loadingComplete = false;
 	m_vertexShader.Reset();

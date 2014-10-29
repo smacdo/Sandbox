@@ -1,5 +1,24 @@
 ﻿#pragma once
 
+#include <memory>
+#include <wrl.h>
+#include <d3dcommon.h>
+#include <d3d11.h>
+#include <DirectXMath.h>
+#include <d2d1.h>
+
+struct ID3D11Device2;
+struct ID3D11DeviceContext2;
+struct IDXGISwapChain1;
+struct ID3D11RenderTargetView;
+struct ID3D11DepthStencilView;
+struct ID2D1Factory2;
+struct ID2D1Device1;
+struct ID2D1DeviceContext1;
+struct ID2D1Bitmap1;
+struct IDWriteFactory2;
+struct IWICImagingFactory2;
+
 namespace DX
 {
     // Provides an interface for an application that owns DeviceResources to be notified of the device being lost or created.

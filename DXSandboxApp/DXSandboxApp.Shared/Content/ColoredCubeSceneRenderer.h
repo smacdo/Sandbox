@@ -1,16 +1,23 @@
 ﻿#pragma once
 
-#include "..\Common\DeviceResources.h"
-#include "ShaderStructures.h"
-#include "..\Common\StepTimer.h"
+#include <memory>
 
+#include "Common\DeviceResources.h"
+#include "ShaderStructures.h"
+#include "Common\StepTimer.h"
+
+struct ID3D11InputLayout;
+struct ID3D11Buffer;
+struct ID3D11VertexShader;
+struct ID3D11PixelShader;
+        
 namespace DXSandboxApp
 {
 	// This sample renderer instantiates a basic rendering pipeline.
-	class Sample3DSceneRenderer
+    class ColoredCubeSceneRenderer
 	{
 	public:
-		Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+		ColoredCubeSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
 		void CreateDeviceDependentResources();
 		void CreateWindowSizeDependentResources();
 		void ReleaseDeviceDependentResources();
@@ -20,7 +27,6 @@ namespace DXSandboxApp
 		void TrackingUpdate(float positionX);
 		void StopTracking();
 		bool IsTracking() { return m_tracking; }
-
 
 	private:
 		void Rotate(float radians);

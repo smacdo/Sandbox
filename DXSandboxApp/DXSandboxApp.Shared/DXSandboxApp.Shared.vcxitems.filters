@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.h" />
@@ -12,10 +12,16 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\DeviceResources.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\Sample3DSceneRenderer.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.h">
       <Filter>Content</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\SampleFpsTextRenderer.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\ColoredCubeSceneRenderer.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\RotatingSceneRendererBase.h">
       <Filter>Content</Filter>
     </ClInclude>
   </ItemGroup>
@@ -25,18 +31,27 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\DeviceResources.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\Sample3DSceneRenderer.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.cpp">
       <Filter>Content</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\SampleFpsTextRenderer.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeSceneRenderer.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\RotatingSceneRendererBase.cpp">
       <Filter>Content</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Content\SamplePixelShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubePixelShader.hlsl">
       <Filter>Content</Filter>
     </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Content\SampleVertexShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeVertexShader.hlsl">
       <Filter>Content</Filter>
     </FxCompile>
   </ItemGroup>

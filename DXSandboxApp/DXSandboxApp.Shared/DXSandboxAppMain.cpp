@@ -2,48 +2,54 @@
 #include "DXSandboxAppMain.h"
 #include "Common\DirectXHelper.h"
 
+#include "Content\SimpleMeshRenderer.h"
+#include "Content\DebugInfoRenderer.h"
+
+#include <memory>
+
 using namespace DXSandboxApp;
 using namespace Windows::Foundation;
 using namespace Windows::System::Threading;
 using namespace Concurrency;
 
-// Loads and initializes application assets when the application is loaded.
-DXSandboxAppMain::DXSandboxAppMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
-	m_deviceResources(deviceResources), m_pointerLocationX(0.0f)
+/**
+ * Loads and initializes application assets when the application is loaded.
+ */
+DXSandboxAppMain::DXSandboxAppMain(std::shared_ptr<DX::DeviceResources> deviceResources)
+    : mDeviceResources(deviceResources),
+      mPointerLocationX(0.0f)
 {
 	// Register to be notified if the Device is lost or recreated
-	m_deviceResources->RegisterDeviceNotify(this);
+	mDeviceResources->RegisterDeviceNotify(this);
 
-	// TODO: Replace this with your app's content initialization.
-	m_sceneRenderer = std::unique_ptr<Sample3DSceneRenderer>(new Sample3DSceneRenderer(m_deviceResources));
+    // Initialize scene renderers.
+    mSceneRenderer = std::unique_ptr<SimpleMeshRenderer>(new SimpleMeshRenderer(mDeviceResources));
+    mDebugInfoRenderer = std::unique_ptr<DebugInfoRenderer>(new DebugInfoRenderer(mDeviceResources));
 
-	m_fpsTextRenderer = std::unique_ptr<SampleFpsTextRenderer>(new SampleFpsTextRenderer(m_deviceResources));
-
-	// TODO: Change the timer settings if you want something other than the default variable timestep mode.
-	// e.g. for 60 FPS fixed timestep update logic, call:
-	/*
-	m_timer.SetFixedTimeStep(true);
-	m_timer.SetTargetElapsedSeconds(1.0 / 60);
-	*/
+	// Set timer to fixed updates, 60 times a second.
+	mTimer.SetFixedTimeStep(true);
+	mTimer.SetTargetElapsedSeconds(1.0 / 60);
 }
 
+/**
+ * Destructor cleanup.
+ */
 DXSandboxAppMain::~DXSandboxAppMain()
 {
 	// Deregister device notification
-	m_deviceResources->RegisterDeviceNotify(nullptr);
+	mDeviceResources->RegisterDeviceNotify(nullptr);
 }
 
 // Updates application state when the window size changes (e.g. device orientation change)
 void DXSandboxAppMain::CreateWindowSizeDependentResources() 
 {
-	// TODO: Replace this with the size-dependent initialization of your app's content.
-	m_sceneRenderer->CreateWindowSizeDependentResources();
+	mSceneRenderer->CreateWindowSizeDependentResources();
 }
 
 void DXSandboxAppMain::StartRenderLoop()
 {
 	// If the animation render loop is already running then do not start another thread.
-	if (m_renderLoopWorker != nullptr && m_renderLoopWorker->Status == AsyncStatus::Started)
+	if (mRenderLoopWorker != nullptr && mRenderLoopWorker->Status == AsyncStatus::Started)
 	{
 		return;
 	}
@@ -54,22 +60,22 @@ void DXSandboxAppMain::StartRenderLoop()
 		// Calculate the updated frame and render once per vertical blanking interval.
 		while (action->Status == AsyncStatus::Started)
 		{
-			critical_section::scoped_lock lock(m_criticalSection);
+			critical_section::scoped_lock lock(mCriticalSection);
 			Update();
 			if (Render())
 			{
-				m_deviceResources->Present();
+				mDeviceResources->Present();
 			}
 		}
 	});
 
 	// Run task on a dedicated high priority background thread.
-	m_renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+	mRenderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
 }
 
 void DXSandboxAppMain::StopRenderLoop()
 {
-	m_renderLoopWorker->Cancel();
+	mRenderLoopWorker->Cancel();
 }
 
 // Updates the application state once per frame.
@@ -78,19 +84,17 @@ void DXSandboxAppMain::Update()
 	ProcessInput();
 
 	// Update scene objects.
-	m_timer.Tick([&]()
+	mTimer.Update([&]()
 	{
-		// TODO: Replace this with your app's content update functions.
-		m_sceneRenderer->Update(m_timer);
-		m_fpsTextRenderer->Update(m_timer);
+		mSceneRenderer->Update(mTimer);
+		mDebugInfoRenderer->Update(mTimer);
 	});
 }
 
 // Process all input from the user before updating game state
 void DXSandboxAppMain::ProcessInput()
 {
-	// TODO: Add per frame input handling here.
-	m_sceneRenderer->TrackingUpdate(m_pointerLocationX);
+	mSceneRenderer->TrackingUpdate(mPointerLocationX);
 }
 
 // Renders the current frame according to the current application state.
@@ -98,29 +102,29 @@ void DXSandboxAppMain::ProcessInput()
 bool DXSandboxAppMain::Render() 
 {
 	// Don't try to render anything before the first Update.
-	if (m_timer.GetFrameCount() == 0)
+	if (mTimer.GetFrameCount() == 0)
 	{
 		return false;
 	}
 
-	auto context = m_deviceResources->GetD3DDeviceContext();
+	auto context = mDeviceResources->GetD3DDeviceContext();
 
 	// Reset the viewport to target the whole screen.
-	auto viewport = m_deviceResources->GetScreenViewport();
+	auto viewport = mDeviceResources->GetScreenViewport();
 	context->RSSetViewports(1, &viewport);
 
 	// Reset render targets to the screen.
-	ID3D11RenderTargetView *const targets[1] = { m_deviceResources->GetBackBufferRenderTargetView() };
-	context->OMSetRenderTargets(1, targets, m_deviceResources->GetDepthStencilView());
+	ID3D11RenderTargetView *const targets[1] = { mDeviceResources->GetBackBufferRenderTargetView() };
+	context->OMSetRenderTargets(1, targets, mDeviceResources->GetDepthStencilView());
 
 	// Clear the back buffer and depth stencil view.
-	context->ClearRenderTargetView(m_deviceResources->GetBackBufferRenderTargetView(), DirectX::Colors::CornflowerBlue);
-	context->ClearDepthStencilView(m_deviceResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	context->ClearRenderTargetView(mDeviceResources->GetBackBufferRenderTargetView(), DirectX::Colors::CornflowerBlue);
+	context->ClearDepthStencilView(mDeviceResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// Render the scene objects.
 	// TODO: Replace this with your app's content rendering functions.
-	m_sceneRenderer->Render();
-	m_fpsTextRenderer->Render();
+	mSceneRenderer->Render();
+	mDebugInfoRenderer->Render();
 
 	return true;
 }
@@ -128,14 +132,34 @@ bool DXSandboxAppMain::Render()
 // Notifies renderers that device resources need to be released.
 void DXSandboxAppMain::OnDeviceLost()
 {
-	m_sceneRenderer->ReleaseDeviceDependentResources();
-	m_fpsTextRenderer->ReleaseDeviceDependentResources();
+	mSceneRenderer->ReleaseDeviceDependentResources();
+	mDebugInfoRenderer->ReleaseDeviceDependentResources();
 }
 
 // Notifies renderers that device resources may now be recreated.
 void DXSandboxAppMain::OnDeviceRestored()
 {
-	m_sceneRenderer->CreateDeviceDependentResources();
-	m_fpsTextRenderer->CreateDeviceDependentResources();
+	mSceneRenderer->CreateDeviceDependentResources();
+	mDebugInfoRenderer->CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
+}
+
+void DXSandboxAppMain::StartTracking()
+{
+    mSceneRenderer->StartTracking();
+}
+
+void DXSandboxAppMain::TrackingUpdate(float positionX)
+{
+    mPointerLocationX = positionX;
+}
+
+void DXSandboxAppMain::StopTracking()
+{
+    mSceneRenderer->StopTracking();
+}
+
+bool DXSandboxAppMain::IsTracking()
+{
+    return mSceneRenderer->IsTracking();
 }
