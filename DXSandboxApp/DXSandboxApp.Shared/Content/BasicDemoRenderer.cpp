@@ -114,6 +114,11 @@ void BasicDemoRenderer::Render()
         float radians = XM_2PI * 2.0f * mInputTracker->InputPositionX() / mDeviceResources->GetOutputSize().Width;
         RotateScene(radians);
     }
+
+    // Update the model-view-projection constant buffer with current MVP values, and bind it for shaders to access.
+    auto context = mDeviceResources->GetD3DDeviceContext();
+    context->UpdateSubresource(mModelViewBuffer.Get(), 0, nullptr, &mModelViewBufferData, 0, 0);
+
 }
 
 void BasicDemoRenderer::CreateModelViewBuffer()

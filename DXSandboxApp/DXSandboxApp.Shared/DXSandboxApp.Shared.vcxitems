@@ -22,6 +22,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\BasicDemoRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\IDemoRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\ShaderStructures.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />

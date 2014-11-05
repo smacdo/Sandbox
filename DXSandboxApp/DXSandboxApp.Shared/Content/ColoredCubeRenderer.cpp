@@ -41,9 +41,6 @@ void ColoredCubeRenderer::Render()
 
     auto context = mDeviceResources->GetD3DDeviceContext();
 
-    // Prepare the constant buffer to send it to the graphics device.
-    context->UpdateSubresource(mModelViewBuffer.Get(), 0, NULL, &mModelViewBufferData, 0, 0);
-
     // Each vertex is one instance of the VertexPositionColor struct.
     unsigned int stride = sizeof(VertexPositionColor);
     unsigned int offset = 0;
@@ -60,7 +57,7 @@ void ColoredCubeRenderer::Render()
     // Attach our vertex shader.
     context->VSSetShader(mVertexShader.Get(), nullptr, 0);
 
-    // Send the constant buffer to the graphics device.
+    // Send the MVP (model view projection) constant buffer to the graphics device.
     context->VSSetConstantBuffers(0, 1, mModelViewBuffer.GetAddressOf());
 
     // Attach our pixel shader.

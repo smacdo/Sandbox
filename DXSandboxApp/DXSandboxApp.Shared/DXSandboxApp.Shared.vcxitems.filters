@@ -33,6 +33,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Input\InputTracker.h">
       <Filter>Input</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\ShaderStructures.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
