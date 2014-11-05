@@ -2,6 +2,7 @@
 #include "DXSandboxAppMain.h"
 #include "Common\DirectXHelper.h"
 #include "Content\IDemoRenderer.h"
+#include "Input\InputTracker.h"
 
 #include "Content\ColoredCubeRenderer.h"
 #include "Content\DebugInfoRenderer.h"
@@ -18,13 +19,14 @@ using namespace Concurrency;
  */
 DXSandboxAppMain::DXSandboxAppMain(std::shared_ptr<DX::DeviceResources> deviceResources)
     : mDeviceResources(deviceResources),
+      mInputTracker(new InputTracker()),
       mPointerLocationX(0.0f)
 {
 	// Register to be notified if the Device is lost or recreated
 	mDeviceResources->RegisterDeviceNotify(this);
 
     // Initialize scene renderers.
-    mSceneRenderer = std::unique_ptr<ColoredCubeRenderer>(new ColoredCubeRenderer(mDeviceResources));
+    mSceneRenderer = std::unique_ptr<ColoredCubeRenderer>(new ColoredCubeRenderer(mInputTracker, mDeviceResources));
     mDebugInfoRenderer = std::unique_ptr<DebugInfoRenderer>(new DebugInfoRenderer(mDeviceResources));
 
 	// Set timer to fixed updates, 60 times a second.
@@ -110,7 +112,8 @@ void DXSandboxAppMain::Update()
 // Process all input from the user before updating game state
 void DXSandboxAppMain::ProcessInput()
 {
-	mSceneRenderer->TrackingUpdate(mPointerLocationX);
+    // TODO: Move this code to the caller.
+    mInputTracker->TrackingUpdate(mPointerLocationX);
 }
 
 // Renders the current frame according to the current application state.
@@ -154,20 +157,25 @@ void DXSandboxAppMain::OnDeviceRestored()
 
 void DXSandboxAppMain::StartTracking()
 {
-    mSceneRenderer->StartTracking();
+    // TODO: Move this code to the caller.
+    mInputTracker->StartTracking();
 }
 
 void DXSandboxAppMain::TrackingUpdate(float positionX)
 {
+    // TODO: Move this code to the caller.
+    mInputTracker->TrackingUpdate(positionX);
     mPointerLocationX = positionX;
 }
 
 void DXSandboxAppMain::StopTracking()
 {
-    mSceneRenderer->StopTracking();
+    // TODO: Move this code to the caller.
+    mInputTracker->StopTracking();
 }
 
 bool DXSandboxAppMain::IsTracking()
 {
-    return mSceneRenderer->IsTracking();
+    // TODO: Move this code to the caller.
+    return mInputTracker->IsTracking();
 }

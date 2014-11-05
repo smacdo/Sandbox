@@ -11,6 +11,7 @@ namespace DXSandboxApp
 {
     class DebugInfoRenderer;
     class IDemoRenderer;
+    class InputTracker;
 
 	class DXSandboxAppMain : public DX::IDeviceNotify
 	{
@@ -38,6 +39,7 @@ namespace DXSandboxApp
 
 		// Cached pointer to device resources.
 		std::shared_ptr<DX::DeviceResources> mDeviceResources;
+        std::shared_ptr<InputTracker> mInputTracker;
 
 		// Scene renderers.
         std::unique_ptr<IDemoRenderer> mSceneRenderer;

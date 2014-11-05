@@ -18,12 +18,16 @@ namespace DX
         
 namespace DXSandboxApp
 {
+    class InputTracker;
+
 	// This is a simple demonstration of C++cx DirectX provided by Microsoft, and modified by Scott.
     // This class is responsible for rendering a simple rainbow color shaded cube.
     class ColoredCubeRenderer : public BasicDemoRenderer
 	{
 	public:
-        ColoredCubeRenderer(std::shared_ptr<DX::DeviceResources> deviceResources);
+        ColoredCubeRenderer(
+            std::shared_ptr<InputTracker> inputTracker,
+            std::shared_ptr<DX::DeviceResources> deviceResources);
         virtual void CreateDeviceDependentResources() override;
         virtual void ReleaseDeviceDependentResources() override;
         virtual void Update(const DX::StepTimer& timer) override;

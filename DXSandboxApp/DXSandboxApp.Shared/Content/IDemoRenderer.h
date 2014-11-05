@@ -26,12 +26,6 @@ namespace DXSandboxApp
         virtual void CreateWindowSizeDependentResources() = 0;
         virtual void ReleaseDeviceDependentResources() = 0;
         virtual void CreateDeviceDependentResources() = 0;
-
-        // TODO: Remove this, put it into separate class called "InputTracking" or wahtnot.
-        virtual void StartTracking() = 0;
-        virtual void StopTracking() = 0;
-        virtual bool IsTracking() const = 0;
-        virtual void TrackingUpdate(float positionX) = 0;
     };
 }
 

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "BasicDemoRenderer.h"
 #include "IDemoRenderer.h"
+#include "Input\InputTracker.h"
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
@@ -13,8 +14,11 @@ using namespace DirectX;
 using namespace Windows::Foundation;
 
 // Basic constructor.
-BasicDemoRenderer::BasicDemoRenderer(std::shared_ptr<DX::DeviceResources> deviceResources)
+BasicDemoRenderer::BasicDemoRenderer(
+    std::shared_ptr<InputTracker> inputTracker,
+    std::shared_ptr<DX::DeviceResources> deviceResources)
     : IDemoRenderer(),
+      mInputTracker(inputTracker),
       mLoadingComplete(false),
       mDegreesPerSecond(45),
       mTracking(false),
@@ -73,7 +77,7 @@ void BasicDemoRenderer::ReleaseDeviceDependentResources()
 // Called once per frame, rotates the cube and calculates the model and view matrices.
 void BasicDemoRenderer::Update(DX::StepTimer const& timer)
 {
-    if (!IsTracking())
+    if (!mInputTracker->IsTracking())
     {
         // Convert degrees to radians, then convert seconds to rotation angle
         float radiansPerSecond = XMConvertToRadians(mDegreesPerSecond);
@@ -95,22 +99,19 @@ void BasicDemoRenderer::RotateScene(float radians)
     XMStoreFloat4x4(&mModelViewBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
 }
 
-void BasicDemoRenderer::StartTracking()
-{
-    mTracking = true;
-}
-
-void BasicDemoRenderer::StopTracking()
-{
-    mTracking = false;
-}
-
 // When tracking, the 3D cube can be rotated around its Y axis by tracking pointer position relative to the output screen width.
-void BasicDemoRenderer::TrackingUpdate(float positionX)
+void BasicDemoRenderer::Render()
 {
-    if (IsTracking())
+    // Loading is asynchronous. Only draw geometry after it's loaded.
+    if (!IsLoadingComplete())
     {
-        float radians = XM_2PI * 2.0f * positionX / mDeviceResources->GetOutputSize().Width;
+        return;
+    }
+
+    // Update rotation based on input tracking.
+    if (mInputTracker->IsTracking())
+    {
+        float radians = XM_2PI * 2.0f * mInputTracker->InputPositionX() / mDeviceResources->GetOutputSize().Width;
         RotateScene(radians);
     }
 }

@@ -15,6 +15,8 @@ namespace DX
 
 namespace DXSandboxApp
 {
+    class InputTracker;
+
     // This is an abstract base for basic scene renderers. Controls the touch and camera for making demos simpler.
     //  TODO: Split this class up
     //     - BasicSceneRenderer
@@ -22,22 +24,18 @@ namespace DXSandboxApp
     class BasicDemoRenderer : public IDemoRenderer
     {
     public:
-        BasicDemoRenderer(std::shared_ptr<DX::DeviceResources> deviceResources);
+        BasicDemoRenderer(
+            std::shared_ptr<InputTracker> inputTracker,
+            std::shared_ptr<DX::DeviceResources> deviceResources);
         virtual ~BasicDemoRenderer();
         
-        virtual void Render() = 0;
+        virtual void Render();
         virtual void Update(const DX::StepTimer& timer);
 
         virtual void CreateWindowSizeDependentResources();
         virtual void ReleaseDeviceDependentResources();
 
-        void StartTracking();
-        void StopTracking();
-        bool IsTracking() const { return mTracking; }
-
         bool IsLoadingComplete() const { return mLoadingComplete; }
-
-        void TrackingUpdate(float positionX);
 
     protected:
         void SetLoadingComplete(bool isLoadingComplete);
@@ -50,6 +48,9 @@ namespace DXSandboxApp
         void RotateScene(float radians);
 
     protected:
+        // Pointer to input tracking.
+        std::shared_ptr<InputTracker> mInputTracker;
+
         // Cached pointer to device resources.
         std::shared_ptr<DX::DeviceResources> mDeviceResources;
 

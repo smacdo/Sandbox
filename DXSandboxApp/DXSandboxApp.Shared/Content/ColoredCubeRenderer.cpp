@@ -3,6 +3,7 @@
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
+#include "Input\InputTracker.h"
 
 #include <memory>
 
@@ -12,8 +13,10 @@ using namespace DirectX;
 using namespace Windows::Foundation;
 
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
-ColoredCubeRenderer::ColoredCubeRenderer(std::shared_ptr<DX::DeviceResources> deviceResources)
-    : BasicDemoRenderer(deviceResources),
+ColoredCubeRenderer::ColoredCubeRenderer(
+    std::shared_ptr<InputTracker> inputTracker,
+    std::shared_ptr<DX::DeviceResources> deviceResources)
+    : BasicDemoRenderer(inputTracker, deviceResources),
       mIndexCount(0)
 {
     CreateDeviceDependentResources();
@@ -28,6 +31,8 @@ void ColoredCubeRenderer::Update(const DX::StepTimer& timer)
 // Renders one frame using the vertex and pixel shaders.
 void ColoredCubeRenderer::Render()
 {
+    BasicDemoRenderer::Render();
+
     // Loading is asynchronous. Only draw geometry after it's loaded.
     if (!IsLoadingComplete())
     {

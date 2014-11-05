@@ -30,6 +30,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\IDemoRenderer.h">
       <Filter>Renderers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Input\InputTracker.h">
+      <Filter>Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -55,6 +58,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.cpp">
       <Filter>Renderers</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubePixelShader.hlsl">
@@ -79,6 +85,9 @@
     </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{7bcb9df8-36d9-4cf0-afb4-107a571b6267}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{56ddc390-f223-4ee1-bc8f-fc7639f8281d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
