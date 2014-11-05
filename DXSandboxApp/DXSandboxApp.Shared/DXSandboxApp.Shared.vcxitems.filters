@@ -15,17 +15,20 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.h">
       <Filter>Renderers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\ColoredCubeSceneRenderer.h">
-      <Filter>Renderers</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.h">
-      <Filter>Renderers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\RotatingSceneRendererBase.h">
       <Filter>Renderers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\BasicDemoRenderer.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\IDemoRenderer.h">
+      <Filter>Renderers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -40,17 +43,17 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeSceneRenderer.cpp">
-      <Filter>Renderers</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.cpp">
-      <Filter>Renderers</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\RotatingSceneRendererBase.cpp">
       <Filter>Renderers</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\BasicDemoRenderer.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.cpp">
+      <Filter>Renderers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

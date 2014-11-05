@@ -5,7 +5,7 @@
 #include "Common\DeviceResources.h"
 #include "ShaderStructures.h"
 #include "Common\StepTimer.h"
-#include "RotatingSceneRendererBase.h"
+#include "BasicDemoRenderer.h"
 
 struct ID3D11InputLayout;
 struct ID3D11Buffer;
@@ -15,7 +15,7 @@ struct ID3D11PixelShader;
 namespace DXSandboxApp
 {
     // This sample renderer instantiates a basic rendering pipeline.
-    class SimpleMeshRenderer : public RotatingSceneRendererBase
+    class SimpleMeshRenderer : public BasicDemoRenderer
     {
     public:
         SimpleMeshRenderer(std::shared_ptr<DX::DeviceResources> deviceResources);

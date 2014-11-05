@@ -13,7 +13,7 @@ using namespace Windows::Foundation;
 
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
 SimpleMeshRenderer::SimpleMeshRenderer(std::shared_ptr<DX::DeviceResources> deviceResources)
-    : RotatingSceneRendererBase(deviceResources),
+    : BasicDemoRenderer(deviceResources),
       mIndexCount(0)
 {
     CreateDeviceDependentResources();
@@ -22,7 +22,7 @@ SimpleMeshRenderer::SimpleMeshRenderer(std::shared_ptr<DX::DeviceResources> devi
 // Called once per frame, rotates the cube and calculates the model and view matrices.
 void SimpleMeshRenderer::Update(const DX::StepTimer& timer)
 {
-    RotatingSceneRendererBase::Update(timer);
+    BasicDemoRenderer::Update(timer);
 }
 
 // Renders one frame using the vertex and pixel shaders.
@@ -180,7 +180,7 @@ void SimpleMeshRenderer::CreateDeviceDependentResources()
 
 void SimpleMeshRenderer::ReleaseDeviceDependentResources()
 {
-    RotatingSceneRendererBase::ReleaseDeviceDependentResources();
+    BasicDemoRenderer::ReleaseDeviceDependentResources();
 
     mVertexShader.Reset();
     mInputLayout.Reset();

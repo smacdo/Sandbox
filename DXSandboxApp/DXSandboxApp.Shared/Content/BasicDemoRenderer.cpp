@@ -1,5 +1,6 @@
 #include "pch.h"
-#include "RotatingSceneRendererBase.h"
+#include "BasicDemoRenderer.h"
+#include "IDemoRenderer.h"
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
@@ -12,8 +13,9 @@ using namespace DirectX;
 using namespace Windows::Foundation;
 
 // Basic constructor.
-RotatingSceneRendererBase::RotatingSceneRendererBase(std::shared_ptr<DX::DeviceResources> deviceResources)
-    : mLoadingComplete(false),
+BasicDemoRenderer::BasicDemoRenderer(std::shared_ptr<DX::DeviceResources> deviceResources)
+    : IDemoRenderer(),
+      mLoadingComplete(false),
       mDegreesPerSecond(45),
       mTracking(false),
       mDeviceResources(deviceResources)
@@ -22,8 +24,12 @@ RotatingSceneRendererBase::RotatingSceneRendererBase(std::shared_ptr<DX::DeviceR
     UpdateModelViewBuffer();
 }
 
+BasicDemoRenderer::~BasicDemoRenderer()
+{
+}
+
 // Initializes view parameters when the window size changes.
-void RotatingSceneRendererBase::UpdateModelViewBuffer()
+void BasicDemoRenderer::UpdateModelViewBuffer()
 {
     Size outputSize = mDeviceResources->GetOutputSize();
     float aspectRatio = outputSize.Width / outputSize.Height;
@@ -44,8 +50,7 @@ void RotatingSceneRendererBase::UpdateModelViewBuffer()
         fovAngleY,
         aspectRatio,
         0.01f,
-        100.0f
-        );
+        100.0f);
 
     XMFLOAT4X4 orientation = mDeviceResources->GetOrientationTransform3D();
     XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
@@ -60,14 +65,13 @@ void RotatingSceneRendererBase::UpdateModelViewBuffer()
     XMStoreFloat4x4(&mModelViewBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
 }
 
-
-void RotatingSceneRendererBase::ReleaseDeviceDependentResources()
+void BasicDemoRenderer::ReleaseDeviceDependentResources()
 {
     ReleaseModelViewBuffer();
 }
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
-void RotatingSceneRendererBase::Update(DX::StepTimer const& timer)
+void BasicDemoRenderer::Update(DX::StepTimer const& timer)
 {
     if (!IsTracking())
     {
@@ -80,29 +84,29 @@ void RotatingSceneRendererBase::Update(DX::StepTimer const& timer)
     }
 }
 
-void RotatingSceneRendererBase::CreateWindowSizeDependentResources()
+void BasicDemoRenderer::CreateWindowSizeDependentResources()
 {
     UpdateModelViewBuffer();
 }
 
 // Rotate the 3D cube model a set amount of radians.
-void RotatingSceneRendererBase::RotateScene(float radians)
+void BasicDemoRenderer::RotateScene(float radians)
 {
     XMStoreFloat4x4(&mModelViewBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
 }
 
-void RotatingSceneRendererBase::StartTracking()
+void BasicDemoRenderer::StartTracking()
 {
     mTracking = true;
 }
 
-void RotatingSceneRendererBase::StopTracking()
+void BasicDemoRenderer::StopTracking()
 {
     mTracking = false;
 }
 
 // When tracking, the 3D cube can be rotated around its Y axis by tracking pointer position relative to the output screen width.
-void RotatingSceneRendererBase::TrackingUpdate(float positionX)
+void BasicDemoRenderer::TrackingUpdate(float positionX)
 {
     if (IsTracking())
     {
@@ -111,20 +115,20 @@ void RotatingSceneRendererBase::TrackingUpdate(float positionX)
     }
 }
 
-void RotatingSceneRendererBase::CreateModelViewBuffer()
+void BasicDemoRenderer::CreateModelViewBuffer()
 {
     CD3D11_BUFFER_DESC bufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
     HRESULT hr = mDeviceResources->GetD3DDevice()->CreateBuffer(&bufferDesc, nullptr, &mModelViewBuffer);
     DX::ThrowIfFailed(hr);
 }
 
-void RotatingSceneRendererBase::ReleaseModelViewBuffer()
+void BasicDemoRenderer::ReleaseModelViewBuffer()
 {
     mLoadingComplete = false;
     mModelViewBuffer.Reset();
 }
 
-void RotatingSceneRendererBase::SetLoadingComplete(bool isLoadingComplete)
+void BasicDemoRenderer::SetLoadingComplete(bool isLoadingComplete)
 {
     mLoadingComplete = isLoadingComplete;
 }

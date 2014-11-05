@@ -4,29 +4,35 @@
 
 #include "Common\DeviceResources.h"
 #include "ShaderStructures.h"
-#include "Common\StepTimer.h"
+#include "IDemoRenderer.h"
 
 struct ID3D11InputLayout;
 struct ID3D11Buffer;
 struct ID3D11VertexShader;
 struct ID3D11PixelShader;
+
+namespace DX
+{
+    class StepTimer;
+}
         
 namespace DXSandboxApp
 {
-	// This sample renderer instantiates a basic rendering pipeline.
-    class ColoredCubeSceneRenderer
+	// This is a simple demonstration of C++cx DirectX provided by Microsoft, and modified by Scott.
+    // This class is responsible for rendering a simple rainbow color shaded cube.
+    class ColoredCubeRenderer : public IDemoRenderer
 	{
 	public:
-		ColoredCubeSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
-		void CreateDeviceDependentResources();
-		void CreateWindowSizeDependentResources();
-		void ReleaseDeviceDependentResources();
-		void Update(DX::StepTimer const& timer);
-		void Render();
-		void StartTracking();
-		void TrackingUpdate(float positionX);
-		void StopTracking();
-		bool IsTracking() { return m_tracking; }
+        ColoredCubeRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+		virtual void CreateDeviceDependentResources() override;
+		virtual void CreateWindowSizeDependentResources() override;
+		virtual void ReleaseDeviceDependentResources() override;
+		virtual void Update(DX::StepTimer const& timer) override;
+		virtual void Render() override;
+		virtual void StartTracking() override;
+		virtual void TrackingUpdate(float positionX) override;
+		virtual void StopTracking() override;
+		virtual bool IsTracking() const override { return m_tracking; }
 
 	private:
 		void Rotate(float radians);

@@ -2,11 +2,16 @@
 
 #include <memory>
 
+#include "IDemoRenderer.h"
 #include "Common\DeviceResources.h"
 #include "ShaderStructures.h"
-#include "Common\StepTimer.h"
 
 struct ID3D11Buffer;
+
+namespace DX
+{
+    class StepTimer;
+}
 
 namespace DXSandboxApp
 {
@@ -14,10 +19,11 @@ namespace DXSandboxApp
     //  TODO: Split this class up
     //     - BasicSceneRenderer
     //        - BasicRotatableScene
-    class RotatingSceneRendererBase
+    class BasicDemoRenderer : public IDemoRenderer
     {
     public:
-        RotatingSceneRendererBase(std::shared_ptr<DX::DeviceResources> deviceResources);
+        BasicDemoRenderer(std::shared_ptr<DX::DeviceResources> deviceResources);
+        virtual ~BasicDemoRenderer();
         
         virtual void Render() = 0;
         virtual void Update(const DX::StepTimer& timer);

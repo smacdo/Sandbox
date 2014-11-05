@@ -16,10 +16,11 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\RotatingSceneRendererBase.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\BasicDemoRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\RotatingSceneRendererBase.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\BasicDemoRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\IDemoRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -32,9 +33,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\DirectXHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\StepTimer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\ColoredCubeSceneRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeSceneRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubePixelShader.hlsl">

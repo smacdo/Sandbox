@@ -9,8 +9,8 @@
 // Renders Direct2D and 3D content on the screen.
 namespace DXSandboxApp
 {
-    class SimpleMeshRenderer;
     class DebugInfoRenderer;
+    class IDemoRenderer;
 
 	class DXSandboxAppMain : public DX::IDeviceNotify
 	{
@@ -40,7 +40,7 @@ namespace DXSandboxApp
 		std::shared_ptr<DX::DeviceResources> mDeviceResources;
 
 		// Scene renderers.
-        std::unique_ptr<SimpleMeshRenderer> mSceneRenderer;     // tODO: Move to ISceneRenderer.
+        std::unique_ptr<IDemoRenderer> mSceneRenderer;
 		std::unique_ptr<DebugInfoRenderer> mDebugInfoRenderer;
 
         // Render details.

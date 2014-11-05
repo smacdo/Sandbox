@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "ColoredCubeSceneRenderer.h"
+#include "ColoredCubeRenderer.h"
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
@@ -12,7 +12,7 @@ using namespace DirectX;
 using namespace Windows::Foundation;
 
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
-ColoredCubeSceneRenderer::ColoredCubeSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources)
+ColoredCubeRenderer::ColoredCubeRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources)
     : m_loadingComplete(false),
 	  m_degreesPerSecond(45),
 	  m_indexCount(0),
@@ -24,7 +24,7 @@ ColoredCubeSceneRenderer::ColoredCubeSceneRenderer(const std::shared_ptr<DX::Dev
 }
 
 // Initializes view parameters when the window size changes.
-void ColoredCubeSceneRenderer::CreateWindowSizeDependentResources()
+void ColoredCubeRenderer::CreateWindowSizeDependentResources()
 {
 	Size outputSize = m_deviceResources->GetOutputSize();
 	float aspectRatio = outputSize.Width / outputSize.Height;
@@ -69,7 +69,7 @@ void ColoredCubeSceneRenderer::CreateWindowSizeDependentResources()
 }
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
-void ColoredCubeSceneRenderer::Update(DX::StepTimer const& timer)
+void ColoredCubeRenderer::Update(DX::StepTimer const& timer)
 {
 	if (!m_tracking)
 	{
@@ -83,19 +83,19 @@ void ColoredCubeSceneRenderer::Update(DX::StepTimer const& timer)
 }
 
 // Rotate the 3D cube model a set amount of radians.
-void ColoredCubeSceneRenderer::Rotate(float radians)
+void ColoredCubeRenderer::Rotate(float radians)
 {
 	// Prepare to pass the updated model matrix to the shader
 	XMStoreFloat4x4(&m_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
 }
 
-void ColoredCubeSceneRenderer::StartTracking()
+void ColoredCubeRenderer::StartTracking()
 {
 	m_tracking = true;
 }
 
 // When tracking, the 3D cube can be rotated around its Y axis by tracking pointer position relative to the output screen width.
-void ColoredCubeSceneRenderer::TrackingUpdate(float positionX)
+void ColoredCubeRenderer::TrackingUpdate(float positionX)
 {
 	if (m_tracking)
 	{
@@ -104,13 +104,13 @@ void ColoredCubeSceneRenderer::TrackingUpdate(float positionX)
 	}
 }
 
-void ColoredCubeSceneRenderer::StopTracking()
+void ColoredCubeRenderer::StopTracking()
 {
 	m_tracking = false;
 }
 
 // Renders one frame using the vertex and pixel shaders.
-void ColoredCubeSceneRenderer::Render()
+void ColoredCubeRenderer::Render()
 {
 	// Loading is asynchronous. Only draw geometry after it's loaded.
 	if (!m_loadingComplete)
@@ -180,7 +180,7 @@ void ColoredCubeSceneRenderer::Render()
 		);
 }
 
-void ColoredCubeSceneRenderer::CreateDeviceDependentResources()
+void ColoredCubeRenderer::CreateDeviceDependentResources()
 {
 	// Load shaders asynchronously.
 	auto loadVSTask = DX::ReadDataAsync(L"ColoredCubeVertexShader.cso");
@@ -312,7 +312,7 @@ void ColoredCubeSceneRenderer::CreateDeviceDependentResources()
 	});
 }
 
-void ColoredCubeSceneRenderer::ReleaseDeviceDependentResources()
+void ColoredCubeRenderer::ReleaseDeviceDependentResources()
 {
 	m_loadingComplete = false;
 	m_vertexShader.Reset();

@@ -1,8 +1,9 @@
 ﻿#include "pch.h"
 #include "DXSandboxAppMain.h"
 #include "Common\DirectXHelper.h"
+#include "Content\IDemoRenderer.h"
 
-#include "Content\SimpleMeshRenderer.h"
+#include "Content\ColoredCubeRenderer.h"
 #include "Content\DebugInfoRenderer.h"
 
 #include <memory>
@@ -23,7 +24,7 @@ DXSandboxAppMain::DXSandboxAppMain(std::shared_ptr<DX::DeviceResources> deviceRe
 	mDeviceResources->RegisterDeviceNotify(this);
 
     // Initialize scene renderers.
-    mSceneRenderer = std::unique_ptr<SimpleMeshRenderer>(new SimpleMeshRenderer(mDeviceResources));
+    mSceneRenderer = std::unique_ptr<ColoredCubeRenderer>(new ColoredCubeRenderer(mDeviceResources));
     mDebugInfoRenderer = std::unique_ptr<DebugInfoRenderer>(new DebugInfoRenderer(mDeviceResources));
 
 	// Set timer to fixed updates, 60 times a second.
