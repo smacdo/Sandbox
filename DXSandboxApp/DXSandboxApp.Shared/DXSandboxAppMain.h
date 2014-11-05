@@ -31,9 +31,10 @@ namespace DXSandboxApp
 		virtual void OnDeviceRestored();
 
 	private:
+        void UpdateGameLoop();
 		void ProcessInput();
 		void Update();
-		bool Render();
+		void Render();
 
 		// Cached pointer to device resources.
 		std::shared_ptr<DX::DeviceResources> mDeviceResources;
@@ -47,7 +48,8 @@ namespace DXSandboxApp
 		Concurrency::critical_section mCriticalSection;
 
 		// Rendering loop timer.
-		DX::StepTimer mTimer;
+        DX::StepTimer mUpdateTimer;
+		DX::StepTimer mRenderTimer;
 
 		// Track current input pointer position.
 		float mPointerLocationX;

@@ -27,8 +27,10 @@ DXSandboxAppMain::DXSandboxAppMain(std::shared_ptr<DX::DeviceResources> deviceRe
     mDebugInfoRenderer = std::unique_ptr<DebugInfoRenderer>(new DebugInfoRenderer(mDeviceResources));
 
 	// Set timer to fixed updates, 60 times a second.
-	mTimer.SetFixedTimeStep(true);
-	mTimer.SetTargetElapsedSeconds(1.0 / 60);
+    mUpdateTimer.SetFixedTimeStep(false);
+
+	mRenderTimer.SetFixedTimeStep(true);
+    mRenderTimer.SetTargetElapsedSeconds(1.0 / 60);
 }
 
 /**
@@ -61,11 +63,7 @@ void DXSandboxAppMain::StartRenderLoop()
 		while (action->Status == AsyncStatus::Started)
 		{
 			critical_section::scoped_lock lock(mCriticalSection);
-			Update();
-			if (Render())
-			{
-				mDeviceResources->Present();
-			}
+            UpdateGameLoop();
 		}
 	});
 
@@ -75,19 +73,36 @@ void DXSandboxAppMain::StartRenderLoop()
 
 void DXSandboxAppMain::StopRenderLoop()
 {
-	mRenderLoopWorker->Cancel();
+    mRenderLoopWorker->Cancel();
+}
+
+void DXSandboxAppMain::UpdateGameLoop()
+{
+    // Get user input and process that before updating, ensuring all input is immediately applied prior to a rendering
+    // call.
+    ProcessInput();
+
+    // Update game state before rendering it. This call will execute as few or as many update calls as needed to ensure
+    // the game state is synchronized to game time.
+    Update();
+
+    // Allow game a chance to render a frame of output reflecting the current game state.
+    if (mUpdateTimer.GetFrameCount() != 0)  // Don't render before the first Update.
+    {
+        Render();
+        mDeviceResources->Present();
+    }
 }
 
 // Updates the application state once per frame.
 void DXSandboxAppMain::Update() 
 {
-	ProcessInput();
-
-	// Update scene objects.
-	mTimer.Update([&]()
+	// Update scene objects. Call the update lambda as few or as many times as needed to ensure we are caught up to the
+    // current game time. Logic for doing this is embedded in StepTimer::Update() function.
+	mUpdateTimer.Update([&](double totalTime, double deltaTime)
 	{
-		mSceneRenderer->Update(mTimer);
-		mDebugInfoRenderer->Update(mTimer);
+        mSceneRenderer->Update(mUpdateTimer);
+        mDebugInfoRenderer->Update(mUpdateTimer);
 	});
 }
 
@@ -99,14 +114,8 @@ void DXSandboxAppMain::ProcessInput()
 
 // Renders the current frame according to the current application state.
 // Returns true if the frame was rendered and is ready to be displayed.
-bool DXSandboxAppMain::Render() 
+void DXSandboxAppMain::Render() 
 {
-	// Don't try to render anything before the first Update.
-	if (mTimer.GetFrameCount() == 0)
-	{
-		return false;
-	}
-
 	auto context = mDeviceResources->GetD3DDeviceContext();
 
 	// Reset the viewport to target the whole screen.
@@ -125,8 +134,6 @@ bool DXSandboxAppMain::Render()
 	// TODO: Replace this with your app's content rendering functions.
 	mSceneRenderer->Render();
 	mDebugInfoRenderer->Render();
-
-	return true;
 }
 
 // Notifies renderers that device resources need to be released.

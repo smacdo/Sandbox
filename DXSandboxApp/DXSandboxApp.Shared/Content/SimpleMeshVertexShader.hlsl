@@ -1,4 +1,4 @@
-// Simple light shader.
+// Simple light shader./
 cbuffer MatrixBuffer
 {
     matrix worldMatrix;
@@ -57,7 +57,7 @@ VOut main(VIn input)
     // position. This is done by obtaining the vertex's world position and subtracting
     // it from the camera position.
     float4 worldPosition = mul(input.position, worldMatrix);
-    output.viewDirection = normalize(cameraPosition.xyz - worldPosition.xyz);
+        output.viewDirection = normalize(cameraPosition.xyz - worldPosition.xyz);
 
     return output;
 }

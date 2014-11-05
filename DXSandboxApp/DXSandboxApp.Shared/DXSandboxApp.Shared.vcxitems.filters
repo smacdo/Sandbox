@@ -13,16 +13,19 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.h">
-      <Filter>Content</Filter>
+      <Filter>Renderers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\ColoredCubeSceneRenderer.h">
-      <Filter>Content</Filter>
+      <Filter>Renderers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.h">
-      <Filter>Content</Filter>
+      <Filter>Renderers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\RotatingSceneRendererBase.h">
-      <Filter>Content</Filter>
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -32,35 +35,47 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.cpp">
-      <Filter>Content</Filter>
+      <Filter>Renderers</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp">
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeSceneRenderer.cpp">
-      <Filter>Content</Filter>
+      <Filter>Renderers</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.cpp">
-      <Filter>Content</Filter>
+      <Filter>Renderers</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\RotatingSceneRendererBase.cpp">
-      <Filter>Content</Filter>
+      <Filter>Renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubePixelShader.hlsl">
-      <Filter>Content</Filter>
+      <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeVertexShader.hlsl">
-      <Filter>Content</Filter>
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshPixelShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshVertexShader.hlsl">
+      <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Common">
       <UniqueIdentifier>{f73e92cf-0eea-4f0b-8a90-6ff2f73088a9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Content">
+    <Filter Include="Renderers">
       <UniqueIdentifier>{14039155-cca3-4667-ad89-ae6374547fe7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{7bcb9df8-36d9-4cf0-afb4-107a571b6267}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

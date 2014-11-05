@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <wrl.h>
+#include <functional>
 
 namespace DX
 {
@@ -43,59 +44,9 @@ namespace DX
         void ResetElapsedTime();
 
 		// Update timer state, calling the specified Update function the appropriate number of times.
-		template<typename TUpdate>
-		void Update(const TUpdate& update)
-		{
-            uint64 timeDelta = PreUpdateCalculations();
-			uint32 lastFrameCount = mFrameCount;
-
-			if (mIsFixedTimeStep)
-			{
-				// Fixed timestep update logic
-
-				// If the app is running very close to the target elapsed time (within 1/4 of a millisecond) just clamp
-				// the clock to exactly match the target value. This prevents tiny and irrelevant errors
-				// from accumulating over time. Without this clamping, a game that requested a 60 fps
-				// fixed update, running with vsync enabled on a 59.94 NTSC display, would eventually
-				// accumulate enough tiny errors that it would drop a frame. It is better to just round 
-				// small deviations down to zero to leave things running smoothly.
-				if (abs(static_cast<int64>(timeDelta - mTargetElapsedTimeUnits)) < TimeUnitsPerSecond / 4000)
-				{
-					timeDelta = mTargetElapsedTimeUnits;
-				}
-
-				mLeftOverTimeUnits += timeDelta;
-
-				while (mLeftOverTimeUnits >= mTargetElapsedTimeUnits)
-				{
-					mElapsedTimeUnits   = mTargetElapsedTimeUnits;
-					mTotalTimeUnits    += mTargetElapsedTimeUnits;
-					mLeftOverTimeUnits -= mTargetElapsedTimeUnits;
-					mFrameCount++;
-
-					update();
-				}
-			}
-			else
-			{
-				// Variable timestep update logic.
-				mElapsedTimeUnits   = timeDelta;
-				mTotalTimeUnits    += timeDelta;
-				mLeftOverTimeUnits  = 0;
-				mFrameCount++;
-
-				update();
-			}
-
-            PostUpdateCalculations(lastFrameCount);
-		}
+        void Update(std::function<void(double, double)> updateCallback);
 
     private:
-        // Performs stateful work prior to invoking the callback in the Update routine.
-        uint64 PreUpdateCalculations();
-
-        // Performs stateful work after invoking the callback in the Update routine.
-        void PostUpdateCalculations(uint32 lastFrameCount);
 
 	private:
 		// Source timing data uses QPC units.
