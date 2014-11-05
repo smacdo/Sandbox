@@ -4,13 +4,17 @@
 
 #include "Common\DeviceResources.h"
 #include "ShaderStructures.h"
-#include "Common\StepTimer.h"
 #include "BasicDemoRenderer.h"
 
 struct ID3D11InputLayout;
 struct ID3D11Buffer;
 struct ID3D11VertexShader;
 struct ID3D11PixelShader;
+
+namespace DX
+{
+    class StepTimer;
+}
 
 namespace DXSandboxApp
 {
@@ -19,12 +23,10 @@ namespace DXSandboxApp
     {
     public:
         SimpleMeshRenderer(std::shared_ptr<DX::DeviceResources> deviceResources);
-        void CreateDeviceDependentResources();
+        virtual void CreateDeviceDependentResources() override;
         virtual void ReleaseDeviceDependentResources() override;
         virtual void Update(const DX::StepTimer& timer) override;
         virtual void Render() override;
-
-    private:
 
     private:
         // Direct3D resources for cube geometry.
