@@ -12,9 +12,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\DeviceResources.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.h">
-      <Filter>Renderers</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.h">
       <Filter>Renderers</Filter>
     </ClInclude>
@@ -36,15 +33,18 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\ShaderStructures.h">
       <Filter>Renderers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Content\GameUiRenderer.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Ui\TextSprite.h">
+      <Filter>Ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)pch.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\DeviceResources.cpp">
       <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\DebugInfoRenderer.cpp">
-      <Filter>Renderers</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp">
       <Filter>Common</Filter>
@@ -63,6 +63,12 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp">
       <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Content\GameUiRenderer.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Ui\TextSprite.cpp">
+      <Filter>Ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +97,9 @@
     </Filter>
     <Filter Include="Input">
       <UniqueIdentifier>{56ddc390-f223-4ee1-bc8f-fc7639f8281d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ui">
+      <UniqueIdentifier>{87d18ddc-a414-46fd-8f4b-5b1575fa14e0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

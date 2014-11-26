@@ -9,7 +9,7 @@
 // Renders Direct2D and 3D content on the screen.
 namespace DXSandboxApp
 {
-    class DebugInfoRenderer;
+    class GameUiRenderer;
     class IDemoRenderer;
     class InputTracker;
 
@@ -43,7 +43,7 @@ namespace DXSandboxApp
 
 		// Scene renderers.
         std::unique_ptr<IDemoRenderer> mSceneRenderer;
-		std::unique_ptr<DebugInfoRenderer> mDebugInfoRenderer;
+        std::unique_ptr<GameUiRenderer> mUiRenderer;
 
         // Render details.
 		Windows::Foundation::IAsyncAction^ mRenderLoopWorker;

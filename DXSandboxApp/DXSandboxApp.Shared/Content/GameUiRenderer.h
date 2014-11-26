@@ -13,12 +13,16 @@ struct IDWriteTextFormat;
 
 namespace DXSandboxApp
 {
+    class TextSprite;
+
 	// Renders the current FPS value in the bottom right corner of the screen using Direct2D and DirectWrite.
-	class DebugInfoRenderer
+	class GameUiRenderer
 	{
 	public:
-        DebugInfoRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+        GameUiRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+        ~GameUiRenderer();
 		void CreateDeviceDependentResources();
+        void CreateWindowSizeDependentResources();
 		void ReleaseDeviceDependentResources();
 		void Update(DX::StepTimer const& timer);
 		void Render();
@@ -27,11 +31,7 @@ namespace DXSandboxApp
 		// Cached pointer to device resources.
 		std::shared_ptr<DX::DeviceResources> mDeviceResources;
 
-		// Resources related to text rendering.
-		std::wstring                                    mText;
-		Microsoft::WRL::ComPtr<ID2D1SolidColorBrush>    mWhiteBrush;
-		Microsoft::WRL::ComPtr<ID2D1DrawingStateBlock>  mStateBlock;
-		Microsoft::WRL::ComPtr<IDWriteTextLayout>       mTextLayout;
-		Microsoft::WRL::ComPtr<IDWriteTextFormat>		mTextFormat;
+        // Text rendering.
+        std::unique_ptr<DXSandboxApp::TextSprite> mTextSprite;
 	};
 }

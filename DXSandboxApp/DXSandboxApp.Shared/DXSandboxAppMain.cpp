@@ -5,7 +5,7 @@
 #include "Input\InputTracker.h"
 
 #include "Content\ColoredCubeRenderer.h"
-#include "Content\DebugInfoRenderer.h"
+#include "Content\GameUiRenderer.h"
 
 #include <memory>
 
@@ -27,7 +27,7 @@ DXSandboxAppMain::DXSandboxAppMain(std::shared_ptr<DX::DeviceResources> deviceRe
 
     // Initialize scene renderers.
     mSceneRenderer = std::unique_ptr<ColoredCubeRenderer>(new ColoredCubeRenderer(mInputTracker, mDeviceResources));
-    mDebugInfoRenderer = std::unique_ptr<DebugInfoRenderer>(new DebugInfoRenderer(mDeviceResources));
+    mUiRenderer = std::unique_ptr<GameUiRenderer>(new GameUiRenderer(mDeviceResources));
 
 	// Set timer to fixed updates, 60 times a second.
     mUpdateTimer.SetFixedTimeStep(false);
@@ -49,6 +49,7 @@ DXSandboxAppMain::~DXSandboxAppMain()
 void DXSandboxAppMain::CreateWindowSizeDependentResources() 
 {
 	mSceneRenderer->CreateWindowSizeDependentResources();
+    mUiRenderer->CreateWindowSizeDependentResources();
 }
 
 void DXSandboxAppMain::StartRenderLoop()
@@ -105,7 +106,7 @@ void DXSandboxAppMain::Update()
 	mUpdateTimer.Update([&](double totalTime, double deltaTime)
 	{
         mSceneRenderer->Update(mUpdateTimer);
-        mDebugInfoRenderer->Update(mUpdateTimer);
+        mUiRenderer->Update(mUpdateTimer);
 	});
 }
 
@@ -137,21 +138,21 @@ void DXSandboxAppMain::Render()
 	// Render the scene objects.
 	// TODO: Replace this with your app's content rendering functions.
 	mSceneRenderer->Render();
-	mDebugInfoRenderer->Render();
+	mUiRenderer->Render();
 }
 
 // Notifies renderers that device resources need to be released.
 void DXSandboxAppMain::OnDeviceLost()
 {
 	mSceneRenderer->ReleaseDeviceDependentResources();
-	mDebugInfoRenderer->ReleaseDeviceDependentResources();
+	mUiRenderer->ReleaseDeviceDependentResources();
 }
 
 // Notifies renderers that device resources may now be recreated.
 void DXSandboxAppMain::OnDeviceRestored()
 {
 	mSceneRenderer->CreateDeviceDependentResources();
-	mDebugInfoRenderer->CreateDeviceDependentResources();
+    mUiRenderer->CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
 }
 
