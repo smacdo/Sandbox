@@ -15,12 +15,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\BasicDemoRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\TextSprite.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\BasicDemoRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\IDemoRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\ShaderStructures.h" />
@@ -40,6 +43,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\GameUiRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.cpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\TextSprite.h" />
   </ItemGroup>
   <ItemGroup>
