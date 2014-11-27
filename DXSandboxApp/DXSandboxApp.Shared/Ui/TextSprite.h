@@ -10,20 +10,13 @@ struct IDWriteTextFormat;
 
 namespace DXSandboxApp
 {
-    // Renders UI text.
-    //  TODO: Consider splitting into two classes. One holds renderer calls (Create/Release) and instance is held by renderer. The
-    //        other class is given to game code, and proxies requests into this class. That way game code doesn't see things like
-    //        create/release device dependent resources.
+    class RenderableTextSprite;
+
+    // Sprite with text.
     class TextSprite
     {
     public:
-        TextSprite(const std::shared_ptr<DX::DeviceResources>& deviceResources, const std::wstring& text);
-
-        TextSprite(const std::shared_ptr<DX::DeviceResources>& deviceResources,
-                   const std::wstring& text,
-                   const std::wstring& fontName,
-                   int fontSize);
-
+        TextSprite(std::shared_ptr<RenderableTextSprite> renderable);
         TextSprite(const TextSprite&) = delete;
         ~TextSprite();
 
@@ -31,7 +24,34 @@ namespace DXSandboxApp
 
         void SetText(const std::wstring& text);
         void SetPosition(float x, float y);
-        std::pair<float, float> LayoutSize() const;
+
+        std::pair<float, float> Size() const;
+
+    private:
+        std::shared_ptr<RenderableTextSprite> mRenderable;
+    };
+
+    // Internal render class.
+    class RenderableTextSprite
+    {
+    public:
+        RenderableTextSprite(
+            const std::shared_ptr<DX::DeviceResources>& deviceResources, const std::wstring& text);
+
+        RenderableTextSprite(
+            const std::shared_ptr<DX::DeviceResources>& deviceResources,
+            const std::wstring& text,
+            const std::wstring& fontName,
+            int fontSize);
+
+        RenderableTextSprite(const TextSprite&) = delete;
+        ~RenderableTextSprite();
+
+        RenderableTextSprite& operator = (const RenderableTextSprite& rhs) = delete;
+
+        void SetText(const std::wstring& text);
+        void SetPosition(float x, float y);
+        std::pair<float, float> Size() const;
 
         void Render();
 

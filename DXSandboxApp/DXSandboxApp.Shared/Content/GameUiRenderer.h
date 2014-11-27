@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 #include "..\Common\DeviceResources.h"
 #include "..\Common\StepTimer.h"
 
@@ -14,6 +15,8 @@ struct IDWriteTextFormat;
 namespace DXSandboxApp
 {
     class TextSprite;
+    class RenderableImageSprite;
+    class RenderableTextSprite;
     class ImageSprite;
     class ResourceLoader;
 
@@ -32,14 +35,16 @@ namespace DXSandboxApp
 		void Update(DX::StepTimer const& timer);
 		void Render();
 
+        TextSprite * CreateTextSprite(const std::wstring& text);
+        ImageSprite * CreateImageSprite(const std::wstring& imageFilePath);
+
 	private:
 		// Cached pointer to device resources.
 		std::shared_ptr<DX::DeviceResources> mDeviceResources;
         std::unique_ptr<ResourceLoader> mResourceLoader;
 
         // Text rendering.
-        std::unique_ptr<DXSandboxApp::TextSprite> mTextSprite;
-        std::unique_ptr<DXSandboxApp::ImageSprite> mImageSprite;
-        std::unique_ptr<DXSandboxApp::ImageSprite> mImageSprite2;
+        std::vector<std::shared_ptr<RenderableTextSprite>> mTextSprites;
+        std::vector<std::shared_ptr<RenderableImageSprite>> mImageSprites;
 	};
 }

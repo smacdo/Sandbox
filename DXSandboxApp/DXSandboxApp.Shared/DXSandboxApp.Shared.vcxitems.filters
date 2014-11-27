@@ -42,7 +42,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.h">
       <Filter>Ui</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Game\GameHud.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -77,7 +80,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.cpp">
       <Filter>Ui</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Game\GameHud.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubePixelShader.hlsl">

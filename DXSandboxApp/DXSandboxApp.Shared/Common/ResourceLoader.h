@@ -5,7 +5,7 @@
 
 namespace DXSandboxApp
 {
-    class ImageSprite;
+    class RenderableImageSprite;
 
     class ResourceLoader
     {
@@ -19,7 +19,7 @@ namespace DXSandboxApp
         void CreateDeviceDependentResources();
         void ReleaseDeviceDependentResources();
 
-        ImageSprite* LoadImageSprite(const std::wstring& imageFileName);
+        RenderableImageSprite* LoadImageSprite(const std::wstring& imageFileName);
 
     private:
         // Cached pointer to device resources.

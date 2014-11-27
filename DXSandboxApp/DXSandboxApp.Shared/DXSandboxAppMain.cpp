@@ -3,6 +3,7 @@
 #include "Common\DirectXHelper.h"
 #include "Content\IDemoRenderer.h"
 #include "Input\InputTracker.h"
+#include "Game\GameHud.h"
 
 #include "Content\ColoredCubeRenderer.h"
 #include "Content\GameUiRenderer.h"
@@ -34,6 +35,10 @@ DXSandboxAppMain::DXSandboxAppMain(std::shared_ptr<DX::DeviceResources> deviceRe
 
 	mRenderTimer.SetFixedTimeStep(true);
     mRenderTimer.SetTargetElapsedSeconds(1.0 / 60);
+
+    // Initialize HUD.
+    mGameHud.reset(new GameHud(mUiRenderer));
+    mGameHud->LoadResources();
 }
 
 /**
@@ -105,6 +110,7 @@ void DXSandboxAppMain::Update()
     // current game time. Logic for doing this is embedded in StepTimer::Update() function.
 	mUpdateTimer.Update([&](double totalTime, double deltaTime)
 	{
+        mGameHud->Update(mUpdateTimer);
         mSceneRenderer->Update(mUpdateTimer);
         mUiRenderer->Update(mUpdateTimer);
 	});
@@ -145,7 +151,9 @@ void DXSandboxAppMain::Render()
 void DXSandboxAppMain::OnDeviceLost()
 {
 	mSceneRenderer->ReleaseDeviceDependentResources();
-	mUiRenderer->ReleaseDeviceDependentResources();
+	mUiRenderer->ReleaseDeviceDependentResources();    
+
+    mGameHud->UnloadResources();
 }
 
 // Notifies renderers that device resources may now be recreated.
@@ -154,6 +162,8 @@ void DXSandboxAppMain::OnDeviceRestored()
 	mSceneRenderer->CreateDeviceDependentResources();
     mUiRenderer->CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
+
+    mGameHud->LoadResources();
 }
 
 void DXSandboxAppMain::StartTracking()

@@ -12,6 +12,7 @@ namespace DXSandboxApp
     class GameUiRenderer;
     class IDemoRenderer;
     class InputTracker;
+    class GameHud;
 
 	class DXSandboxAppMain : public DX::IDeviceNotify
 	{
@@ -43,7 +44,7 @@ namespace DXSandboxApp
 
 		// Scene renderers.
         std::unique_ptr<IDemoRenderer> mSceneRenderer;
-        std::unique_ptr<GameUiRenderer> mUiRenderer;
+        std::shared_ptr<GameUiRenderer> mUiRenderer;
 
         // Render details.
 		Windows::Foundation::IAsyncAction^ mRenderLoopWorker;
@@ -55,5 +56,8 @@ namespace DXSandboxApp
 
 		// Track current input pointer position.
 		float mPointerLocationX;
+
+        // Gameplay
+        std::unique_ptr<GameHud> mGameHud;
 	};
 }

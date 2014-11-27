@@ -27,7 +27,7 @@ void ResourceLoader::CreateDeviceDependentResources()
 {
 }
 
-ImageSprite* ResourceLoader::LoadImageSprite(const std::wstring& imageFileName)
+RenderableImageSprite* ResourceLoader::LoadImageSprite(const std::wstring& imageFileName)
 {
     // Format path to image file name.
     auto location = Package::Current->InstalledLocation;
@@ -87,7 +87,7 @@ ImageSprite* ResourceLoader::LoadImageSprite(const std::wstring& imageFileName)
 
     imageSize = imageBitmap->GetSize();
 
-    return new ImageSprite(mDeviceResources, imageBitmap.Get(), imageSize.width, imageSize.height);
+    return new RenderableImageSprite(mDeviceResources, imageBitmap.Get(), imageSize.width, imageSize.height);
 }
 
 void ResourceLoader::ReleaseDeviceDependentResources()

@@ -12,6 +12,8 @@ struct ID2DBitmap;
 
 namespace DXSandboxApp
 {
+    class RenderableImageSprite;
+
     // Renders UI text.
     //  TODO: Consider splitting into two classes. One holds renderer calls (Create/Release) and instance is held by renderer. The
     //        other class is given to game code, and proxies requests into this class. That way game code doesn't see things like
@@ -19,16 +21,36 @@ namespace DXSandboxApp
     class ImageSprite
     {
     public:
-        ImageSprite(
+        ImageSprite(std::shared_ptr<RenderableImageSprite> renderableSprite);
+        ImageSprite(const ImageSprite&) = delete;
+        ~ImageSprite();
+
+        ImageSprite& operator = (const ImageSprite& rhs) = delete;
+
+        void SetText(const std::wstring& text);
+        void SetPosition(float x, float y);
+
+        std::pair<float, float> Size() const;
+
+    private:
+        std::shared_ptr<RenderableImageSprite> mRenderable;
+    };
+
+    ///////////
+
+    class RenderableImageSprite
+    {
+    public:
+        RenderableImageSprite(
             const std::shared_ptr<DX::DeviceResources>& deviceResources,
             ID2D1Bitmap * spriteBitmap,          // ImageSprite takes ownership using AddRef.
             float spriteWidth,
             float spriteHeight);
 
-        ImageSprite(const ImageSprite&) = delete;
-        ~ImageSprite();
+        RenderableImageSprite(const RenderableImageSprite&) = delete;
+        ~RenderableImageSprite();
 
-        ImageSprite& operator = (const ImageSprite& rhs) = delete;
+        RenderableImageSprite& operator = (const RenderableImageSprite& rhs) = delete;
 
         void SetText(const std::wstring& text);
         void SetPosition(float x, float y);

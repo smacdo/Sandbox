@@ -19,6 +19,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\BasicDemoRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Game\GameHud.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\TextSprite.cpp" />
@@ -30,6 +31,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Game\GameHud.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Input\InputTracker.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)pch.cpp">

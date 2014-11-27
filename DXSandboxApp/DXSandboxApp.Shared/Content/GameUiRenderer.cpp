@@ -14,9 +14,8 @@ using namespace DXSandboxApp;
 GameUiRenderer::GameUiRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources)
     : mDeviceResources(deviceResources),
       mResourceLoader(new ResourceLoader(deviceResources)),
-      mTextSprite(new TextSprite(deviceResources, L"Hello World")),
-      mImageSprite(),
-      mImageSprite2()
+      mTextSprites(),
+      mImageSprites()
 {
 	CreateDeviceDependentResources();
 }
@@ -33,11 +32,7 @@ GameUiRenderer::~GameUiRenderer()
 */
 void GameUiRenderer::Update(DX::StepTimer const& timer)
 {
-	// Update FPS text.
-	uint32 fps = timer.GetFramesPerSecond();
-	std::wstring textString = (fps > 0) ? std::to_wstring(fps) + L" FPS" : L" - FPS";
 
-    mTextSprite->SetText(textString);
 }
 
 // Renders a frame to the screen.
@@ -47,8 +42,10 @@ void GameUiRenderer::Render()
     auto d2dContext = mDeviceResources->GetD2DDeviceContext();
     d2dContext->BeginDraw();
 
-    mImageSprite->Render();
-    mImageSprite2->Render();
+    for (auto &sprite : mImageSprites)
+    {
+        sprite->Render();
+    }
 
     HRESULT hr = d2dContext->EndDraw();
     if (hr != D2DERR_RECREATE_TARGET)
@@ -57,33 +54,62 @@ void GameUiRenderer::Render()
     }
 
     // Draw text objects.
-    mTextSprite->Render();
+    for (auto &sprite : mTextSprites)
+    {
+        sprite->Render();
+    }
 }
 
 void GameUiRenderer::CreateDeviceDependentResources()
 {
-    mTextSprite->CreateDeviceDependentResources();
+    for (auto &sprite : mTextSprites)
+    {
+        sprite->CreateDeviceDependentResources();
+    }
 
     // Load sprites (have to reload after device lost).
-    mImageSprite.reset(mResourceLoader->LoadImageSprite(L"Logo.png"));
-    mImageSprite2.reset(mResourceLoader->LoadImageSprite(L"StoreLogo.png"));
-
-    mImageSprite2->SetPosition(300, 400);
+    for (auto &sprite : mImageSprites)
+    {
+        sprite->CreateDeviceDependentResources();
+    }
 }
 
 void GameUiRenderer::ReleaseDeviceDependentResources()
 {
-    mTextSprite->ReleaseDeviceDependentResources();
-    mImageSprite->ReleaseDeviceDependentResources();
-    mImageSprite2->ReleaseDeviceDependentResources();
+    for (auto &sprite : mTextSprites)
+    {
+        sprite->ReleaseDeviceDependentResources();
+    }
+
+    for (auto &sprite : mImageSprites)
+    {
+        sprite->ReleaseDeviceDependentResources();
+    }
 }
 
 void GameUiRenderer::CreateWindowSizeDependentResources()
 {
     // (Re-)Position text objects.
-    ID2D1DeviceContext* context = mDeviceResources->GetD2DDeviceContext();
+/*    ID2D1DeviceContext* context = mDeviceResources->GetD2DDeviceContext();
     Windows::Foundation::Size logicalSize = mDeviceResources->GetLogicalSize();
 
-    std::pair<float, float> size = mTextSprite->LayoutSize();
-    mTextSprite->SetPosition(logicalSize.Width - size.first, logicalSize.Height - size.second);
+    std::pair<float, float> size = mTextSprite->Size();
+    mTextSprite->SetPosition(logicalSize.Width - size.first, logicalSize.Height - size.second);*/
+}
+
+TextSprite* GameUiRenderer::CreateTextSprite(const std::wstring& text)
+{
+    std::shared_ptr<RenderableTextSprite> renderable(new RenderableTextSprite(mDeviceResources, text));
+    renderable->CreateDeviceDependentResources();
+
+    mTextSprites.push_back(renderable);     // TODO: Presize array or something.
+    return new TextSprite(renderable);
+}
+
+ImageSprite* GameUiRenderer::CreateImageSprite(const std::wstring& imageFilePath)
+{
+    std::shared_ptr<RenderableImageSprite> renderable(mResourceLoader->LoadImageSprite(imageFilePath)); // TODO: Rename LoadImageSprite
+    mImageSprites.push_back(renderable);     // TODO: Presize array or something.
+
+    return new ImageSprite(renderable);
 }

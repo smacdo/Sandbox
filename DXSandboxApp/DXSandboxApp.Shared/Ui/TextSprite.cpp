@@ -12,15 +12,44 @@ static const float DefaultFontSize = 32.0f;
 static const float MaxDrawTextWidth = 800.0f;
 static const float MaxDrawTextHeight = 100.0f;
 
-TextSprite::TextSprite(const std::shared_ptr<DX::DeviceResources>& deviceResources, const std::wstring& text)
-    : TextSprite(deviceResources, text, DefaultFontName, DefaultFontSize)
+TextSprite::TextSprite(std::shared_ptr<RenderableTextSprite> renderable)
+    : mRenderable(renderable)
 {
 }
 
-TextSprite::TextSprite(const std::shared_ptr<DX::DeviceResources>& deviceResources,
-                       const std::wstring& text,
-                       const std::wstring& fontName,
-                       int fontSize)
+TextSprite::~TextSprite()
+{
+}
+
+void TextSprite::SetText(const std::wstring& text)
+{
+    mRenderable->SetText(text);
+}
+
+void TextSprite::SetPosition(float x, float y)
+{
+    mRenderable->SetPosition(x, y);
+}
+
+std::pair<float, float> TextSprite::Size() const
+{
+    return mRenderable->Size();
+}
+
+///////////////////////////////////////////////
+
+RenderableTextSprite::RenderableTextSprite(
+    const std::shared_ptr<DX::DeviceResources>& deviceResources,
+    const std::wstring& text)
+    : RenderableTextSprite(deviceResources, text, DefaultFontName, DefaultFontSize)
+{
+}
+
+RenderableTextSprite::RenderableTextSprite(
+    const std::shared_ptr<DX::DeviceResources>& deviceResources,
+    const std::wstring& text,
+    const std::wstring& fontName,
+    int fontSize)
     : mText(),
       mPosX(0.0f),
       mPosY(0.0f),
@@ -52,31 +81,31 @@ TextSprite::TextSprite(const std::shared_ptr<DX::DeviceResources>& deviceResourc
     SetText(text);
 }
 
-TextSprite::~TextSprite()
+RenderableTextSprite::~RenderableTextSprite()
 {
 }
 
-void TextSprite::SetText(const std::wstring& text)
+void RenderableTextSprite::SetText(const std::wstring& text)
 {
     mText = text;
 
     DX::ThrowIfFailed(
         mDeviceResources->GetDWriteFactory()->CreateTextLayout(
-        mText.c_str(),
-        static_cast<uint32>(mText.length()),
-        mFormat.Get(),
-        MaxDrawTextWidth,  // Max width of the input text.
-        MaxDrawTextHeight, // Max height of the input text.
-        &mLayout));
+            mText.c_str(),
+            static_cast<uint32>(mText.length()),
+            mFormat.Get(),
+            MaxDrawTextWidth,  // Max width of the input text.
+            MaxDrawTextHeight, // Max height of the input text.
+            &mLayout));
 }
 
-void TextSprite::SetPosition(float x, float y)
+void RenderableTextSprite::SetPosition(float x, float y)
 {
     mPosX = x;
     mPosY = y;
 }
 
-std::pair<float, float> TextSprite::LayoutSize() const
+std::pair<float, float> RenderableTextSprite::Size() const
 {
     DWRITE_TEXT_METRICS	textMetrics = { 0 };
     DX::ThrowIfFailed(mLayout->GetMetrics(&textMetrics));
@@ -85,20 +114,20 @@ std::pair<float, float> TextSprite::LayoutSize() const
 }
 
 
-void TextSprite::CreateDeviceDependentResources()
+void RenderableTextSprite::CreateDeviceDependentResources()
 {
     // TODO: Mark state as recreated
     DX::ThrowIfFailed(
         mDeviceResources->GetD2DDeviceContext()->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &mBrush));
 }
 
-void TextSprite::ReleaseDeviceDependentResources()
+void RenderableTextSprite::ReleaseDeviceDependentResources()
 {
     // TODO: Mark state as released
     mBrush.Reset();
 }
 
-void TextSprite::Render()
+void RenderableTextSprite::Render()
 {
     // Draw text.
     ID2D1DeviceContext* context = mDeviceResources->GetD2DDeviceContext();
