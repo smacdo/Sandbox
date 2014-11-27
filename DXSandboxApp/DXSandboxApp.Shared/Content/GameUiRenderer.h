@@ -35,6 +35,8 @@ namespace DXSandboxApp
 		void Update(DX::StepTimer const& timer);
 		void Render();
 
+        std::pair<float, float> LogicalSize() const;
+
         TextSprite * CreateTextSprite(const std::wstring& text);
         ImageSprite * CreateImageSprite(const std::wstring& imageFilePath);
 

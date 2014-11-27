@@ -39,3 +39,9 @@ void GameHud::Update(const DX::StepTimer& timer)
 
     mFpsStatus->SetText(textString);
 }
+
+void GameHud::OnScreenSizeChanged(float width, float height)
+{
+    std::pair<float, float> size = mFpsStatus->Size();
+    mFpsStatus->SetPosition(width - size.first, height - size.second);
+}

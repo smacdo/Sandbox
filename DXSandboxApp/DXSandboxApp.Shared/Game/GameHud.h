@@ -15,6 +15,7 @@ namespace DXSandboxApp
     class ImageSprite;
 
     // Game user interface.
+    //  TODO: Add window reisze / changed support
     class GameHud
     {
     public:
@@ -26,6 +27,8 @@ namespace DXSandboxApp
 
         void LoadResources();           // TODO: Rename LoadContent()
         void UnloadResources();
+
+        void OnScreenSizeChanged(float width, float height);
 
         void Update(const DX::StepTimer& timer);
 

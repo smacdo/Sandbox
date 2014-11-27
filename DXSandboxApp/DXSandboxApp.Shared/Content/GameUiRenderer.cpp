@@ -32,7 +32,6 @@ GameUiRenderer::~GameUiRenderer()
 */
 void GameUiRenderer::Update(DX::StepTimer const& timer)
 {
-
 }
 
 // Renders a frame to the screen.
@@ -62,12 +61,13 @@ void GameUiRenderer::Render()
 
 void GameUiRenderer::CreateDeviceDependentResources()
 {
+    // Text sprites.
     for (auto &sprite : mTextSprites)
     {
         sprite->CreateDeviceDependentResources();
     }
 
-    // Load sprites (have to reload after device lost).
+    // Image sprites.
     for (auto &sprite : mImageSprites)
     {
         sprite->CreateDeviceDependentResources();
@@ -76,11 +76,13 @@ void GameUiRenderer::CreateDeviceDependentResources()
 
 void GameUiRenderer::ReleaseDeviceDependentResources()
 {
+    // Text sprites.
     for (auto &sprite : mTextSprites)
     {
         sprite->ReleaseDeviceDependentResources();
     }
 
+    // Image sprites.
     for (auto &sprite : mImageSprites)
     {
         sprite->ReleaseDeviceDependentResources();
@@ -89,12 +91,14 @@ void GameUiRenderer::ReleaseDeviceDependentResources()
 
 void GameUiRenderer::CreateWindowSizeDependentResources()
 {
-    // (Re-)Position text objects.
-/*    ID2D1DeviceContext* context = mDeviceResources->GetD2DDeviceContext();
+}
+
+std::pair<float, float> GameUiRenderer::LogicalSize() const
+{
+    ID2D1DeviceContext* context = mDeviceResources->GetD2DDeviceContext();
     Windows::Foundation::Size logicalSize = mDeviceResources->GetLogicalSize();
 
-    std::pair<float, float> size = mTextSprite->Size();
-    mTextSprite->SetPosition(logicalSize.Width - size.first, logicalSize.Height - size.second);*/
+    return std::pair<float, float>(logicalSize.Width, logicalSize.Height);
 }
 
 TextSprite* GameUiRenderer::CreateTextSprite(const std::wstring& text)

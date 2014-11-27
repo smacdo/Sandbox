@@ -55,6 +55,10 @@ void DXSandboxAppMain::CreateWindowSizeDependentResources()
 {
 	mSceneRenderer->CreateWindowSizeDependentResources();
     mUiRenderer->CreateWindowSizeDependentResources();
+
+    // Resize the game ui.
+    std::pair<float, float> screenSize = mUiRenderer->LogicalSize();
+    mGameHud->OnScreenSizeChanged(screenSize.first, screenSize.second);
 }
 
 void DXSandboxAppMain::StartRenderLoop()
