@@ -17,7 +17,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Demos\ColoredCubeRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Demos\SimpleMeshRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Game\GameHud.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\BasicDemoRenderer.cpp" />
@@ -28,7 +29,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\TextSprite.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\SimpleMeshRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Demos\ColoredCubeRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Demos\SimpleMeshRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Game\GameHud.h" />
@@ -41,8 +43,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\DeviceResources.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\DirectXHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\StepTimer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.h" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\BasicDemoRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\IDemoRenderer.h" />
@@ -53,18 +53,18 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\TextSprite.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubePixelShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\ColoredCubePixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
       <FileType>Document</FileType>
     </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeVertexShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\ColoredCubeVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
       <FileType>Document</FileType>
     </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshPixelShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleMeshPixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Content\SimpleMeshVertexShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleMeshVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>

@@ -32,6 +32,9 @@ namespace DXSandboxApp
 		virtual void OnDeviceLost();
 		virtual void OnDeviceRestored();
 
+        void Initialize();
+        void StartRenderer(IDemoRenderer * renderer);
+
 	private:
         void UpdateGameLoop();
 		void ProcessInput();

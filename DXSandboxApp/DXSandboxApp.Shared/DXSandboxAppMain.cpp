@@ -2,11 +2,10 @@
 #include "DXSandboxAppMain.h"
 #include "Common/DirectXHelper.h"
 #include "Rendering/IDemoRenderer.h"
+#include "Rendering/GameUiRenderer.h"
 #include "Input/InputTracker.h"
 #include "Game/GameHud.h"
-
-#include "Content/ColoredCubeRenderer.h"
-#include "Rendering/GameUiRenderer.h"
+#include "Demos/ColoredCubeRenderer.h"
 
 #include <memory>
 
@@ -26,19 +25,8 @@ DXSandboxAppMain::DXSandboxAppMain(std::shared_ptr<DX::DeviceResources> deviceRe
 	// Register to be notified if the Device is lost or recreated
 	mDeviceResources->RegisterDeviceNotify(this);
 
-    // Initialize scene renderers.
-    mSceneRenderer = std::unique_ptr<ColoredCubeRenderer>(new ColoredCubeRenderer(mInputTracker, mDeviceResources));
-    mUiRenderer = std::unique_ptr<GameUiRenderer>(new GameUiRenderer(mDeviceResources));
-
-	// Set timer to fixed updates, 60 times a second.
-    mUpdateTimer.SetFixedTimeStep(false);
-
-	mRenderTimer.SetFixedTimeStep(true);
-    mRenderTimer.SetTargetElapsedSeconds(1.0 / 60);
-
-    // Initialize HUD.
-    mGameHud.reset(new GameHud(mUiRenderer));
-    mGameHud->LoadResources();
+    Initialize();
+    StartRenderer(new ColoredCubeRenderer(mInputTracker, mDeviceResources));
 }
 
 /**
@@ -48,6 +36,27 @@ DXSandboxAppMain::~DXSandboxAppMain()
 {
 	// Deregister device notification
 	mDeviceResources->RegisterDeviceNotify(nullptr);
+}
+
+void DXSandboxAppMain::Initialize()
+{
+    // Initialize system / game timer to fixed updates, 60 times a second.
+    mUpdateTimer.SetFixedTimeStep(false);
+
+    mRenderTimer.SetFixedTimeStep(true);
+    mRenderTimer.SetTargetElapsedSeconds(1.0 / 60);
+
+    // Initialize the user interface.
+    mUiRenderer = std::unique_ptr<GameUiRenderer>(new GameUiRenderer(mDeviceResources));
+
+    mGameHud.reset(new GameHud(mUiRenderer));
+    mGameHud->LoadResources();
+}
+
+void DXSandboxAppMain::StartRenderer(IDemoRenderer * renderer)
+{
+    critical_section::scoped_lock lock(mCriticalSection);
+    mSceneRenderer = std::unique_ptr<IDemoRenderer>(renderer);
 }
 
 // Updates application state when the window size changes (e.g. device orientation change)
@@ -125,8 +134,13 @@ void DXSandboxAppMain::Render()
     context->ClearRenderTargetView(mDeviceResources->GetBackBufferRenderTargetView(), DirectX::Colors::CornflowerBlue);
     context->ClearDepthStencilView(mDeviceResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-    // Render the scene objects.
-    mSceneRenderer->Render();
+    // Render active demo scene, if one was selected.
+    if (mSceneRenderer)
+    {
+        mSceneRenderer->Render();
+    }
+
+    // Render the user interface.
     mUiRenderer->Render();
 }
 
@@ -139,7 +153,13 @@ void DXSandboxAppMain::Update()
 	{
         mGameHud->Update(mUpdateTimer);
 
-        mSceneRenderer->Update(mUpdateTimer);
+        // Update active demo renderer, if one is running.
+        if (mSceneRenderer)
+        {
+            mSceneRenderer->Update(mUpdateTimer);
+        }
+
+        // Update the user interface.
         mUiRenderer->Update(mUpdateTimer);
 	});
 }
@@ -153,16 +173,23 @@ void DXSandboxAppMain::ProcessInput()
 // Notifies renderers that device resources need to be released.
 void DXSandboxAppMain::OnDeviceLost()
 {
-	mSceneRenderer->ReleaseDeviceDependentResources();
-	mUiRenderer->ReleaseDeviceDependentResources();    
+    if (mSceneRenderer)
+    {
+        mSceneRenderer->ReleaseDeviceDependentResources();
+    }
 
+	mUiRenderer->ReleaseDeviceDependentResources();    
     mGameHud->UnloadResources();
 }
 
 // Notifies renderers that device resources may now be recreated.
 void DXSandboxAppMain::OnDeviceRestored()
 {
-	mSceneRenderer->CreateDeviceDependentResources();
+    if (mSceneRenderer)
+    {
+        mSceneRenderer->CreateDeviceDependentResources();
+    }
+
     mUiRenderer->CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
 
