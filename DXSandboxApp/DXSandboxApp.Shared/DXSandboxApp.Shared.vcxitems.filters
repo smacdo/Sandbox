@@ -18,23 +18,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\BasicDemoRenderer.h">
-      <Filter>Renderers</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.h">
-      <Filter>Renderers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\IDemoRenderer.h">
       <Filter>Renderers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Input\InputTracker.h">
       <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\ShaderStructures.h">
-      <Filter>Renderers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Content\GameUiRenderer.h">
-      <Filter>Renderers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\TextSprite.h">
       <Filter>Ui</Filter>
@@ -45,6 +33,24 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Game\GameHud.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.h">
+      <Filter>Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.h">
+      <Filter>Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\BasicDemoRenderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\IDemoRenderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ShaderStructures.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -62,17 +68,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\BasicDemoRenderer.cpp">
-      <Filter>Renderers</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Content\ColoredCubeRenderer.cpp">
       <Filter>Renderers</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp">
       <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Content\GameUiRenderer.cpp">
-      <Filter>Renderers</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\TextSprite.cpp">
       <Filter>Ui</Filter>
@@ -83,6 +83,18 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Game\GameHud.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.cpp">
+      <Filter>Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.cpp">
+      <Filter>Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\BasicDemoRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +126,12 @@
     </Filter>
     <Filter Include="Ui">
       <UniqueIdentifier>{87d18ddc-a414-46fd-8f4b-5b1575fa14e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{35bc66ff-ed09-47a8-b8a3-d8707fa795dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Demos">
+      <UniqueIdentifier>{a98ae5f6-b864-4b53-b613-007dff3d37f6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

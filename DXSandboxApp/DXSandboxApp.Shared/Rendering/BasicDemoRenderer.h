@@ -3,8 +3,8 @@
 #include <memory>
 
 #include "IDemoRenderer.h"
-#include "Common\DeviceResources.h"
-#include "ShaderStructures.h"
+#include "Common/DeviceResources.h"
+#include "Rendering/ShaderStructures.h"
 
 struct ID3D11Buffer;
 

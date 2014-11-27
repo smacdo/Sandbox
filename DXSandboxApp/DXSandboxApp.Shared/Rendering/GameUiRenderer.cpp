@@ -3,6 +3,8 @@
 
 #include "Common/DirectXHelper.h"
 #include "Common/ResourceLoader.h"
+#include "Ui/RenderableTextSprite.h"
+#include "Ui/RenderableImageSprite.h"
 #include "Ui/TextSprite.h"
 #include "Ui/ImageSprite.h"
 

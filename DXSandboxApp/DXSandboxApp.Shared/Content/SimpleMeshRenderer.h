@@ -2,9 +2,9 @@
 
 #include <memory>
 
-#include "Common\DeviceResources.h"
-#include "ShaderStructures.h"
-#include "BasicDemoRenderer.h"
+#include "Common/DeviceResources.h"
+#include "Rendering/ShaderStructures.h"
+#include "Rendering/BasicDemoRenderer.h"
 
 struct ID3D11InputLayout;
 struct ID3D11Buffer;

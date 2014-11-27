@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "GameHud.h"
-#include "Content/GameUiRenderer.h"
-#include "Common\StepTimer.h"
+#include "Rendering/GameUiRenderer.h"
+#include "Common/StepTimer.h"
 
 #include "Ui\ImageSprite.h"
 #include "Ui\TextSprite.h"

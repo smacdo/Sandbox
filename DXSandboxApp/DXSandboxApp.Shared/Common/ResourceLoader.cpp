@@ -2,7 +2,7 @@
 #include "ResourceLoader.h"
 
 #include "Common/DirectXHelper.h"
-#include "Ui\ImageSprite.h"
+#include "Ui/RenderableImageSprite.h"
 
 using namespace DXSandboxApp;
 using namespace Microsoft::WRL;

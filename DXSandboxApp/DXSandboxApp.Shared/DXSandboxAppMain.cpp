@@ -1,12 +1,12 @@
 ﻿#include "pch.h"
 #include "DXSandboxAppMain.h"
-#include "Common\DirectXHelper.h"
-#include "Content\IDemoRenderer.h"
-#include "Input\InputTracker.h"
-#include "Game\GameHud.h"
+#include "Common/DirectXHelper.h"
+#include "Rendering/IDemoRenderer.h"
+#include "Input/InputTracker.h"
+#include "Game/GameHud.h"
 
-#include "Content\ColoredCubeRenderer.h"
-#include "Content\GameUiRenderer.h"
+#include "Content/ColoredCubeRenderer.h"
+#include "Rendering/GameUiRenderer.h"
 
 #include <memory>
 
@@ -107,6 +107,29 @@ void DXSandboxAppMain::UpdateGameLoop()
     }
 }
 
+// Renders the current frame according to the current application state.
+// Returns true if the frame was rendered and is ready to be displayed.
+void DXSandboxAppMain::Render()
+{
+    auto context = mDeviceResources->GetD3DDeviceContext();
+
+    // Reset the viewport to target the whole screen.
+    auto viewport = mDeviceResources->GetScreenViewport();
+    context->RSSetViewports(1, &viewport);
+
+    // Reset render targets to the screen.
+    ID3D11RenderTargetView *const targets[1] = { mDeviceResources->GetBackBufferRenderTargetView() };
+    context->OMSetRenderTargets(1, targets, mDeviceResources->GetDepthStencilView());
+
+    // Clear the back buffer and depth stencil view.
+    context->ClearRenderTargetView(mDeviceResources->GetBackBufferRenderTargetView(), DirectX::Colors::CornflowerBlue);
+    context->ClearDepthStencilView(mDeviceResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+    // Render the scene objects.
+    mSceneRenderer->Render();
+    mUiRenderer->Render();
+}
+
 // Updates the application state once per frame.
 void DXSandboxAppMain::Update() 
 {
@@ -115,6 +138,7 @@ void DXSandboxAppMain::Update()
 	mUpdateTimer.Update([&](double totalTime, double deltaTime)
 	{
         mGameHud->Update(mUpdateTimer);
+
         mSceneRenderer->Update(mUpdateTimer);
         mUiRenderer->Update(mUpdateTimer);
 	});
@@ -123,32 +147,7 @@ void DXSandboxAppMain::Update()
 // Process all input from the user before updating game state
 void DXSandboxAppMain::ProcessInput()
 {
-    // TODO: Move this code to the caller.
     mInputTracker->TrackingUpdate(mPointerLocationX);
-}
-
-// Renders the current frame according to the current application state.
-// Returns true if the frame was rendered and is ready to be displayed.
-void DXSandboxAppMain::Render() 
-{
-	auto context = mDeviceResources->GetD3DDeviceContext();
-
-	// Reset the viewport to target the whole screen.
-	auto viewport = mDeviceResources->GetScreenViewport();
-	context->RSSetViewports(1, &viewport);
-
-	// Reset render targets to the screen.
-	ID3D11RenderTargetView *const targets[1] = { mDeviceResources->GetBackBufferRenderTargetView() };
-	context->OMSetRenderTargets(1, targets, mDeviceResources->GetDepthStencilView());
-
-	// Clear the back buffer and depth stencil view.
-	context->ClearRenderTargetView(mDeviceResources->GetBackBufferRenderTargetView(), DirectX::Colors::CornflowerBlue);
-	context->ClearDepthStencilView(mDeviceResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-	// Render the scene objects.
-	// TODO: Replace this with your app's content rendering functions.
-	mSceneRenderer->Render();
-	mUiRenderer->Render();
 }
 
 // Notifies renderers that device resources need to be released.
