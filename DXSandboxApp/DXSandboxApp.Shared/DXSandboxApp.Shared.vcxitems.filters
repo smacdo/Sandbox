@@ -52,6 +52,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Demos\SimpleMeshRenderer.h">
       <Filter>Demos</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Exceptions.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -95,6 +101,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Demos\SimpleMeshRenderer.cpp">
       <Filter>Demos</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

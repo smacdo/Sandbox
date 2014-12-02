@@ -2,6 +2,7 @@
 #include "BasicDemoRenderer.h"
 #include "IDemoRenderer.h"
 #include "Input\InputTracker.h"
+#include "Common\ConstantBuffer.h"
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
@@ -30,6 +31,18 @@ BasicDemoRenderer::BasicDemoRenderer(
 
 BasicDemoRenderer::~BasicDemoRenderer()
 {
+}
+
+void BasicDemoRenderer::CreateModelViewBuffer()
+{
+    mModelViewBuffer.reset(
+        ConstantBuffer::Create<ModelViewProjectionConstantBuffer>(mDeviceResources->GetD3DDevice()));
+}
+
+void BasicDemoRenderer::ReleaseModelViewBuffer()
+{
+    mLoadingComplete = false;
+    mModelViewBuffer.reset();
 }
 
 // Initializes view parameters when the window size changes.
@@ -117,21 +130,7 @@ void BasicDemoRenderer::Render()
 
     // Update the model-view-projection constant buffer with current MVP values, and bind it for shaders to access.
     auto context = mDeviceResources->GetD3DDeviceContext();
-    context->UpdateSubresource(mModelViewBuffer.Get(), 0, nullptr, &mModelViewBufferData, 0, 0);
-
-}
-
-void BasicDemoRenderer::CreateModelViewBuffer()
-{
-    CD3D11_BUFFER_DESC bufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
-    HRESULT hr = mDeviceResources->GetD3DDevice()->CreateBuffer(&bufferDesc, nullptr, &mModelViewBuffer);
-    DX::ThrowIfFailed(hr);
-}
-
-void BasicDemoRenderer::ReleaseModelViewBuffer()
-{
-    mLoadingComplete = false;
-    mModelViewBuffer.Reset();
+    mModelViewBuffer->UpdateValue(context, mModelViewBufferData);
 }
 
 void BasicDemoRenderer::SetLoadingComplete(bool isLoadingComplete)

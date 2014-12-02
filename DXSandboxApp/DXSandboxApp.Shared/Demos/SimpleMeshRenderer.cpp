@@ -3,6 +3,7 @@
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
+#include "Common\ConstantBuffer.h"
 #include "Input\InputTracker.h"
 
 #include <memory>
@@ -58,7 +59,7 @@ void SimpleMeshRenderer::Render()
     context->VSSetShader(mVertexShader.Get(), nullptr, 0);
 
     // Send the MVP (model view projection) constant buffer to the graphics device.
-    context->VSSetConstantBuffers(0, 1, mModelViewBuffer.GetAddressOf());
+    mModelViewBuffer->BindToActiveVertexShader(context, 0);
 
     // Attach our pixel shader.
     context->PSSetShader(mPixelShader.Get(), nullptr, 0);
