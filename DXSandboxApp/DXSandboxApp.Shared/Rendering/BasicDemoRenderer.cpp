@@ -2,7 +2,7 @@
 #include "BasicDemoRenderer.h"
 #include "IDemoRenderer.h"
 #include "Input\InputTracker.h"
-#include "Common\ConstantBuffer.h"
+#include "Common\ModelViewConstantBuffer.h"
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
@@ -35,8 +35,7 @@ BasicDemoRenderer::~BasicDemoRenderer()
 
 void BasicDemoRenderer::CreateModelViewBuffer()
 {
-    mModelViewBuffer.reset(
-        ConstantBuffer::Create<ModelViewProjectionConstantBuffer>(mDeviceResources->GetD3DDevice()));
+    mModelViewBuffer.reset(new ModelViewConstantBuffer(mDeviceResources->GetD3DDevice()));
 }
 
 void BasicDemoRenderer::ReleaseModelViewBuffer()
@@ -72,14 +71,14 @@ void BasicDemoRenderer::UpdateModelViewBuffer()
     XMFLOAT4X4 orientation = mDeviceResources->GetOrientationTransform3D();
     XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
 
-    XMStoreFloat4x4(&mModelViewBufferData.projection,XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+    mModelViewBuffer->SetProjection(perspectiveMatrix * orientationMatrix);
 
     // Eye is at (0,0.7,1.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
     static const XMVECTORF32 eye = { 0.0f, 0.7f, 1.5f, 0.0f };
     static const XMVECTORF32 at = { 0.0f, -0.1f, 0.0f, 0.0f };
     static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 
-    XMStoreFloat4x4(&mModelViewBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+    mModelViewBuffer->SetView(XMMatrixLookAtRH(eye, at, up));
 }
 
 void BasicDemoRenderer::ReleaseDeviceDependentResources()
@@ -109,7 +108,7 @@ void BasicDemoRenderer::CreateWindowSizeDependentResources()
 // Rotate the 3D cube model a set amount of radians.
 void BasicDemoRenderer::RotateScene(float radians)
 {
-    XMStoreFloat4x4(&mModelViewBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
+    mModelViewBuffer->SetModel(XMMatrixRotationY(radians));
 }
 
 // When tracking, the 3D cube can be rotated around its Y axis by tracking pointer position relative to the output screen width.
@@ -130,7 +129,7 @@ void BasicDemoRenderer::Render()
 
     // Update the model-view-projection constant buffer with current MVP values, and bind it for shaders to access.
     auto context = mDeviceResources->GetD3DDeviceContext();
-    mModelViewBuffer->UpdateValue(context, mModelViewBufferData);
+    mModelViewBuffer->ApplyChanges(context);
 }
 
 void BasicDemoRenderer::SetLoadingComplete(bool isLoadingComplete)

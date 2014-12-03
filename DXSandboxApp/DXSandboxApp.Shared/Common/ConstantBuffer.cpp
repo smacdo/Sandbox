@@ -13,12 +13,20 @@ using namespace Platform;
 
 using namespace DXSandboxApp;
 
+ConstantBuffer::ConstantBuffer(ID3D11Device * device, size_t bufferSize)
+    : mConstantBuffer()
+{
+    CD3D11_BUFFER_DESC bufferDesc(bufferSize, D3D11_BIND_CONSTANT_BUFFER);
+
+    HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, &mConstantBuffer);
+    DX::ThrowIfFailed(hr);
+}
+
 ConstantBuffer::ConstantBuffer(ID3D11Buffer * constantBuffer)
     : mConstantBuffer()
 {
+    // TODO: Null check.
     mConstantBuffer.Attach(constantBuffer);     // Transfered ownership, do not AddRef.
-    //VerifyNotNull(constantBuffer);        // TODO: Implement
-    //Verify(shaderSlotIndex >= 0);
 }
 
 ConstantBuffer::~ConstantBuffer()
@@ -52,9 +60,6 @@ ConstantBuffer * ConstantBuffer::Create(ID3D11Device * device, size_t bufferSize
 {
     CD3D11_BUFFER_DESC bufferDesc(bufferSize, D3D11_BIND_CONSTANT_BUFFER);
     ComPtr<ID3D11Buffer> rawConstantBuffer;
-
-    bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-    bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
     HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, &rawConstantBuffer);
     DX::ThrowIfFailed(hr);

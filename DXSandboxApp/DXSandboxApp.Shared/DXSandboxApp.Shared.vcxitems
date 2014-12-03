@@ -15,6 +15,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp" />
@@ -30,6 +31,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\TextSprite.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Exceptions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Demos\ColoredCubeRenderer.h" />

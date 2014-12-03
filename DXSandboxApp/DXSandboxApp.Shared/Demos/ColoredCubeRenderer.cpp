@@ -3,7 +3,7 @@
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
-#include "Common\ConstantBuffer.h"
+#include "Common\ModelViewConstantBuffer.h"
 #include "Input\InputTracker.h"
 
 #include <memory>

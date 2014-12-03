@@ -16,7 +16,7 @@ namespace DX
 namespace DXSandboxApp
 {
     class InputTracker;
-    class ConstantBuffer;
+    class ModelViewConstantBuffer;
 
     // This is an abstract base for basic scene renderers. Controls the touch and camera for making demos simpler.
     //  TODO: Split this class up
@@ -56,8 +56,7 @@ namespace DXSandboxApp
         std::shared_ptr<DX::DeviceResources> mDeviceResources;
 
         // Camera view data.
-        std::shared_ptr<ConstantBuffer> mModelViewBuffer;
-        ModelViewProjectionConstantBuffer mModelViewBufferData;
+        std::shared_ptr<ModelViewConstantBuffer> mModelViewBuffer;
 
     private:
         // Variables used with the rendering loop.

@@ -3,6 +3,8 @@
 #include <wrl.h>
 #include <functional>
 
+#include "Common\DirectXHelper.h"
+
 struct ID3D11Buffer;
 struct ID3D11DeviceContext;
 
@@ -15,10 +17,8 @@ namespace DXSandboxApp
     class ConstantBuffer
     {
     public:
-        // Constructor.
-        //  TODO: Consider making protected.
-        ConstantBuffer(
-            ID3D11Buffer * constantBuffer);     // Transfer ownership of object (do not release)
+        // Default constant buffer constructor.
+        ConstantBuffer(ID3D11Device * device, size_t bufferSize);
 
         // Disabled copy constructor.
         ConstantBuffer(const ConstantBuffer&) = delete;
@@ -54,12 +54,17 @@ namespace DXSandboxApp
         // Create a new untyped constant buffer.
         static ConstantBuffer * Create(ID3D11Device * device, size_t bufferSize);
 
+    protected:
+        // Internal constructor.
+        ConstantBuffer(
+            ID3D11Buffer * constantBuffer);     // Transfer ownership of object (do not release)
+
     private:
         Microsoft::WRL::ComPtr<ID3D11Buffer> mConstantBuffer;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // Implementation of constant buffer update.
+    // Implementation of constant buffer methods.
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     template<class T>
     HRESULT ConstantBuffer::Update(ID3D11DeviceContext * deviceContext, std::function<void(T& buffer)> updateFunction)
@@ -87,9 +92,6 @@ namespace DXSandboxApp
         UpdateValue(deviceContext, reinterpret_cast<const void *>(&data));
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // Static helper functions.
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     template<class T>
     ConstantBuffer * ConstantBuffer::Create(ID3D11Device * pDevice)
     {
@@ -103,10 +105,7 @@ namespace DXSandboxApp
     class TypedConstantBuffer
     {
     public:
-        // Constructor.
-        //  TODO: Consider making protected.
-        TypedConstantBuffer(
-            ID3D11Buffer * constantBuffer);     // Transfer ownership of object (do not release)
+        TypedConstantBuffer(ID3D11Device * device);
 
         // Disabled copy constructor.
         TypedConstantBuffer(const ConstantBuffer&) = delete;
@@ -129,14 +128,19 @@ namespace DXSandboxApp
         // Set constant buffer value, and immediately update the buffer.
         void SetValue(ID3D11DeviceContext * deviceContext, const T& value);
 
-        // Binds this constant shader to the currently active vertex shader.
+        // Binds this buffer to an input slot in the currently active vertex shader.
         void BindToActiveVertexShader(ID3D11DeviceContext * deviceContext, unsigned int startSlot) const;
 
-        // Binds this constant shader to the currently active pixel shader.
+        // Binds this buffer to an input slot in the currently active pixel shader.
         void BindToActivePixelShader(ID3D11DeviceContext * deviceContext, unsigned int startSlot) const;
 
         // Create a new typed constant buffer.
         static TypedConstantBuffer<T> * Create(ID3D11Device * device);
+
+    protected:
+        // Internal constructor.
+        TypedConstantBuffer(
+            ID3D11Buffer * constantBuffer);     // Transfer ownership of object (do not release)
 
     private:
         Microsoft::WRL::ComPtr<ID3D11Buffer> mConstantBuffer;
@@ -146,6 +150,16 @@ namespace DXSandboxApp
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // Typed constant buffer implementation.
     ///////////////////////////////////////////////////////////////////////////////////////////////////
+    template<class T>
+    TypedConstantBuffer<T>::TypedConstantBuffer(ID3D11Device * device)
+        : mConstantBuffer(),
+          mData()
+    {
+        CD3D11_BUFFER_DESC bufferDesc(sizeof(T), D3D11_BIND_CONSTANT_BUFFER);
+        HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, &mConstantBuffer);
+        DX::ThrowIfFailed(hr);
+    }
+
     template<class T>
     TypedConstantBuffer<T>::TypedConstantBuffer(ID3D11Buffer * constantBuffer)
         : mConstantBuffer(),
@@ -214,9 +228,6 @@ namespace DXSandboxApp
     {
         CD3D11_BUFFER_DESC bufferDesc(bufferSize, D3D11_BIND_CONSTANT_BUFFER);
         ComPtr<ID3D11Buffer> rawConstantBuffer;
-
-        bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-        bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
         HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, &rawConstantBuffer);
         DX::ThrowIfFailed(hr);
