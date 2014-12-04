@@ -19,6 +19,7 @@ namespace DX
 namespace DXSandboxApp
 {
     class InputTracker;
+    class ResourceLoader;
 
     // This sample renderer instantiates a basic rendering pipeline.
     class SimpleMeshRenderer : public BasicDemoRenderer
@@ -26,6 +27,7 @@ namespace DXSandboxApp
     public:
         SimpleMeshRenderer(
             std::shared_ptr<InputTracker> inputTracker,
+            std::shared_ptr<ResourceLoader> resourceLoader,
             std::shared_ptr<DX::DeviceResources> deviceResources);
         virtual void CreateDeviceDependentResources() override;
         virtual void ReleaseDeviceDependentResources() override;

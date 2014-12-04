@@ -17,6 +17,7 @@ namespace DXSandboxApp
 {
     class InputTracker;
     class ModelViewConstantBuffer;
+    class ResourceLoader;
 
     // This is an abstract base for basic scene renderers. Controls the touch and camera for making demos simpler.
     //  TODO: Split this class up
@@ -27,6 +28,7 @@ namespace DXSandboxApp
     public:
         BasicDemoRenderer(
             std::shared_ptr<InputTracker> inputTracker,
+            std::shared_ptr<ResourceLoader> resourceLoader,
             std::shared_ptr<DX::DeviceResources> deviceResources);
         virtual ~BasicDemoRenderer();
         
@@ -54,6 +56,9 @@ namespace DXSandboxApp
 
         // Cached pointer to device resources.
         std::shared_ptr<DX::DeviceResources> mDeviceResources;
+
+        // Cached pointer to resource loader.
+        std::shared_ptr<ResourceLoader> mResourceLoader;
 
         // Camera view data.
         std::shared_ptr<ModelViewConstantBuffer> mModelViewBuffer;

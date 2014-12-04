@@ -17,13 +17,15 @@ using namespace Windows::Foundation;
 // Basic constructor.
 BasicDemoRenderer::BasicDemoRenderer(
     std::shared_ptr<InputTracker> inputTracker,
+    std::shared_ptr<ResourceLoader> resourceLoader,
     std::shared_ptr<DX::DeviceResources> deviceResources)
     : IDemoRenderer(),
       mInputTracker(inputTracker),
       mLoadingComplete(false),
       mDegreesPerSecond(45),
       mTracking(false),
-      mDeviceResources(deviceResources)
+      mDeviceResources(deviceResources),
+      mResourceLoader(resourceLoader)
 {
     CreateModelViewBuffer();
     UpdateModelViewBuffer();

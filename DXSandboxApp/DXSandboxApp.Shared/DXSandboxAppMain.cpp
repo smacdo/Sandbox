@@ -6,6 +6,7 @@
 #include "Input/InputTracker.h"
 #include "Game/GameHud.h"
 #include "Demos/ColoredCubeRenderer.h"
+#include "Common/ResourceLoader.h"
 
 #include <memory>
 
@@ -26,7 +27,10 @@ DXSandboxAppMain::DXSandboxAppMain(std::shared_ptr<DX::DeviceResources> deviceRe
 	mDeviceResources->RegisterDeviceNotify(this);
 
     Initialize();
-    StartRenderer(new ColoredCubeRenderer(mInputTracker, mDeviceResources));
+    StartRenderer(new ColoredCubeRenderer(
+        mInputTracker,
+        std::shared_ptr<ResourceLoader>(new ResourceLoader(mDeviceResources)),
+        mDeviceResources));
 }
 
 /**

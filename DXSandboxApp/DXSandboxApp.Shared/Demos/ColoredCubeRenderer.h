@@ -27,6 +27,7 @@ namespace DXSandboxApp
 	public:
         ColoredCubeRenderer(
             std::shared_ptr<InputTracker> inputTracker,
+            std::shared_ptr<ResourceLoader> resourceLoader,
             std::shared_ptr<DX::DeviceResources> deviceResources);
         virtual void CreateDeviceDependentResources() override;
         virtual void ReleaseDeviceDependentResources() override;

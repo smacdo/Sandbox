@@ -4,6 +4,7 @@
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
 #include "Common\ModelViewConstantBuffer.h"
+#include "Common\ResourceLoader.h"
 #include "Input\InputTracker.h"
 
 #include <memory>
@@ -16,8 +17,9 @@ using namespace Windows::Foundation;
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
 ColoredCubeRenderer::ColoredCubeRenderer(
     std::shared_ptr<InputTracker> inputTracker,
+    std::shared_ptr<ResourceLoader> resourceLoader,
     std::shared_ptr<DX::DeviceResources> deviceResources)
-    : BasicDemoRenderer(inputTracker, deviceResources),
+    : BasicDemoRenderer(inputTracker, resourceLoader, deviceResources),
       mIndexCount(0)
 {
     CreateDeviceDependentResources();
@@ -70,47 +72,30 @@ void ColoredCubeRenderer::Render()
 
 void ColoredCubeRenderer::CreateDeviceDependentResources()
 {
-    // Load shaders asynchronously.
-    auto loadVSTask = DX::ReadDataAsync(L"ColoredCubeVertexShader.cso");
-    auto loadPSTask = DX::ReadDataAsync(L"ColoredCubePixelShader.cso");
+    // Create and load cube vertex shader.
+    static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
 
-    // After the vertex shader file is loaded, create the shader and input layout.
-    auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData) {
-        DX::ThrowIfFailed(
-            mDeviceResources->GetD3DDevice()->CreateVertexShader(
-            &fileData[0],
-            fileData.size(),
-            nullptr,
-            &mVertexShader));
+    auto loadVSTask = mResourceLoader->LoadVertexShaderAndCreateInputLayoutAsync(
+        L"ColoredCubeVertexShader.cso",
+        vertexDesc,
+        ARRAYSIZE(vertexDesc));
 
-        static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
-        {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        };
-
-        DX::ThrowIfFailed(
-            mDeviceResources->GetD3DDevice()->CreateInputLayout(
-            vertexDesc,
-            ARRAYSIZE(vertexDesc),
-            &fileData[0],
-            fileData.size(),
-            &mInputLayout));
+    auto createVSTask = loadVSTask.then([this](std::tuple<ID3D11VertexShader*, ID3D11InputLayout*> results) {
+        std::tie(mVertexShader, mInputLayout) = results;
     });
 
-    // After the pixel shader file is loaded, create the shader and constant buffer.
-    auto createPSTask = loadPSTask.then([this](const std::vector<byte>& fileData) {
-        DX::ThrowIfFailed(
-            mDeviceResources->GetD3DDevice()->CreatePixelShader(
-            &fileData[0],
-            fileData.size(),
-            nullptr,
-            &mPixelShader));
+    // Create and load cube pixel shader.
+    auto loadPSTask = mResourceLoader->LoadPixelShaderAsync(L"ColoredCubePixelShader.cso");
+    auto createPSTask = loadPSTask.then([this](ID3D11PixelShader* pixelShader) {
+        mPixelShader = pixelShader;
     });
 
     // Once both shaders are loaded, create the mesh.
     auto createCubeTask = (createPSTask && createVSTask).then([this]() {
-
         // Load mesh vertices. Each vertex has a position and a color.
         static const VertexPositionColor cubeVertices[] =
         {

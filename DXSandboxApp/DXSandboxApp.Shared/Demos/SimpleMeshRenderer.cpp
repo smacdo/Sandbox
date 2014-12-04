@@ -4,6 +4,7 @@
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
 #include "Common\ModelViewConstantBuffer.h"
+#include "Common\ResourceLoader.h"
 #include "Input\InputTracker.h"
 
 #include <memory>
@@ -16,8 +17,9 @@ using namespace Windows::Foundation;
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
 SimpleMeshRenderer::SimpleMeshRenderer(
     std::shared_ptr<InputTracker> inputTracker,
+    std::shared_ptr<ResourceLoader> resourceLoader,
     std::shared_ptr<DX::DeviceResources> deviceResources)
-    : BasicDemoRenderer(inputTracker, deviceResources),
+    : BasicDemoRenderer(inputTracker, resourceLoader, deviceResources),
       mIndexCount(0)
 {
     CreateDeviceDependentResources();
