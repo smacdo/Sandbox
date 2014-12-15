@@ -59,6 +59,8 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -107,6 +109,8 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleMeshPixelShader.hlsl">
@@ -119,6 +123,12 @@
       <Filter>Demos\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\ColoredCubePixelShader.hlsl">
+      <Filter>Demos\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleModelVertexShader.hlsl">
+      <Filter>Demos\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleModelPixelShader.hlsl">
       <Filter>Demos\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

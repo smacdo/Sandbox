@@ -18,9 +18,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Demos\ColoredCubeRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Demos\SimpleMeshRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Game\GameHud.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\BasicDemoRenderer.cpp" />
@@ -34,8 +36,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Demos\ColoredCubeRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Demos\SimpleMeshRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Game\GameHud.h" />
@@ -70,6 +74,12 @@
       <ShaderType>Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleMeshVertexShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleModelPixelShader.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleModelVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>
