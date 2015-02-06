@@ -79,14 +79,21 @@
     <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleMeshVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleModelPixelShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\TexturedCubePixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
+      <FileType>Document</FileType>
     </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleModelVertexShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\TexturedCubeVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
+      <FileType>Document</FileType>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="$(MSBuildThisFileDirectory)Assets\crate.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
   </ItemGroup>
 </Project>

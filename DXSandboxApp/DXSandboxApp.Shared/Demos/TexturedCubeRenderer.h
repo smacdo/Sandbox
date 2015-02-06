@@ -19,6 +19,7 @@ namespace DX
 namespace DXSandboxApp
 {
     class InputTracker;
+    class Texture2d;
 
     // Modified ColoredCubeRenderer that uses texture mapping.
     class TexturedCubeRenderer : public BasicDemoRenderer
@@ -42,6 +43,8 @@ namespace DXSandboxApp
             _Out_opt_ unsigned int * indexCountOut);
 
     private:
+        std::unique_ptr<Texture2d> mCubeTexture;
+
         // Direct3D resources for cube geometry.
         Microsoft::WRL::ComPtr<ID3D11InputLayout>	mInputLayout;
         Microsoft::WRL::ComPtr<ID3D11Buffer>		mVertexBuffer;

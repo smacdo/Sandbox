@@ -6,6 +6,7 @@
 #include "Common\ModelViewConstantBuffer.h"
 #include "Common\ResourceLoader.h"
 #include "Input\InputTracker.h"
+#include "Texture2d.h"
 
 #include <memory>
 
@@ -20,7 +21,8 @@ TexturedCubeRenderer::TexturedCubeRenderer(
     std::shared_ptr<ResourceLoader> resourceLoader,
     std::shared_ptr<DX::DeviceResources> deviceResources)
     : BasicDemoRenderer(inputTracker, resourceLoader, deviceResources),
-    mIndexCount(0)
+      mCubeTexture(),
+      mIndexCount(0)
 {
     CreateDeviceDependentResources();
 }
@@ -63,6 +65,9 @@ void TexturedCubeRenderer::Render()
     // Send the MVP (model view projection) constant buffer to the graphics device.
     mModelViewBuffer->BindToActiveVertexShader(context, 0);
 
+    ID3D11ShaderResourceView* shaderResourceViews[] = { mCubeTexture->GetShaderResourceView() };
+    context->PSSetShaderResources(0, 1, shaderResourceViews);
+
     // Attach our pixel shader.
     context->PSSetShader(mPixelShader.Get(), nullptr, 0);
 
@@ -76,12 +81,12 @@ void TexturedCubeRenderer::CreateDeviceDependentResources()
     static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =        // TODO: Make separate function.
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-//        { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_INSTANCE_DATA, 0 }
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
     auto loadVSTask = mResourceLoader->LoadVertexShaderAndCreateInputLayoutAsync(
-        L"SimpleModelVertexShader.cso",
+        L"TexturedCubeVertexShader.cso",
         vertexDesc,
         ARRAYSIZE(vertexDesc));
 
@@ -90,7 +95,7 @@ void TexturedCubeRenderer::CreateDeviceDependentResources()
     });
 
     // Create and load cube pixel shader.
-    auto loadPSTask = mResourceLoader->LoadPixelShaderAsync(L"SimpleModelPixelShader.cso");
+    auto loadPSTask = mResourceLoader->LoadPixelShaderAsync(L"TexturedCubePixelShader.cso");
     auto createPSTask = loadPSTask.then([this](ID3D11PixelShader* pixelShader) {
         mPixelShader = pixelShader;
     });
@@ -100,8 +105,14 @@ void TexturedCubeRenderer::CreateDeviceDependentResources()
         CreateCubeMesh(&mVertexBuffer, &mIndexBuffer, nullptr, &mIndexCount);
     });
 
+    // Load the texture map for the cube.
+    auto loadTextureTask = mResourceLoader->LoadTexture2dAsync(L"crate.png").then([this](Texture2d * pTexture)
+    {
+        mCubeTexture.reset(pTexture);
+    });
+
     // Once the cube is loaded, the object is ready to be rendered.
-    createCubeTask.then([this]() {
+    (createCubeTask && loadTextureTask).then([this]() {
         SetLoadingComplete(true);
     });
 }

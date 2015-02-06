@@ -60,11 +60,13 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Debugging.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Texture2d.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.h">
+      <Filter>Demos</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -114,8 +116,10 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Texture2d.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.cpp">
+      <Filter>Demos</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleMeshPixelShader.hlsl">
@@ -130,10 +134,10 @@
     <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\ColoredCubePixelShader.hlsl">
       <Filter>Demos\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleModelVertexShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\TexturedCubePixelShader.hlsl">
       <Filter>Demos\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleModelPixelShader.hlsl">
+    <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\TexturedCubeVertexShader.hlsl">
       <Filter>Demos\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
@@ -156,5 +160,13 @@
     <Filter Include="Demos\Shaders">
       <UniqueIdentifier>{7bcb9df8-36d9-4cf0-afb4-107a571b6267}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{66125395-45ef-416e-b221-15ec828a3603}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="$(MSBuildThisFileDirectory)Assets\crate.png">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
 </Project>

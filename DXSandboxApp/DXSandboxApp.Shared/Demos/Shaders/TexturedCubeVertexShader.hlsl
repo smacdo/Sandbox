@@ -14,7 +14,7 @@ struct VertexShaderInput
 {
     float3 pos : POSITION;
     float2 textureUV : TEXCOORD0;
-//    float3 normal : NORMAL;
+    float3 normal : NORMAL;
 };
 
 // Per-pixel color data passed through the pixel shader.
@@ -22,7 +22,7 @@ struct PixelShaderInput     // TODO: Shared.
 {
     float4 pos : SV_POSITION;
     float2 textureUV : TEXCOORD0;
-//    float3 normal : NORMAL;
+    float3 normal : NORMAL;
 };
 
 // Simple shader to do vertex processing on the GPU.
@@ -42,8 +42,8 @@ PixelShaderInput main(VertexShaderInput input)
     output.textureUV = input.textureUV;
 
     // Transform normal vector against world matrix. (Since normal is in model space).
-//    output.normal = mul(input.normal, (float3x3) view);
-//    output.normal = normalize(output.normal);
+    output.normal = mul(input.normal, (float3x3) view);
+    output.normal = normalize(output.normal);
 
     return output;
 }

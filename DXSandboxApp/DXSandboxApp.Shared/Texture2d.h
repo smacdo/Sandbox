@@ -27,7 +27,13 @@ namespace DXSandboxApp
         ID3D11Texture2D * GetTexture2D();
 
         // Retrieve the ID3D11Texture2D texture pointer.
+        const ID3D11Texture2D * GetTexture2D() const;
+
+        // Retrieve the ID3D11Texture2D texture pointer.
         ID3D11ShaderResourceView * GetShaderResourceView();
+
+        // Retrieve the ID3D11Texture2D texture pointer.
+        const ID3D11ShaderResourceView * GetShaderResourceView() const;
 
     private:
         bool mLoaded;

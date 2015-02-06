@@ -45,7 +45,19 @@ ID3D11Texture2D * Texture2d::GetTexture2D()
     return mTexture.Get();
 }
 
+const ID3D11Texture2D * Texture2d::GetTexture2D() const
+{
+    // TODO: Throw if null.
+    return mTexture.Get();
+}
+
 ID3D11ShaderResourceView * Texture2d::GetShaderResourceView()
+{
+    // TODO: Throw if null.
+    return mShaderResourceView.Get();
+}
+
+const ID3D11ShaderResourceView * Texture2d::GetShaderResourceView() const
 {
     // TODO: Throw if null.
     return mShaderResourceView.Get();
