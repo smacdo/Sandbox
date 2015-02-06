@@ -51,6 +51,7 @@ namespace DXSandboxApp
         Microsoft::WRL::ComPtr<ID3D11Buffer>		mIndexBuffer;
         Microsoft::WRL::ComPtr<ID3D11VertexShader>	mVertexShader;
         Microsoft::WRL::ComPtr<ID3D11PixelShader>	mPixelShader;
+        Microsoft::WRL::ComPtr<ID3D11RasterizerState> mRasterizerState;
 
         // System resources for cube geometry.
         uint32	mIndexCount;

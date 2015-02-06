@@ -142,18 +142,17 @@ void DX::DeviceResources::CreateDeviceResources()
 	ComPtr<ID3D11Device> device;
 	ComPtr<ID3D11DeviceContext> context;
 
-	HRESULT hr = D3D11CreateDevice(
-		nullptr,					// Specify nullptr to use the default adapter.
-		D3D_DRIVER_TYPE_HARDWARE,	// Create a device using the hardware graphics driver.
-		0,							// Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
-		creationFlags,				// Set debug and Direct2D compatibility flags.
-		featureLevels,				// List of feature levels this app can support.
-		ARRAYSIZE(featureLevels),	// Size of the list above.
-		D3D11_SDK_VERSION,			// Always set this to D3D11_SDK_VERSION for Windows Store apps.
-		&device,					// Returns the Direct3D device created.
-		&m_d3dFeatureLevel,			// Returns feature level of device created.
-		&context					// Returns the device immediate context.
-		);
+    HRESULT hr = D3D11CreateDevice(
+        nullptr,					// Specify nullptr to use the default adapter.
+        D3D_DRIVER_TYPE_HARDWARE,	// Create a device using the hardware graphics driver.
+        0,							// Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
+        creationFlags,				// Set debug and Direct2D compatibility flags.
+        featureLevels,				// List of feature levels this app can support.
+        ARRAYSIZE(featureLevels),	// Size of the list above.
+        D3D11_SDK_VERSION,			// Always set this to D3D11_SDK_VERSION for Windows Store apps.
+        &device,					// Returns the Direct3D device created.
+        &m_d3dFeatureLevel,			// Returns feature level of device created.
+        &context);					// Returns the device immediate context.
 
 	if (FAILED(hr))
 	{
@@ -177,30 +176,19 @@ void DX::DeviceResources::CreateDeviceResources()
 	}
 
 	// Store pointers to the Direct3D 11.1 API device and immediate context.
-	DX::ThrowIfFailed(
-		device.As(&m_d3dDevice)
-		);
-
-	DX::ThrowIfFailed(
-		context.As(&m_d3dContext)
-		);
+	DX::ThrowIfFailed(device.As(&m_d3dDevice));
+	DX::ThrowIfFailed(context.As(&m_d3dContext));
 
 	// Create the Direct2D device object and a corresponding context.
 	ComPtr<IDXGIDevice3> dxgiDevice;
-	DX::ThrowIfFailed(
-		m_d3dDevice.As(&dxgiDevice)
-		);
+	DX::ThrowIfFailed(m_d3dDevice.As(&dxgiDevice));
 
-	DX::ThrowIfFailed(
-		m_d2dFactory->CreateDevice(dxgiDevice.Get(), &m_d2dDevice)
-		);
+	DX::ThrowIfFailed(m_d2dFactory->CreateDevice(dxgiDevice.Get(), &m_d2dDevice));
 
 	DX::ThrowIfFailed(
 		m_d2dDevice->CreateDeviceContext(
 			D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
-			&m_d2dContext
-			)
-		);
+			&m_d2dContext));
 }
 
 // These resources need to be recreated every time the window size is changed.
@@ -235,13 +223,13 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 	if (m_swapChain != nullptr)
 	{
 		// If the swap chain already exists, resize it.
-		HRESULT hr = m_swapChain->ResizeBuffers(
-			2, // Double-buffered swap chain.
-			lround(m_d3dRenderTargetSize.Width),
-			lround(m_d3dRenderTargetSize.Height),
-			DXGI_FORMAT_B8G8R8A8_UNORM,
-			0
-			);
+        HRESULT hr =
+            m_swapChain->ResizeBuffers(
+                2, // Double-buffered swap chain.
+                lround(m_d3dRenderTargetSize.Width),
+                lround(m_d3dRenderTargetSize.Height),
+                DXGI_FORMAT_B8G8R8A8_UNORM,
+                0);
 
 		if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
 		{
@@ -377,7 +365,6 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 	DX::ThrowIfFailed(
 		spSwapChain2->SetMatrixTransform(&inverseScale)
 		);
-	
 
 	// Create a render target view of the swap chain back buffer.
 	ComPtr<ID3D11Texture2D> backBuffer;
@@ -426,8 +413,7 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 		0.0f,
 		0.0f,
 		m_d3dRenderTargetSize.Width,
-		m_d3dRenderTargetSize.Height
-		);
+		m_d3dRenderTargetSize.Height);
 
 	m_d3dContext->RSSetViewports(1, &m_screenViewport);
 
@@ -518,6 +504,31 @@ void DX::DeviceResources::SetCompositionScale(float compositionScaleX, float com
 		m_compositionScaleY = compositionScaleY;
 		CreateWindowSizeDependentResources();
 	}
+}
+
+ID3D11RasterizerState * DX::DeviceResources::CreateRasterizerState()
+{
+    // Set the raster description object. This allows us to configure how and what polygons will be drawn.
+    D3D11_RASTERIZER_DESC rasterDesc;
+    ZeroMemory(&rasterDesc, sizeof(rasterDesc));
+
+    rasterDesc.AntialiasedLineEnable = false;
+    rasterDesc.CullMode = D3D11_CULL_BACK;
+    rasterDesc.DepthBias = 0;
+    rasterDesc.DepthBiasClamp = 0.0f;
+    rasterDesc.DepthClipEnable = true;
+    rasterDesc.FillMode = D3D11_FILL_SOLID;
+    rasterDesc.FrontCounterClockwise = true;        // TODO: True = CCW winding, false = CW winding.
+    rasterDesc.MultisampleEnable = true;
+    rasterDesc.ScissorEnable = false;
+    rasterDesc.SlopeScaledDepthBias = 0.0f;
+    //   rasterDesc.DepthClipEnable = false;
+
+    // Create the raster state.
+    Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
+    DX::ThrowIfFailed(m_d3dDevice->CreateRasterizerState(&rasterDesc, &rasterizerState));
+
+    return rasterizerState.Detach();
 }
 
 // This method is called in the event handler for the DisplayContentsInvalidated event.

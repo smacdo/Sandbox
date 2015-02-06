@@ -22,9 +22,11 @@ TexturedCubeRenderer::TexturedCubeRenderer(
     std::shared_ptr<DX::DeviceResources> deviceResources)
     : BasicDemoRenderer(inputTracker, resourceLoader, deviceResources),
       mCubeTexture(),
-      mIndexCount(0)
+      mIndexCount(0),
+      mRasterizerState(deviceResources->CreateRasterizerState())
 {
     CreateDeviceDependentResources();
+    deviceResources->GetD3DDeviceContext()->RSSetState(mRasterizerState.Get());
 }
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
@@ -140,53 +142,45 @@ void TexturedCubeRenderer::CreateCubeMesh(
     _Out_opt_ unsigned int * vertexCountOut,
     _Out_opt_ unsigned int * indexCountOut)
 {
-#define _P(x, y, z) XMFLOAT3((x), (y), (z))
-#define _T(u, v) XMFLOAT2((u), (v))
-#define _N(x, y, z) XMFLOAT3((x), (y), (z))
-
     // Load mesh vertices. Each vertex has a position and a color.
     static const VertexSimple cubeVertices[] =
     {
-        { _P(-1.0, 1.0, -1.0),  _T(0.0, 0.0), _N(0.0, 0.0, -1.0) },
-        { _P(1.0, 1.0, -1.0),   _T(1.0, 0.0), _N(0.0, 0.0, -1.0) },
-        { _P(-1.0, -1.0, -1.0), _T(0.0, 1.0), _N(0.0, 0.0, -1.0) },
-        { _P(-1.0, -1.0, -1.0), _T(0.0, 1.0), _N(0.0, 0.0, -1.0) },
-        { _P(1.0, 1.0, -1.0),   _T(1.0, 0.0), _N(0.0, 0.0, -1.0) },
-        { _P(1.0, -1.0, -1.0),  _T(1.0, 1.0), _N(0.0, 0.0, -1.0) },
-        { _P(1.0, 1.0, -1.0),   _T(0.0, 0.0), _N(1.0, 0.0, 0.0)  },
-        { _P(1.0, -1.0, -1.0),  _T(0.0, 1.0), _N(1.0, 0.0, 0.0)  },
-        { _P(1.0, -1.0, -1.0),  _T(0.0, 1.0), _N(1.0, 0.0, 0.0)  },
-        { _P(1.0, 1.0, 1.0),    _T(1.0, 0.0), _N(1.0, 0.0, 0.0)  },
-        { _P(1.0, -1.0, 1.0),   _T(1.0, 1.0), _N(1.0, 0.0, 0.0)  },
-        { _P(1.0, 1.0, 1.0),    _T(0.0, 0.0), _N(0.0, 0.0, 1.0)  },
-        { _P(-1.0, 1.0, 1.0),   _T(1.0, 0.0), _N(0.0, 0.0, 1.0)  },
-        { _P(1.0, -1.0, 1.0),   _T(0.0, 1.0), _N(0.0, 0.0, 1.0)  },
-        { _P(1.0, -1.0, 1.0),   _T(0.0, 1.0), _N(0.0, 0.0, 1.0)  },
-        { _P(-1.0, 1.0, 1.0),   _T(1.0, 0.0), _N(0.0, 0.0, 1.0)  },
-        { _P(-1.0, -1.0, 1.0),  _T(1.0, 1.0), _N(0.0, 0.0, 1.0)  },
-        { _P(-1.0, 1.0, 1.0),   _T(0.0, 0.0), _N(-1.0, 0.0, 0.0) },
-        { _P(-1.0, 1.0, -1.0),  _T(1.0, 0.0), _N(-1.0, 0.0, 0.0) },
-        { _P(-1.0, -1.0, 1.0),  _T(0.0, 1.0), _N(-1.0, 0.0, 0.0) },
-        { _P(-1.0, -1.0, 1.0),  _T(0.0, 1.0), _N(-1.0, 0.0, 0.0) },
-        { _P(-1.0, 1.0, -1.0),  _T(1.0, 0.0), _N(-1.0, 0.0, 0.0) },
-        { _P(-1.0, -1.0, -1.0), _T(1.0, 1.0), _N(-1.0, 0.0, 0.0) },
-        { _P(-1.0, 1.0, 1.0),   _T(0.0, 0.0), _N(0.0, 1.0, 0.0)  },
-        { _P(1.0, 1.0, 1.0),    _T(1.0, 0.0), _N(0.0, 1.0, 0.0)  },
-        { _P(-1.0, 1.0, -1.0),  _T(0.0, 1.0), _N(0.0, 1.0, 0.0)  },
-        { _P(-1.0, 1.0, -1.0),  _T(0.0, 1.0), _N(0.0, 1.0, 0.0)  },
-        { _P(1.0, 1.0, 1.0),    _T(1.0, 0.0), _N(0.0, 1.0, 0.0)  },
-        { _P(1.0, 1.0, -1.0),   _T(1.0, 1.0), _N(0.0, 1.0, 0.0)  },
-        { _P(-1.0, -1.0, -1.0), _T(0.0, 0.0), _N(0.0, -1.0, 0.0) },
-        { _P(1.0, -1.0, -1.0),  _T(1.0, 0.0), _N(0.0, -1.0, 0.0) },
-        { _P(-1.0, -1.0, 1.0),  _T(0.0, 1.0), _N(0.0, -1.0, 0.0) },
-        { _P(-1.0, -1.0, 1.0),  _T(0.0, 1.0), _N(0.0, -1.0, 0.0) },
-        { _P(1.0, -1.0, -1.0),  _T(1.0, 0.0), _N(0.0, -1.0, 0.0) },
-        { _P(1.0, -1.0, 1.0),   _T(1.0, 1.0), _N(0.0, -1.0, 0.0) },
-    };
+        // Front Face
+        VertexSimple(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f),
+        VertexSimple(-1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, -1.0f),
+        VertexSimple(1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f),
+        VertexSimple(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f),
 
-#undef _P
-#undef _T
-#undef _U
+        // Back Face
+        VertexSimple(-1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f),
+        VertexSimple(1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 1.0f),
+        VertexSimple(1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),
+        VertexSimple(-1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 1.0f),
+
+        // Top Face
+        VertexSimple(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f),
+        VertexSimple(-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f),
+        VertexSimple(1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f),
+        VertexSimple(1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f),
+
+        // Bottom Face
+        VertexSimple(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f),
+        VertexSimple(1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, -1.0f),
+        VertexSimple(1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f),
+        VertexSimple(-1.0f, -1.0f, 1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 1.0f),
+
+        // Left Face
+        VertexSimple(-1.0f, -1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f),
+        VertexSimple(-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f),
+        VertexSimple(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, -1.0f),
+        VertexSimple(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f),
+
+        // Right Face
+        VertexSimple(1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, -1.0f),
+        VertexSimple(1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, -1.0f),
+        VertexSimple(1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f),
+        VertexSimple(1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f),
+    };
 
     if (vertexCountOut != nullptr)
     {
@@ -212,23 +206,29 @@ void TexturedCubeRenderer::CreateCubeMesh(
     //              triangle of this mesh.
     static const unsigned short cubeIndices[] =
     {
-        0, 2, 1, // -x
-        1, 2, 3,
+        // Front Face
+        0, 1, 2,
+        0, 2, 3,
 
-        4, 5, 6, // +x
-        5, 7, 6,
+        // Back Face
+        4, 5, 6,
+        4, 6, 7,
 
-        0, 1, 5, // -y
-        0, 5, 4,
+        // Top Face
+        8, 9, 10,
+        8, 10, 11,
 
-        2, 6, 7, // +y
-        2, 7, 3,
+        // Bottom Face
+        12, 13, 14,
+        12, 14, 15,
 
-        0, 4, 6, // -z
-        0, 6, 2,
+        // Left Face
+        16, 17, 18,
+        16, 18, 19,
 
-        1, 3, 7, // +z
-        1, 7, 5,
+        // Right Face
+        20, 21, 22,
+        20, 22, 23
     };
 
     if (indexCountOut != nullptr)
