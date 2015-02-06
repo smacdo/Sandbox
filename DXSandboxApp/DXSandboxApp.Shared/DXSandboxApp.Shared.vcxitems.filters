@@ -61,6 +61,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Debugging.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Texture2d.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -111,6 +115,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Texture2d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleMeshPixelShader.hlsl">

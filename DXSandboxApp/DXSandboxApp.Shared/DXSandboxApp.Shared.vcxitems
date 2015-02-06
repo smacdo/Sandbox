@@ -27,11 +27,13 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\BasicDemoRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Texture2d.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\TextSprite.cpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Debugging.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Exceptions.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h" />
@@ -56,6 +58,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\IDemoRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ShaderStructures.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Texture2d.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.h" />

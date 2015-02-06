@@ -58,7 +58,7 @@ namespace DXSandboxApp
         // Internal constructor.
         ConstantBuffer(
             ID3D11Buffer * constantBuffer);     // Transfer ownership of object (do not release)
-
+    
     private:
         Microsoft::WRL::ComPtr<ID3D11Buffer> mConstantBuffer;
     };

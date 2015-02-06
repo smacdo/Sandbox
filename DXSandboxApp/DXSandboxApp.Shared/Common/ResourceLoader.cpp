@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "ResourceLoader.h"
+#include "Texture2d.h"
 #include <ppltasks.h>
 #include <string>
 #include <locale>
+#include <memory>
 #include <codecvt>
 
 #include "Common/DirectXHelper.h"
@@ -160,6 +162,106 @@ concurrency::task<std::tuple<ID3D11VertexShader*, ID3D11InputLayout*>>  Resource
 
         return std::make_tuple(vertexShader, inputLayout);
     });
+}
+
+concurrency::task<Texture2d *> ResourceLoader::LoadTexture2dAsync(const std::wstring& fileName)
+{
+    using namespace Concurrency;
+    return create_task([=] { return LoadTexture2d(fileName); });
+}
+
+Texture2d * ResourceLoader::LoadTexture2d(const std::wstring& fileName)
+{
+    // Format path to image file name.
+    auto location = Package::Current->InstalledLocation;
+
+    Platform::String^ path = Platform::String::Concat(location->Path, "\\");
+    path = Platform::String::Concat(path, "Assets\\");
+    path = Platform::String::Concat(path, Platform::StringReference(fileName.c_str()));
+
+    // Get WIC imaging factory, and create a decoder for the requested image.
+    auto wicFactory = mDeviceResources->GetWicImagingFactory();
+
+    ComPtr<IWICBitmapDecoder> wicBitmapDecoder;
+    DX::ThrowIfFailed(
+        wicFactory->CreateDecoderFromFilename(
+            path->Data(),
+            nullptr,
+            GENERIC_READ,
+            WICDecodeMetadataCacheOnDemand,
+            &wicBitmapDecoder));
+
+    ComPtr<IWICBitmapFrameDecode> wicBitmapFrame;
+    DX::ThrowIfFailed(wicBitmapDecoder->GetFrame(0, &wicBitmapFrame));
+
+    ComPtr<IWICFormatConverter> wicFormatConverter;
+    DX::ThrowIfFailed(wicFactory->CreateFormatConverter(&wicFormatConverter));
+
+    // Initialize WIC decoder. Set the output format to be the same as the formated used by the engine when rendering
+    // 2d sprites.
+    DX::ThrowIfFailed(
+        wicFormatConverter->Initialize(
+            wicBitmapFrame.Get(),
+            GUID_WICPixelFormat32bppPBGRA,
+            WICBitmapDitherTypeNone,
+            nullptr,
+            0.0,
+            WICBitmapPaletteTypeCustom));  // The BGRA format has no palette so this value is ignored.
+
+    // Read image into temporary pixel buffer.
+    uint32_t width = 0, height = 0;
+    DX::ThrowIfFailed(wicBitmapFrame->GetSize(&width, &height));
+
+    std::unique_ptr<uint8_t[]> pixels(new uint8_t[width * height * 4]);
+    DX::ThrowIfFailed(
+        wicFormatConverter->CopyPixels(
+            nullptr,                // Read from the entire bitmap, not a subregion.
+            width * 4,              // Image stride.
+            width * height * 4,     // Size of the image buffer.
+            pixels.get()));         // Destination image buffer pointer.
+
+    // Configure and initialize Direct2d texture object from pixel data.
+    D3D11_SUBRESOURCE_DATA initialData = {0};
+    initialData.pSysMem = pixels.get();
+    initialData.SysMemPitch = width * 4;
+    initialData.SysMemSlicePitch = 0;
+
+    CD3D11_TEXTURE2D_DESC textureDesc(
+        DXGI_FORMAT_B8G8R8A8_UNORM,
+        width,
+        height,
+        1,
+        1);
+
+    ComPtr<ID3D11Texture2D> texture2d;
+    DX::ThrowIfFailed(
+        mDeviceResources->GetD3DDevice()->CreateTexture2D(
+            &textureDesc,
+            &initialData,
+            &texture2d));
+
+    // Create a shader resource view object as well.
+    ComPtr<ID3D11ShaderResourceView> srv;
+    CD3D11_SHADER_RESOURCE_VIEW_DESC srvDesc(
+        texture2d.Get(),
+        D3D11_SRV_DIMENSION_TEXTURE2D);
+
+    DX::ThrowIfFailed(
+        mDeviceResources->GetD3DDevice()->CreateShaderResourceView(
+            texture2d.Get(),
+            &srvDesc,
+            &srv));
+
+    // TODO: Set debug name on texture.
+
+    // Create and return a new shader object.
+    return new Texture2d(texture2d.Get(), srv.Get());
+}
+
+concurrency::task<RenderableImageSprite*> ResourceLoader::LoadImageSpriteAsync(const std::wstring& fileName)
+{
+    using namespace Concurrency;
+    return create_task([=] { return LoadImageSprite(fileName); });
 }
 
 RenderableImageSprite* ResourceLoader::LoadImageSprite(const std::wstring& imageFileName)

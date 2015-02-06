@@ -636,6 +636,53 @@ void DX::DeviceResources::Present()
 	}
 }
 
+// Check if compute shaders are supported.
+bool DX::DeviceResources::GetComputerShadersSupported() const
+{
+    if (m_d3dFeatureLevel > D3D_FEATURE_LEVEL_11_0)
+    {
+        return true;
+    }
+    else
+    {
+        if (m_d3dFeatureLevel >= D3D_FEATURE_LEVEL_10_0)
+        {
+            D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS hwopts = { 0 };
+            m_d3dDevice->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &hwopts, sizeof(hwopts));
+            return hwopts.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x;
+        }
+    }
+
+    return false;
+}
+
+// Get the maximum supported textured size.
+unsigned int DX::DeviceResources::GetMaxTextureDimensions() const
+{
+    // see http://msdn.microsoft.com/en-us/library/windows/desktop/ff476876(v=vs.85).aspx
+    switch (m_d3dFeatureLevel)
+    {
+        case D3D_FEATURE_LEVEL_11_1:
+        case D3D_FEATURE_LEVEL_11_0:
+            return 16384;
+
+        case D3D_FEATURE_LEVEL_10_1:
+        case D3D_FEATURE_LEVEL_10_0:
+            return 8192;
+
+        case D3D_FEATURE_LEVEL_9_3:
+            return 4096;
+
+        case D3D_FEATURE_LEVEL_9_2:
+        case D3D_FEATURE_LEVEL_9_1:
+            return 2048;
+
+        default:
+            ThrowIfFailed(E_UNEXPECTED);
+            return 0;
+    }
+}
+
 // This method determines the rotation between the display device's native Orientation and the
 // current display orientation.
 DXGI_MODE_ROTATION DX::DeviceResources::ComputeDisplayRotation()

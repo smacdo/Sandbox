@@ -1,4 +1,3 @@
-// TODO: Move .cpp, .h into Common\ folder.
 #include "pch.h"
 #include "ConstantBuffer.h"
 #include "Common/DirectXHelper.h"
@@ -25,7 +24,7 @@ ConstantBuffer::ConstantBuffer(ID3D11Device * device, size_t bufferSize)
 ConstantBuffer::ConstantBuffer(ID3D11Buffer * constantBuffer)
     : mConstantBuffer()
 {
-    // TODO: Null check.
+    CheckNotNull(constantBuffer);
     mConstantBuffer.Attach(constantBuffer);     // Transfered ownership, do not AddRef.
 }
 

@@ -8,4 +8,11 @@ namespace DXSandboxApp
 		DirectX::XMFLOAT3 pos;
 		DirectX::XMFLOAT3 color;
 	};
+
+    struct VertexSimple
+    {
+        DirectX::XMFLOAT3 pos;
+        DirectX::XMFLOAT2 texture;
+        DirectX::XMFLOAT3 normal;
+    };
 }

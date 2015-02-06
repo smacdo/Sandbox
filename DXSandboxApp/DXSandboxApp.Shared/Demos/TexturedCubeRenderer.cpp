@@ -44,8 +44,8 @@ void TexturedCubeRenderer::Render()
 
     auto context = mDeviceResources->GetD3DDeviceContext();
 
-    // Each vertex is one instance of the VertexPositionColor struct.
-    unsigned int stride = sizeof(VertexPositionColor);
+    // Each vertex is one instance of the VertexSimple struct.
+    unsigned int stride = sizeof(VertexSimple);
     unsigned int offset = 0;
 
     context->IASetVertexBuffers(0, 1, mVertexBuffer.GetAddressOf(), &stride, &offset);
@@ -76,7 +76,8 @@ void TexturedCubeRenderer::CreateDeviceDependentResources()
     static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =        // TODO: Make separate function.
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+//        { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_INSTANCE_DATA, 0 }
     };
 
     auto loadVSTask = mResourceLoader->LoadVertexShaderAndCreateInputLayoutAsync(
@@ -128,18 +129,53 @@ void TexturedCubeRenderer::CreateCubeMesh(
     _Out_opt_ unsigned int * vertexCountOut,
     _Out_opt_ unsigned int * indexCountOut)
 {
+#define _P(x, y, z) XMFLOAT3((x), (y), (z))
+#define _T(u, v) XMFLOAT2((u), (v))
+#define _N(x, y, z) XMFLOAT3((x), (y), (z))
+
     // Load mesh vertices. Each vertex has a position and a color.
-    static const VertexPositionColor cubeVertices[] =
+    static const VertexSimple cubeVertices[] =
     {
-        { XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, 0.0f) },
-        { XMFLOAT3(-0.5f, -0.5f, 0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f) },
-        { XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-        { XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f) },
-        { XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
-        { XMFLOAT3(0.5f, -0.5f, 0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f) },
-        { XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f) },
-        { XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(1.0f, 1.0f, 1.0f) },
+        { _P(-1.0, 1.0, -1.0),  _T(0.0, 0.0), _N(0.0, 0.0, -1.0) },
+        { _P(1.0, 1.0, -1.0),   _T(1.0, 0.0), _N(0.0, 0.0, -1.0) },
+        { _P(-1.0, -1.0, -1.0), _T(0.0, 1.0), _N(0.0, 0.0, -1.0) },
+        { _P(-1.0, -1.0, -1.0), _T(0.0, 1.0), _N(0.0, 0.0, -1.0) },
+        { _P(1.0, 1.0, -1.0),   _T(1.0, 0.0), _N(0.0, 0.0, -1.0) },
+        { _P(1.0, -1.0, -1.0),  _T(1.0, 1.0), _N(0.0, 0.0, -1.0) },
+        { _P(1.0, 1.0, -1.0),   _T(0.0, 0.0), _N(1.0, 0.0, 0.0)  },
+        { _P(1.0, -1.0, -1.0),  _T(0.0, 1.0), _N(1.0, 0.0, 0.0)  },
+        { _P(1.0, -1.0, -1.0),  _T(0.0, 1.0), _N(1.0, 0.0, 0.0)  },
+        { _P(1.0, 1.0, 1.0),    _T(1.0, 0.0), _N(1.0, 0.0, 0.0)  },
+        { _P(1.0, -1.0, 1.0),   _T(1.0, 1.0), _N(1.0, 0.0, 0.0)  },
+        { _P(1.0, 1.0, 1.0),    _T(0.0, 0.0), _N(0.0, 0.0, 1.0)  },
+        { _P(-1.0, 1.0, 1.0),   _T(1.0, 0.0), _N(0.0, 0.0, 1.0)  },
+        { _P(1.0, -1.0, 1.0),   _T(0.0, 1.0), _N(0.0, 0.0, 1.0)  },
+        { _P(1.0, -1.0, 1.0),   _T(0.0, 1.0), _N(0.0, 0.0, 1.0)  },
+        { _P(-1.0, 1.0, 1.0),   _T(1.0, 0.0), _N(0.0, 0.0, 1.0)  },
+        { _P(-1.0, -1.0, 1.0),  _T(1.0, 1.0), _N(0.0, 0.0, 1.0)  },
+        { _P(-1.0, 1.0, 1.0),   _T(0.0, 0.0), _N(-1.0, 0.0, 0.0) },
+        { _P(-1.0, 1.0, -1.0),  _T(1.0, 0.0), _N(-1.0, 0.0, 0.0) },
+        { _P(-1.0, -1.0, 1.0),  _T(0.0, 1.0), _N(-1.0, 0.0, 0.0) },
+        { _P(-1.0, -1.0, 1.0),  _T(0.0, 1.0), _N(-1.0, 0.0, 0.0) },
+        { _P(-1.0, 1.0, -1.0),  _T(1.0, 0.0), _N(-1.0, 0.0, 0.0) },
+        { _P(-1.0, -1.0, -1.0), _T(1.0, 1.0), _N(-1.0, 0.0, 0.0) },
+        { _P(-1.0, 1.0, 1.0),   _T(0.0, 0.0), _N(0.0, 1.0, 0.0)  },
+        { _P(1.0, 1.0, 1.0),    _T(1.0, 0.0), _N(0.0, 1.0, 0.0)  },
+        { _P(-1.0, 1.0, -1.0),  _T(0.0, 1.0), _N(0.0, 1.0, 0.0)  },
+        { _P(-1.0, 1.0, -1.0),  _T(0.0, 1.0), _N(0.0, 1.0, 0.0)  },
+        { _P(1.0, 1.0, 1.0),    _T(1.0, 0.0), _N(0.0, 1.0, 0.0)  },
+        { _P(1.0, 1.0, -1.0),   _T(1.0, 1.0), _N(0.0, 1.0, 0.0)  },
+        { _P(-1.0, -1.0, -1.0), _T(0.0, 0.0), _N(0.0, -1.0, 0.0) },
+        { _P(1.0, -1.0, -1.0),  _T(1.0, 0.0), _N(0.0, -1.0, 0.0) },
+        { _P(-1.0, -1.0, 1.0),  _T(0.0, 1.0), _N(0.0, -1.0, 0.0) },
+        { _P(-1.0, -1.0, 1.0),  _T(0.0, 1.0), _N(0.0, -1.0, 0.0) },
+        { _P(1.0, -1.0, -1.0),  _T(1.0, 0.0), _N(0.0, -1.0, 0.0) },
+        { _P(1.0, -1.0, 1.0),   _T(1.0, 1.0), _N(0.0, -1.0, 0.0) },
     };
+
+#undef _P
+#undef _T
+#undef _U
 
     if (vertexCountOut != nullptr)
     {

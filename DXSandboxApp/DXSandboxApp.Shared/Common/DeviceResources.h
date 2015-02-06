@@ -44,6 +44,11 @@ namespace DX
 		void Trim();
 		void Present();
 
+        // Getters.
+        //  - Custom functions added by Scott.
+        bool GetComputerShadersSupported() const;
+        unsigned int GetMaxTextureDimensions() const;
+
 		// Device Accessors.
 		Windows::Foundation::Size GetOutputSize() const					{ return m_outputSize; }
 		Windows::Foundation::Size GetLogicalSize() const				{ return m_logicalSize; }
