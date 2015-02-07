@@ -18,6 +18,7 @@ namespace DXSandboxApp
     class InputTracker;
     class ModelViewConstantBuffer;
     class ResourceLoader;
+    class Camera;
 
     // This is an abstract base for basic scene renderers. Controls the touch and camera for making demos simpler.
     //  TODO: Split this class up
@@ -44,6 +45,7 @@ namespace DXSandboxApp
         void SetLoadingComplete(bool isLoadingComplete);
 
     private:
+        void Initialize();
         void CreateModelViewBuffer();
         void ReleaseModelViewBuffer();
         void UpdateModelViewBuffer();
@@ -51,6 +53,8 @@ namespace DXSandboxApp
         void RotateScene(float radians);
 
     protected:
+        std::unique_ptr<Camera> mCamera;
+
         // Pointer to input tracking.
         std::shared_ptr<InputTracker> mInputTracker;
 

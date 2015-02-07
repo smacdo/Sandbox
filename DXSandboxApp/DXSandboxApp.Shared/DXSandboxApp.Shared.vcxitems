@@ -14,6 +14,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\Camera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp" />
@@ -32,6 +33,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\TextSprite.cpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Camera.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Debugging.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Exceptions.h" />

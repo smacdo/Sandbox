@@ -6,6 +6,7 @@
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
+#include "Common\Camera.h"
 
 #include <memory>
 
@@ -20,6 +21,7 @@ BasicDemoRenderer::BasicDemoRenderer(
     std::shared_ptr<ResourceLoader> resourceLoader,
     std::shared_ptr<DX::DeviceResources> deviceResources)
     : IDemoRenderer(),
+      mCamera(new Camera()),
       mInputTracker(inputTracker),
       mLoadingComplete(false),
       mDegreesPerSecond(45),
@@ -27,12 +29,25 @@ BasicDemoRenderer::BasicDemoRenderer(
       mDeviceResources(deviceResources),
       mResourceLoader(resourceLoader)
 {
-    CreateModelViewBuffer();
-    UpdateModelViewBuffer();
+    Initialize();
 }
 
 BasicDemoRenderer::~BasicDemoRenderer()
 {
+}
+
+void BasicDemoRenderer::Initialize()
+{
+    // Configure initial camera view.
+    mCamera->SetProjParams(XM_PI / 2, 1.0f, 0.01f, 100.0f);
+    mCamera->SetViewParams(
+        XMFLOAT3(0.0f, 0.0f, -5.0f),
+        XMFLOAT3(0.0f, 0.0f, 0.0f),
+        XMFLOAT3(0.0f, 1.0f, 0.0f));
+
+    // Create and set up the constant view buffer.
+    CreateModelViewBuffer();
+    UpdateModelViewBuffer();
 }
 
 void BasicDemoRenderer::CreateModelViewBuffer()
@@ -53,6 +68,12 @@ void BasicDemoRenderer::UpdateModelViewBuffer()
     float aspectRatio = outputSize.Width / outputSize.Height;
     float fovAngleY = 70.0f * XM_PI / 180.0f;
 
+    mCamera->SetProjParams(
+        XM_PI / 2,
+        outputSize.Width / outputSize.Height,
+        0.01f,
+        1000.0f);
+
     // This is a simple example of change that can be made when the app is in portrait or snapped view.
     if (aspectRatio < 1.0f)
     {
@@ -70,7 +91,7 @@ void BasicDemoRenderer::UpdateModelViewBuffer()
         0.01f,
         100.0f);
 
-    XMFLOAT4X4 orientation = mDeviceResources->GetOrientationTransform3D();
+    auto orientation = mDeviceResources->GetOrientationTransform3D();
     XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
 
     mModelViewBuffer->SetProjection(perspectiveMatrix * orientationMatrix);

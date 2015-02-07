@@ -67,6 +67,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.h">
       <Filter>Demos</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Camera.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -119,6 +122,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Texture2d.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.cpp">
       <Filter>Demos</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\Camera.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
