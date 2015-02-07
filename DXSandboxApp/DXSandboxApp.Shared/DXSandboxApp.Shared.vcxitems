@@ -27,8 +27,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Game\GameHud.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\BasicDemoRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\ConfigurableDesc.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Texture2d.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\Texture2d.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.cpp" />
@@ -57,10 +58,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\DirectXHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\StepTimer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\BasicDemoRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ConfigurableDesc.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\IDemoRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ShaderStructures.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Texture2d.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\Texture2d.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.h" />

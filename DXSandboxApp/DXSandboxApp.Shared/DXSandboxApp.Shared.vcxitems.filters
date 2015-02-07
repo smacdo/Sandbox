@@ -63,13 +63,16 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Debugging.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Texture2d.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.h">
       <Filter>Demos</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Camera.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\Texture2d.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ConfigurableDesc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -119,13 +122,16 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Texture2d.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.cpp">
       <Filter>Demos</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Camera.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\Texture2d.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\ConfigurableDesc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleMeshPixelShader.hlsl">

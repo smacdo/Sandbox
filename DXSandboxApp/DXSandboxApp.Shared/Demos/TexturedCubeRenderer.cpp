@@ -6,7 +6,8 @@
 #include "Common\ModelViewConstantBuffer.h"
 #include "Common\ResourceLoader.h"
 #include "Input\InputTracker.h"
-#include "Texture2d.h"
+#include "Rendering/Texture2d.h"
+#include "Rendering/ConfigurableDesc.h"
 
 #include <memory>
 
@@ -112,7 +113,10 @@ void TexturedCubeRenderer::CreateDeviceDependentResources()
     });
 
     // Load the texture map for the cube.
-    auto loadTextureTask = mResourceLoader->LoadTexture2dAsync(L"crate.png").then([this](Texture2d * pTexture)
+    SamplerSettings settings;
+    settings = settings.AnisotropicFilter().MaxAnisotropy(8);
+
+    auto loadTextureTask = mResourceLoader->LoadTexture2dAsync(L"crate.png", settings).then([this](Texture2d * pTexture)
     {
         mCubeTexture.reset(pTexture);
     });

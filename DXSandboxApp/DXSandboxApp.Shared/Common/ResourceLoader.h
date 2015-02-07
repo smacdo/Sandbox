@@ -14,6 +14,7 @@ namespace DXSandboxApp
     class RenderableImageSprite;
     class SimpleMesh;
     class Texture2d;
+    class SamplerSettings;
 
     class ResourceLoader
     {
@@ -49,10 +50,10 @@ namespace DXSandboxApp
             _In_ uint32 inputElementCount);
 
         // Load texture from disk.
-        concurrency::task<Texture2d*> LoadTexture2dAsync(const std::wstring& fileName);
+        concurrency::task<Texture2d*> LoadTexture2dAsync(const std::wstring& fileName, const SamplerSettings& settings);
 
         // Load texture from disk.
-        Texture2d* LoadTexture2d(const std::wstring& fileName);
+        Texture2d* LoadTexture2d(const std::wstring& fileName, const SamplerSettings& settings);
 
         // Get an image sprite loaded from a file.
         concurrency::task<RenderableImageSprite*> LoadImageSpriteAsync(const std::wstring& imageFileName);

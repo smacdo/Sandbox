@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "ResourceLoader.h"
-#include "Texture2d.h"
 #include <ppltasks.h>
 #include <string>
 #include <locale>
@@ -9,6 +8,8 @@
 
 #include "Common/DirectXHelper.h"
 #include "Ui/RenderableImageSprite.h"
+#include "Rendering/Texture2d.h"
+#include "Rendering/ConfigurableDesc.h"
 
 using namespace DXSandboxApp;
 using namespace Microsoft::WRL;
@@ -164,13 +165,17 @@ concurrency::task<std::tuple<ID3D11VertexShader*, ID3D11InputLayout*>>  Resource
     });
 }
 
-concurrency::task<Texture2d *> ResourceLoader::LoadTexture2dAsync(const std::wstring& fileName)
+concurrency::task<Texture2d *> ResourceLoader::LoadTexture2dAsync(
+    const std::wstring& fileName,
+    const SamplerSettings& settings)
 {
     using namespace Concurrency;
-    return create_task([=] { return LoadTexture2d(fileName); });
+    return create_task([=] { return LoadTexture2d(fileName, settings); });
 }
 
-Texture2d * ResourceLoader::LoadTexture2d(const std::wstring& fileName)
+Texture2d * ResourceLoader::LoadTexture2d(
+    const std::wstring& fileName,
+    const SamplerSettings& settings)
 {
     // Format path to image file name.
     auto location = Package::Current->InstalledLocation;
@@ -253,19 +258,8 @@ Texture2d * ResourceLoader::LoadTexture2d(const std::wstring& fileName)
             &srv));
 
     // Create a default sampler state.
-    D3D11_SAMPLER_DESC sdc = {};
-
-    sdc.Filter = D3D11_FILTER_ANISOTROPIC;
-    sdc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    sdc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    sdc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-    sdc.MaxAnisotropy = 8;
-    sdc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-    sdc.MinLOD = 0;
-    sdc.MaxLOD = FLT_MAX;
-
     ComPtr<ID3D11SamplerState> sampler;
-    DX::ThrowIfFailed(mDeviceResources->GetD3DDevice()->CreateSamplerState(&sdc, &sampler));
+    sampler = settings.CreateSamplerState(mDeviceResources->GetD3DDevice());
 
     // TODO: Set debug name on texture.
 
