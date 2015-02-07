@@ -252,10 +252,25 @@ Texture2d * ResourceLoader::LoadTexture2d(const std::wstring& fileName)
             &srvDesc,
             &srv));
 
+    // Create a default sampler state.
+    D3D11_SAMPLER_DESC sdc = {};
+
+    sdc.Filter = D3D11_FILTER_ANISOTROPIC;
+    sdc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    sdc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    sdc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    sdc.MaxAnisotropy = 8;
+    sdc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    sdc.MinLOD = 0;
+    sdc.MaxLOD = FLT_MAX;
+
+    ComPtr<ID3D11SamplerState> sampler;
+    DX::ThrowIfFailed(mDeviceResources->GetD3DDevice()->CreateSamplerState(&sdc, &sampler));
+
     // TODO: Set debug name on texture.
 
     // Create and return a new shader object.
-    return new Texture2d(texture2d.Get(), srv.Get());
+    return new Texture2d(texture2d.Get(), srv.Get(), sampler.Get());
 }
 
 concurrency::task<RenderableImageSprite*> ResourceLoader::LoadImageSpriteAsync(const std::wstring& fileName)

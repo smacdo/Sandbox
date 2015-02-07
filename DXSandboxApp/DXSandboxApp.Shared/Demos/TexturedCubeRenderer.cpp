@@ -67,8 +67,12 @@ void TexturedCubeRenderer::Render()
     // Send the MVP (model view projection) constant buffer to the graphics device.
     mModelViewBuffer->BindToActiveVertexShader(context, 0);
 
+    // Bind the texture resource view and sampler state.
     ID3D11ShaderResourceView* shaderResourceViews[] = { mCubeTexture->GetShaderResourceView() };
     context->PSSetShaderResources(0, 1, shaderResourceViews);
+
+    ID3D11SamplerState* samplerStates[] = { mCubeTexture->GetSamplerState() };
+    context->PSSetSamplers(0, 1, samplerStates);
 
     // Attach our pixel shader.
     context->PSSetShader(mPixelShader.Get(), nullptr, 0);

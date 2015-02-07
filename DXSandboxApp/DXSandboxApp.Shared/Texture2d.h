@@ -11,11 +11,17 @@ namespace DXSandboxApp
     {
     public:
         Texture2d();
-        Texture2d(ID3D11Texture2D * pTexture, ID3D11ShaderResourceView * pResourceView);
+        Texture2d(
+            ID3D11Texture2D * pTexture,
+            ID3D11ShaderResourceView * pResourceView,
+            ID3D11SamplerState * samplerState);
         ~Texture2d();
 
         // Load texture.
-        void Initialize(ID3D11Texture2D * pTexture, ID3D11ShaderResourceView * pResourceView);
+        void Initialize(
+            ID3D11Texture2D * pTexture,
+            ID3D11ShaderResourceView * pResourceView,
+            ID3D11SamplerState * samplerState);
 
         // Unload texture object.
         void Reset();
@@ -35,9 +41,16 @@ namespace DXSandboxApp
         // Retrieve the ID3D11Texture2D texture pointer.
         const ID3D11ShaderResourceView * GetShaderResourceView() const;
 
+        // Retrieve the ID3D11SamplerState texture pointer.
+        ID3D11SamplerState * GetSamplerState();
+
+        // Retrieve the ID3D11SamplerState texture pointer.
+        const ID3D11SamplerState * GetSamplerState() const;
+
     private:
         bool mLoaded;
         Microsoft::WRL::ComPtr<ID3D11Texture2D> mTexture;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mShaderResourceView;
+        Microsoft::WRL::ComPtr<ID3D11SamplerState> mSamplerState;
     };
 }
