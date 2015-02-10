@@ -3,10 +3,10 @@
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
-#include "Common\ModelViewConstantBuffer.h"
+#include "Rendering\ConstantBuffers.h"
 #include "Common\ResourceLoader.h"
 #include "Input\InputTracker.h"
-#include "Rendering/Texture2d.h"
+#include "Rendering/Material.h"
 #include "Rendering/ConfigurableDesc.h"
 
 #include <memory>
@@ -28,6 +28,84 @@ TexturedCubeRenderer::TexturedCubeRenderer(
 {
     CreateDeviceDependentResources();
     deviceResources->GetD3DDeviceContext()->RSSetState(mRasterizerState.Get());
+}
+
+void TexturedCubeRenderer::CreateDeviceDependentResources()
+{
+    // Create and load cube vertex shader.
+    static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =        // TODO: Make separate function.
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+    };
+
+    auto loadVSTask = mResourceLoader->LoadVertexShaderAndCreateInputLayoutAsync(
+        L"TexturedCubeVertexShader.cso",
+        vertexDesc,
+        ARRAYSIZE(vertexDesc));
+
+    auto createVSTask = loadVSTask.then([this](std::tuple<ID3D11VertexShader*, ID3D11InputLayout*> results) {
+        std::tie(mVertexShader, mInputLayout) = results;
+    });
+
+    // Create and load cube pixel shader.
+    auto loadPSTask = mResourceLoader->LoadPixelShaderAsync(L"TexturedCubePixelShader.cso");
+    auto createPSTask = loadPSTask.then([this](ID3D11PixelShader* pixelShader) {
+        mPixelShader = pixelShader;
+    });
+
+    // Create the cube mesh once the vertex and pixel shaders have loaded.
+    auto createCubeTask = (createPSTask && createVSTask).then([this]() {
+        CreateCubeMesh(&mVertexBuffer, &mIndexBuffer, nullptr, &mIndexCount);
+    });
+
+    // Load the texture map for the cube.
+    SamplerSettings settings;
+    settings = settings.AnisotropicFilter().MaxAnisotropy(8);
+
+    auto loadTextureTask = mResourceLoader->LoadTexture2dAsync(L"crate.png", settings).then([this](Material * pTexture)
+    {
+        mCubeTexture.reset(pTexture);
+
+        // Configure material values.
+        mCubeTexture->SetMeshColor(XMFLOAT4(0.8f, 0.8f, 0.8f, 0.5f));
+        mCubeTexture->SetDiffuseColor(XMFLOAT4(0.8f, 0.8f, 0.8f, 0.5f));
+        mCubeTexture->SetSpecularColor(XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f));
+        mCubeTexture->SetSpecularExponent(5.0f);
+    });
+
+    // Once the cube is loaded, the object is ready to be rendered.
+    (createCubeTask && loadTextureTask).then([this]() {
+        SetLoadingComplete(true);
+    });
+
+    // Initialize the scene's constant buffer that holds lighting data.
+    auto d3dDevice = mDeviceResources->GetD3DDevice();
+    mSceneLighting.reset(new SceneLightingConstantBuffer(d3dDevice));
+
+    mSceneLighting->SetPosition(XMFLOAT4(3.5f, 2.5f, 5.5f, 1.0f), 0);
+    mSceneLighting->SetPosition(XMFLOAT4(3.5f, 2.5f, -5.5f, 1.0f), 1);
+    mSceneLighting->SetPosition(XMFLOAT4(-3.5f, 2.5f, -5.5f, 1.0f), 2);
+    mSceneLighting->SetPosition(XMFLOAT4(3.5f, 2.5f, 5.5f, 1.0f), 3);
+    mSceneLighting->SetColor(XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f));
+
+    auto d3dContext = mDeviceResources->GetD3DDeviceContext();
+    mSceneLighting->ApplyChanges(d3dContext);
+
+    // Initialize per primitive constant buffer.
+    mPerPrimitiveConstants.reset(new PerPrimitiveConstantBuffer(d3dDevice));
+}
+
+void TexturedCubeRenderer::ReleaseDeviceDependentResources()
+{
+    BasicDemoRenderer::ReleaseDeviceDependentResources();
+
+    mVertexShader.Reset();
+    mInputLayout.Reset();
+    mPixelShader.Reset();
+    mVertexBuffer.Reset();
+    mIndexBuffer.Reset();
 }
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
@@ -65,8 +143,8 @@ void TexturedCubeRenderer::Render()
     // Attach our vertex shader.
     context->VSSetShader(mVertexShader.Get(), nullptr, 0);
 
-    // Send the MVP (model view projection) constant buffer to the graphics device.
-    mModelViewBuffer->BindToActiveVertexShader(context, 0);
+    // Send data to our constant buffers before rendering.
+    BindConstantBuffers(context);
 
     // Bind the texture resource view and sampler state.
     ID3D11ShaderResourceView* shaderResourceViews[] = { mCubeTexture->GetShaderResourceView() };
@@ -82,60 +160,21 @@ void TexturedCubeRenderer::Render()
     context->DrawIndexed(mIndexCount, 0, 0);
 }
 
-void TexturedCubeRenderer::CreateDeviceDependentResources()
+void TexturedCubeRenderer::BindConstantBuffers(_In_ ID3D11DeviceContext1 * pContext)
 {
-    // Create and load cube vertex shader.
-    static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =        // TODO: Make separate function.
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-    };
+    // Upload per primitive values to the per primtiive constant buffer.
+    mPerPrimitiveConstants->SetWorldMatrix(XMMatrixRotationY(mRotationAmount));
+    mPerPrimitiveConstants->SetMeshColor(mCubeTexture->MeshColor());
+    mPerPrimitiveConstants->SetDiffuseColor(mCubeTexture->DiffuseColor());
+    mPerPrimitiveConstants->SetSpecularColor(mCubeTexture->SpecularColor());
+    mPerPrimitiveConstants->SetSpecularExponent(mCubeTexture->SpecularExponent());
 
-    auto loadVSTask = mResourceLoader->LoadVertexShaderAndCreateInputLayoutAsync(
-        L"TexturedCubeVertexShader.cso",
-        vertexDesc,
-        ARRAYSIZE(vertexDesc));
+    mPerPrimitiveConstants->ApplyChanges(pContext);
 
-    auto createVSTask = loadVSTask.then([this](std::tuple<ID3D11VertexShader*, ID3D11InputLayout*> results) {
-        std::tie(mVertexShader, mInputLayout) = results;
-    });
-
-    // Create and load cube pixel shader.
-    auto loadPSTask = mResourceLoader->LoadPixelShaderAsync(L"TexturedCubePixelShader.cso");
-    auto createPSTask = loadPSTask.then([this](ID3D11PixelShader* pixelShader) {
-        mPixelShader = pixelShader;
-    });
-
-    // Create the cube mesh once the vertex and pixel shaders have loaded.
-    auto createCubeTask = (createPSTask && createVSTask).then([this]() {
-        CreateCubeMesh(&mVertexBuffer, &mIndexBuffer, nullptr, &mIndexCount);
-    });
-
-    // Load the texture map for the cube.
-    SamplerSettings settings;
-    settings = settings.AnisotropicFilter().MaxAnisotropy(8);
-
-    auto loadTextureTask = mResourceLoader->LoadTexture2dAsync(L"crate.png", settings).then([this](Texture2d * pTexture)
-    {
-        mCubeTexture.reset(pTexture);
-    });
-
-    // Once the cube is loaded, the object is ready to be rendered.
-    (createCubeTask && loadTextureTask).then([this]() {
-        SetLoadingComplete(true);
-    });
-}
-
-void TexturedCubeRenderer::ReleaseDeviceDependentResources()
-{
-    BasicDemoRenderer::ReleaseDeviceDependentResources();
-
-    mVertexShader.Reset();
-    mInputLayout.Reset();
-    mPixelShader.Reset();
-    mVertexBuffer.Reset();
-    mIndexBuffer.Reset();
+    // Apply constant buffers.
+    mSceneLighting->BindToActivePixelShader(pContext, 0);
+    mModelViewBuffer->BindToActiveVertexShader(pContext, 1);
+    mPerPrimitiveConstants->BindToActiveVertexShader(pContext, 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

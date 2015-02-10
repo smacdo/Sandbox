@@ -67,6 +67,8 @@ namespace DXSandboxApp
         // Camera view data.
         std::shared_ptr<ModelViewConstantBuffer> mModelViewBuffer;
 
+        float mRotationAmount;
+
     private:
         // Variables used with the rendering loop.
         bool	mLoadingComplete;

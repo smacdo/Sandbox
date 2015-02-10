@@ -2,7 +2,7 @@
 #include "BasicDemoRenderer.h"
 #include "IDemoRenderer.h"
 #include "Input\InputTracker.h"
-#include "Common\ModelViewConstantBuffer.h"
+#include "Rendering\ConstantBuffers.h"
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
 #include "Common\DirectXHelper.h"
@@ -131,6 +131,7 @@ void BasicDemoRenderer::CreateWindowSizeDependentResources()
 // Rotate the 3D cube model a set amount of radians.
 void BasicDemoRenderer::RotateScene(float radians)
 {
+    mRotationAmount = radians;
     mModelViewBuffer->SetModel(XMMatrixRotationY(radians));
 }
 

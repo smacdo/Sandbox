@@ -1,12 +1,26 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Vertex shader used for rendering simple models.
 ///////////////////////////////////////////////////////////////////////////////
-// A constant buffer that stores the three basic column-major matrices for composing geometry.
-cbuffer ModelViewProjectionConstantBuffer : register(b0)
+cbuffer SceneLightingConstantBuffer : register(b0)
 {
-    matrix model;
+    float4 lightPosition[4];
+    float4 lightColor;
+}
+
+cbuffer ModelViewProjectionConstantBuffer : register(b1)
+{
+    matrix model;           // TODO: Unused, only used for earlier demos.
     matrix view;
     matrix projection;
+};
+
+cbuffer ConstantBufferChangesEveryPrim : register (b2)
+{
+    matrix world;
+    float4 meshColor;
+    float4 diffuseColor;
+    float4 specularColor;
+    float  specularExponent;
 };
 
 // Per-vertex data used as input to the vertex shader.
@@ -33,7 +47,7 @@ PixelShaderInput main(VertexShaderInput input)
     // Transform the vertex position into projected space.
     float4 pos = float4(input.pos, 1.0f);
 
-    pos = mul(pos, model);
+    pos = mul(pos, view);
     pos = mul(pos, view);
     pos = mul(pos, projection);
     output.pos = pos;

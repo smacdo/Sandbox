@@ -58,8 +58,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Debugging.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -69,10 +67,18 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Camera.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\Texture2d.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\Material.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ConfigurableDesc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ConfigurableDesc.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ConstantBuffers.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -120,18 +126,24 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.cpp">
       <Filter>Demos</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Camera.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\Texture2d.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\Material.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\ConfigurableDesc.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\ConfigurableDesc.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\ConstantBuffers.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleMeshPixelShader.hlsl">

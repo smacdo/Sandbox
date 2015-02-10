@@ -8,7 +8,7 @@
 
 #include "Common/DirectXHelper.h"
 #include "Ui/RenderableImageSprite.h"
-#include "Rendering/Texture2d.h"
+#include "Rendering/Material.h"
 #include "Rendering/ConfigurableDesc.h"
 
 using namespace DXSandboxApp;
@@ -165,7 +165,7 @@ concurrency::task<std::tuple<ID3D11VertexShader*, ID3D11InputLayout*>>  Resource
     });
 }
 
-concurrency::task<Texture2d *> ResourceLoader::LoadTexture2dAsync(
+concurrency::task<Material *> ResourceLoader::LoadTexture2dAsync(
     const std::wstring& fileName,
     const SamplerSettings& settings)
 {
@@ -173,7 +173,7 @@ concurrency::task<Texture2d *> ResourceLoader::LoadTexture2dAsync(
     return create_task([=] { return LoadTexture2d(fileName, settings); });
 }
 
-Texture2d * ResourceLoader::LoadTexture2d(
+Material * ResourceLoader::LoadTexture2d(
     const std::wstring& fileName,
     const SamplerSettings& settings)
 {
@@ -264,7 +264,7 @@ Texture2d * ResourceLoader::LoadTexture2d(
     // TODO: Set debug name on texture.
 
     // Create and return a new shader object.
-    return new Texture2d(texture2d.Get(), srv.Get(), sampler.Get());
+    return new Material(texture2d.Get(), srv.Get(), sampler.Get());
 }
 
 concurrency::task<RenderableImageSprite*> ResourceLoader::LoadImageSpriteAsync(const std::wstring& fileName)

@@ -1,21 +1,21 @@
 #pragma once
 
 // Forward declarations.
-struct ID3D11Texture2D;
+struct ID3D11Material;
 struct ID3D11ShaderResourceView;
 
 namespace DXSandboxApp
 {
     // Wrapper around DirectX texture 2d.
-    class Texture2d
+    class Material
     {
     public:
-        Texture2d();
-        Texture2d(
+        Material();
+        Material(
             ID3D11Texture2D * pTexture,
             ID3D11ShaderResourceView * pResourceView,
             ID3D11SamplerState * samplerState);
-        ~Texture2d();
+        ~Material();
 
         // Load texture.
         void Initialize(
@@ -30,15 +30,15 @@ namespace DXSandboxApp
         bool IsValid() const;
 
         // Retrieve the ID3D11Texture2D texture pointer.
-        ID3D11Texture2D * GetTexture2D();
+        ID3D11Texture2D * GetTexture();
 
         // Retrieve the ID3D11Texture2D texture pointer.
-        const ID3D11Texture2D * GetTexture2D() const;
+        const ID3D11Texture2D * GetTexture() const;
 
-        // Retrieve the ID3D11Texture2D texture pointer.
+        // Retrieve the ID3D11ShaderResourceView pointer.
         ID3D11ShaderResourceView * GetShaderResourceView();
 
-        // Retrieve the ID3D11Texture2D texture pointer.
+        // Retrieve the ID3D11ShaderResourceView pointer.
         const ID3D11ShaderResourceView * GetShaderResourceView() const;
 
         // Retrieve the ID3D11SamplerState texture pointer.
@@ -47,10 +47,24 @@ namespace DXSandboxApp
         // Retrieve the ID3D11SamplerState texture pointer.
         const ID3D11SamplerState * GetSamplerState() const;
 
+        void SetMeshColor(DirectX::XMFLOAT4 color);
+        void SetDiffuseColor(DirectX::XMFLOAT4 color);
+        void SetSpecularColor(DirectX::XMFLOAT4 color);
+        void SetSpecularExponent(float value);
+
+        DirectX::XMFLOAT4 MeshColor() const;
+        DirectX::XMFLOAT4 DiffuseColor() const;
+        DirectX::XMFLOAT4 SpecularColor() const;
+        float SpecularExponent() const;
+
     private:
         bool mLoaded;
         Microsoft::WRL::ComPtr<ID3D11Texture2D> mTexture;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mShaderResourceView;
         Microsoft::WRL::ComPtr<ID3D11SamplerState> mSamplerState;
+        DirectX::XMFLOAT4 mMeshColor;
+        DirectX::XMFLOAT4 mDiffuseColor;
+        DirectX::XMFLOAT4 mSpecularColor;
+        float mSpecularExponent;
     };
 }

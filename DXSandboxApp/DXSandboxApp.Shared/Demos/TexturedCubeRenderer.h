@@ -19,7 +19,9 @@ namespace DX
 namespace DXSandboxApp
 {
     class InputTracker;
-    class Texture2d;
+    class Material;
+    class SceneLightingConstantBuffer;
+    class PerPrimitiveConstantBuffer;
 
     // Modified ColoredCubeRenderer that uses texture mapping.
     class TexturedCubeRenderer : public BasicDemoRenderer
@@ -35,6 +37,8 @@ namespace DXSandboxApp
         virtual void Render() override;
 
     private:
+        void BindConstantBuffers(_In_ ID3D11DeviceContext1 * pContext);
+
         // TODO: Move this into a factory.
         void CreateCubeMesh(
             _Out_ ID3D11Buffer ** vertexBufferOut,
@@ -43,7 +47,9 @@ namespace DXSandboxApp
             _Out_opt_ unsigned int * indexCountOut);
 
     private:
-        std::unique_ptr<Texture2d> mCubeTexture;
+        std::unique_ptr<Material> mCubeTexture;     // TODO: Rename mCubeMaterial
+        std::unique_ptr<SceneLightingConstantBuffer> mSceneLighting;
+        std::unique_ptr<PerPrimitiveConstantBuffer> mPerPrimitiveConstants;
 
         // Direct3D resources for cube geometry.
         Microsoft::WRL::ComPtr<ID3D11InputLayout>	mInputLayout;

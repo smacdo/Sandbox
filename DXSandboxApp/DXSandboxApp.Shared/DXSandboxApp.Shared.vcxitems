@@ -16,7 +16,6 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Camera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.cpp" />
@@ -28,8 +27,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\BasicDemoRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\ConfigurableDesc.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\ConstantBuffers.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\Texture2d.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\Material.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.cpp" />
@@ -38,7 +38,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Debugging.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Exceptions.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\ModelViewConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.h" />
@@ -59,10 +58,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\StepTimer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\BasicDemoRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ConfigurableDesc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ConstantBuffers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\IDemoRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ShaderStructures.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\Texture2d.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\Material.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.h" />
