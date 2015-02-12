@@ -46,36 +46,36 @@ void ModelViewConstantBuffer::BindToActivePixelShader(ID3D11DeviceContext * devi
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-SceneLightingConstantBuffer::SceneLightingConstantBuffer(ID3D11Device * device)
-    : mData(new TypedConstantBuffer<SceneLightingData>(device))
+PerFrameConstantBuffer::PerFrameConstantBuffer(ID3D11Device * device)
+    : mData(new TypedConstantBuffer<PerFrameData>(device))
 {
 }
 
-SceneLightingConstantBuffer::~SceneLightingConstantBuffer()
+PerFrameConstantBuffer::~PerFrameConstantBuffer()
 {
 }
 
-void SceneLightingConstantBuffer::SetPosition(DirectX::XMFLOAT4 position, unsigned int index)
+void PerFrameConstantBuffer::SetAmbientColor(DirectX::XMFLOAT4 color)
 {
-    mData->Data().position[index] = position;
+    mData->Data().ambientColor = color;
 }
 
-void SceneLightingConstantBuffer::SetColor(DirectX::XMFLOAT4 color)
+void PerFrameConstantBuffer::SetDiffuseColor(DirectX::XMFLOAT4 color)
 {
-    mData->Data().color = color;
+    mData->Data().diffuseColor = color;
 }
 
-void SceneLightingConstantBuffer::ApplyChanges(ID3D11DeviceContext * deviceContext)
+void PerFrameConstantBuffer::ApplyChanges(ID3D11DeviceContext * deviceContext)
 {
     mData->ApplyChanges(deviceContext);
 }
 
-void SceneLightingConstantBuffer::BindToActiveVertexShader(ID3D11DeviceContext * deviceContext, unsigned int startSlot) const
+void PerFrameConstantBuffer::BindToActiveVertexShader(ID3D11DeviceContext * deviceContext, unsigned int startSlot) const
 {
     mData->BindToActiveVertexShader(deviceContext, startSlot);
 }
 
-void SceneLightingConstantBuffer::BindToActivePixelShader(ID3D11DeviceContext * deviceContext, unsigned int startSlot) const
+void PerFrameConstantBuffer::BindToActivePixelShader(ID3D11DeviceContext * deviceContext, unsigned int startSlot) const
 {
     mData->BindToActivePixelShader(deviceContext, startSlot);
 }

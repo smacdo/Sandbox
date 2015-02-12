@@ -20,7 +20,7 @@ namespace DXSandboxApp
 {
     class InputTracker;
     class Material;
-    class SceneLightingConstantBuffer;
+    class PerFrameConstantBuffer;
     class PerPrimitiveConstantBuffer;
 
     // Modified ColoredCubeRenderer that uses texture mapping.
@@ -48,7 +48,7 @@ namespace DXSandboxApp
 
     private:
         std::unique_ptr<Material> mCubeTexture;     // TODO: Rename mCubeMaterial
-        std::unique_ptr<SceneLightingConstantBuffer> mSceneLighting;
+        std::unique_ptr<PerFrameConstantBuffer> mPerFrameConstants;
         std::unique_ptr<PerPrimitiveConstantBuffer> mPerPrimitiveConstants;
 
         // Direct3D resources for cube geometry.

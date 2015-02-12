@@ -69,9 +69,9 @@ void TexturedCubeRenderer::CreateDeviceDependentResources()
         mCubeTexture.reset(pTexture);
 
         // Configure material values.
-        mCubeTexture->SetMeshColor(XMFLOAT4(0.8f, 0.8f, 0.8f, 0.5f));
+        mCubeTexture->SetMeshColor(XMFLOAT4(0.8f, 0.8f, 0.0f, 0.5f));
         mCubeTexture->SetDiffuseColor(XMFLOAT4(0.8f, 0.8f, 0.8f, 0.5f));
-        mCubeTexture->SetSpecularColor(XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f));
+        mCubeTexture->SetSpecularColor(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
         mCubeTexture->SetSpecularExponent(5.0f);
     });
 
@@ -82,16 +82,13 @@ void TexturedCubeRenderer::CreateDeviceDependentResources()
 
     // Initialize the scene's constant buffer that holds lighting data.
     auto d3dDevice = mDeviceResources->GetD3DDevice();
-    mSceneLighting.reset(new SceneLightingConstantBuffer(d3dDevice));
+    mPerFrameConstants.reset(new PerFrameConstantBuffer(d3dDevice));
 
-    mSceneLighting->SetPosition(XMFLOAT4(3.5f, 2.5f, 5.5f, 1.0f), 0);
-    mSceneLighting->SetPosition(XMFLOAT4(3.5f, 2.5f, -5.5f, 1.0f), 1);
-    mSceneLighting->SetPosition(XMFLOAT4(-3.5f, 2.5f, -5.5f, 1.0f), 2);
-    mSceneLighting->SetPosition(XMFLOAT4(3.5f, 2.5f, 5.5f, 1.0f), 3);
-    mSceneLighting->SetColor(XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f));
+    mPerFrameConstants->SetAmbientColor(XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f));
+    mPerFrameConstants->SetDiffuseColor(XMFLOAT4(0.25f, 0.25f, 0.85f, 1.0f));
 
     auto d3dContext = mDeviceResources->GetD3DDeviceContext();
-    mSceneLighting->ApplyChanges(d3dContext);
+    mPerFrameConstants->ApplyChanges(d3dContext);
 
     // Initialize per primitive constant buffer.
     mPerPrimitiveConstants.reset(new PerPrimitiveConstantBuffer(d3dDevice));
@@ -172,9 +169,12 @@ void TexturedCubeRenderer::BindConstantBuffers(_In_ ID3D11DeviceContext1 * pCont
     mPerPrimitiveConstants->ApplyChanges(pContext);
 
     // Apply constant buffers.
-    mSceneLighting->BindToActivePixelShader(pContext, 0);
+    mPerFrameConstants->BindToActivePixelShader(pContext, 0);
     mModelViewBuffer->BindToActiveVertexShader(pContext, 1);
     mPerPrimitiveConstants->BindToActiveVertexShader(pContext, 2);
+
+    mModelViewBuffer->BindToActivePixelShader(pContext, 1);
+    mPerPrimitiveConstants->BindToActivePixelShader(pContext, 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

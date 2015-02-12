@@ -14,6 +14,7 @@ namespace DirectX
 namespace DXSandboxApp
 {
     template<class T> class TypedConstantBuffer;
+    // TODO: All these classes can derive directly from TypedConstantBuffer.
 
     /**
      * Internal layout of the MVP constant buffer.
@@ -54,23 +55,23 @@ namespace DXSandboxApp
     /**
      * Lighting constant buffer.
      */
-    struct SceneLightingData
+    struct PerFrameData
     {
-        DirectX::XMFLOAT4 position[4];
-        DirectX::XMFLOAT4 color;
+        DirectX::XMFLOAT4 ambientColor;
+        DirectX::XMFLOAT4 diffuseColor;
     };
 
     /**
     * Convience class for interacting with the MVP constant buffer present in most demos.
     */
-    class SceneLightingConstantBuffer       // TODO: Rename PerSceneConstantBuffer
+    class PerFrameConstantBuffer
     {
     public:
-        SceneLightingConstantBuffer(ID3D11Device * device);
-        virtual ~SceneLightingConstantBuffer();
+        PerFrameConstantBuffer(ID3D11Device * device);
+        virtual ~PerFrameConstantBuffer();
 
-        void SetPosition(DirectX::XMFLOAT4 position, unsigned int index);
-        void SetColor(DirectX::XMFLOAT4 color);
+        void SetAmbientColor(DirectX::XMFLOAT4 color);
+        void SetDiffuseColor(DirectX::XMFLOAT4 color);
 
         // Update hardware constant buffer with new MVP values.
         void ApplyChanges(ID3D11DeviceContext * deviceContext);
@@ -82,7 +83,7 @@ namespace DXSandboxApp
         void BindToActivePixelShader(ID3D11DeviceContext * deviceContext, unsigned int startSlot) const;
 
     private:
-        std::shared_ptr<TypedConstantBuffer<SceneLightingData>> mData;
+        std::shared_ptr<TypedConstantBuffer<PerFrameData>> mData;
     };
 
     /**
