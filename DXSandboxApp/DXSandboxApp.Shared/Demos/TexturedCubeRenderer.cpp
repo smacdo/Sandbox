@@ -8,6 +8,7 @@
 #include "Input\InputTracker.h"
 #include "Rendering/Material.h"
 #include "Rendering/ConfigurableDesc.h"
+#include "Rendering/MeshFactory.h"
 
 #include <memory>
 
@@ -57,7 +58,13 @@ void TexturedCubeRenderer::CreateDeviceDependentResources()
 
     // Create the cube mesh once the vertex and pixel shaders have loaded.
     auto createCubeTask = (createPSTask && createVSTask).then([this]() {
-        CreateCubeMesh(&mVertexBuffer, &mIndexBuffer, nullptr, &mIndexCount);
+        MeshFactory::CreateCubeMesh(
+            mDeviceResources->GetD3DDevice(),
+            &mVertexBuffer,
+            &mIndexBuffer,
+            nullptr,
+            &mIndexCount);
+        //CreateCubeMesh(&mVertexBuffer, &mIndexBuffer, nullptr, &mIndexCount);
     });
 
     // Load the texture map for the cube.
@@ -175,125 +182,4 @@ void TexturedCubeRenderer::BindConstantBuffers(_In_ ID3D11DeviceContext1 * pCont
 
     mModelViewBuffer->BindToActivePixelShader(pContext, 1);
     mPerPrimitiveConstants->BindToActivePixelShader(pContext, 2);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Utility factory methods
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * Generate a cube mesh in simple model format.
- */
-void TexturedCubeRenderer::CreateCubeMesh(
-    _Out_ ID3D11Buffer ** vertexBufferOut,
-    _Out_ ID3D11Buffer ** indexBufferOut,
-    _Out_opt_ unsigned int * vertexCountOut,
-    _Out_opt_ unsigned int * indexCountOut)
-{
-    // Load mesh vertices. Each vertex has a position and a color.
-    static const VertexSimple cubeVertices[] =
-    {
-        // Front Face
-        VertexSimple(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f),
-        VertexSimple(-1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, -1.0f),
-        VertexSimple(1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f),
-        VertexSimple(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f),
-
-        // Back Face
-        VertexSimple(-1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f),
-        VertexSimple(1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 1.0f),
-        VertexSimple(1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),
-        VertexSimple(-1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 1.0f),
-
-        // Top Face
-        VertexSimple(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f),
-        VertexSimple(-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f),
-        VertexSimple(1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f),
-        VertexSimple(1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f),
-
-        // Bottom Face
-        VertexSimple(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f),
-        VertexSimple(1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, -1.0f),
-        VertexSimple(1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f),
-        VertexSimple(-1.0f, -1.0f, 1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 1.0f),
-
-        // Left Face
-        VertexSimple(-1.0f, -1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f),
-        VertexSimple(-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f),
-        VertexSimple(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, -1.0f),
-        VertexSimple(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f),
-
-        // Right Face
-        VertexSimple(1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, -1.0f),
-        VertexSimple(1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, -1.0f),
-        VertexSimple(1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f),
-        VertexSimple(1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f),
-    };
-
-    if (vertexCountOut != nullptr)
-    {
-        *vertexCountOut = ARRAYSIZE(cubeVertices);
-    }
-
-    // Initialize vertex buffer description and data structures, and then ask DirectX to create a new vertex buffer.
-    CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(cubeVertices), D3D11_BIND_VERTEX_BUFFER);
-
-    D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-    vertexBufferData.pSysMem = cubeVertices;
-    vertexBufferData.SysMemPitch = 0;
-    vertexBufferData.SysMemSlicePitch = 0;
-
-    DX::ThrowIfFailed(
-        mDeviceResources->GetD3DDevice()->CreateBuffer(
-            &vertexBufferDesc,
-            &vertexBufferData,
-            vertexBufferOut));
-
-    // Load mesh indices. Each trio of indices represents a triangle to be rendered on the screen.
-    // For example: 0,2,1 means that the vertices with indexes 0, 2 and 1 from the vertex buffer compose the first
-    //              triangle of this mesh.
-    static const unsigned short cubeIndices[] =
-    {
-        // Front Face
-        0, 1, 2,
-        0, 2, 3,
-
-        // Back Face
-        4, 5, 6,
-        4, 6, 7,
-
-        // Top Face
-        8, 9, 10,
-        8, 10, 11,
-
-        // Bottom Face
-        12, 13, 14,
-        12, 14, 15,
-
-        // Left Face
-        16, 17, 18,
-        16, 18, 19,
-
-        // Right Face
-        20, 21, 22,
-        20, 22, 23
-    };
-
-    if (indexCountOut != nullptr)
-    {
-        *indexCountOut = ARRAYSIZE(cubeIndices);
-    }
-
-    // Initialize index buffer description and data structures, and then ask DirectX to create a new index buffer.
-    CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndices), D3D11_BIND_INDEX_BUFFER);
-
-    D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
-    indexBufferData.pSysMem = cubeIndices;
-    indexBufferData.SysMemPitch = 0;
-    indexBufferData.SysMemSlicePitch = 0;
-    
-    DX::ThrowIfFailed(
-        mDeviceResources->GetD3DDevice()->CreateBuffer(
-            &indexBufferDesc,
-            &indexBufferData,
-            indexBufferOut));
 }

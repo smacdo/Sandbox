@@ -30,6 +30,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\ConstantBuffers.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\Material.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\MeshFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.cpp" />
@@ -61,6 +62,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ConstantBuffers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\IDemoRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\MeshFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ShaderStructures.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\Material.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.h" />

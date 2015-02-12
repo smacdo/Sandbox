@@ -39,13 +39,6 @@ namespace DXSandboxApp
     private:
         void BindConstantBuffers(_In_ ID3D11DeviceContext1 * pContext);
 
-        // TODO: Move this into a factory.
-        void CreateCubeMesh(
-            _Out_ ID3D11Buffer ** vertexBufferOut,
-            _Out_ ID3D11Buffer ** indexBufferOut,
-            _Out_opt_ unsigned int * vertexCountOut,
-            _Out_opt_ unsigned int * indexCountOut);
-
     private:
         std::unique_ptr<Material> mCubeTexture;     // TODO: Rename mCubeMaterial
         std::unique_ptr<PerFrameConstantBuffer> mPerFrameConstants;
