@@ -5,6 +5,7 @@
 
 #include "pch.h"
 #include "DirectXPage.xaml.h"
+#include "Input\InputTracker.h"
 
 using namespace DXSandboxApp;
 
@@ -164,23 +165,23 @@ void DirectXPage::AppBarButton_Click(Object^ sender, RoutedEventArgs^ e)
 
 void DirectXPage::OnPointerPressed(Object^ sender, PointerEventArgs^ e)
 {
-	// When the pointer is pressed begin tracking the pointer movement.
-	m_main->StartTracking();
+	m_main->GetInputTracker()->PointerPressed(
+		e->CurrentPoint->Position.X,
+		e->CurrentPoint->Position.Y);
 }
 
 void DirectXPage::OnPointerMoved(Object^ sender, PointerEventArgs^ e)
 {
-	// Update the pointer tracking code.
-	if (m_main->IsTracking())
-	{
-		m_main->TrackingUpdate(e->CurrentPoint->Position.X);
-	}
+	m_main->GetInputTracker()->PointerMoved(
+		e->CurrentPoint->Position.X,
+		e->CurrentPoint->Position.Y);
 }
 
 void DirectXPage::OnPointerReleased(Object^ sender, PointerEventArgs^ e)
 {
-	// Stop tracking pointer movement when the pointer is released.
-	m_main->StopTracking();
+	m_main->GetInputTracker()->PointerReleased(
+		e->CurrentPoint->Position.X,
+		e->CurrentPoint->Position.Y);
 }
 
 void DirectXPage::OnCompositionScaleChanged(SwapChainPanel^ sender, Object^ args)

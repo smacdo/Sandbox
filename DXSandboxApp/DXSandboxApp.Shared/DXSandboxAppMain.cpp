@@ -20,8 +20,7 @@ using namespace Concurrency;
  */
 DXSandboxAppMain::DXSandboxAppMain(std::shared_ptr<DX::DeviceResources> deviceResources)
     : mDeviceResources(deviceResources),
-      mInputTracker(new InputTracker()),
-      mPointerLocationX(0.0f)
+      mInputTracker(new InputTracker())
 {
 	// Register to be notified if the Device is lost or recreated
 	mDeviceResources->RegisterDeviceNotify(this);
@@ -61,6 +60,11 @@ void DXSandboxAppMain::StartRenderer(IDemoRenderer * renderer)
 {
     critical_section::scoped_lock lock(mCriticalSection);
     mSceneRenderer = std::unique_ptr<IDemoRenderer>(renderer);
+}
+
+std::shared_ptr<InputTracker> DXSandboxApp::DXSandboxAppMain::GetInputTracker()
+{
+	return mInputTracker;
 }
 
 // Updates application state when the window size changes (e.g. device orientation change)
@@ -171,7 +175,7 @@ void DXSandboxAppMain::Update()
 // Process all input from the user before updating game state
 void DXSandboxAppMain::ProcessInput()
 {
-    mInputTracker->TrackingUpdate(mPointerLocationX);
+//    mInputTracker->TrackingUpdate(mPointerLocationX);
 }
 
 // Notifies renderers that device resources need to be released.
@@ -198,29 +202,4 @@ void DXSandboxAppMain::OnDeviceRestored()
 	CreateWindowSizeDependentResources();
 
     mGameHud->LoadResources();
-}
-
-void DXSandboxAppMain::StartTracking()
-{
-    // TODO: Move this code to the caller.
-    mInputTracker->StartTracking();
-}
-
-void DXSandboxAppMain::TrackingUpdate(float positionX)
-{
-    // TODO: Move this code to the caller.
-    mInputTracker->TrackingUpdate(positionX);
-    mPointerLocationX = positionX;
-}
-
-void DXSandboxAppMain::StopTracking()
-{
-    // TODO: Move this code to the caller.
-    mInputTracker->StopTracking();
-}
-
-bool DXSandboxAppMain::IsTracking()
-{
-    // TODO: Move this code to the caller.
-    return mInputTracker->IsTracking();
 }

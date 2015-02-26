@@ -20,10 +20,6 @@ namespace DXSandboxApp
 		DXSandboxAppMain(std::shared_ptr<DX::DeviceResources> deviceResources);
 		~DXSandboxAppMain();
 		void CreateWindowSizeDependentResources();
-        void StartTracking();
-        void TrackingUpdate(float positionX);
-        void StopTracking();
-        bool IsTracking();
 		void StartRenderLoop();
 		void StopRenderLoop();
 		Concurrency::critical_section& GetCriticalSection() { return mCriticalSection; }
@@ -34,6 +30,8 @@ namespace DXSandboxApp
 
         void Initialize();
         void StartRenderer(IDemoRenderer * renderer);
+
+		std::shared_ptr<InputTracker> GetInputTracker();
 
 	private:
         void UpdateGameLoop();
@@ -56,9 +54,6 @@ namespace DXSandboxApp
 		// Rendering loop timer.
         DX::StepTimer mUpdateTimer;
 		DX::StepTimer mRenderTimer;
-
-		// Track current input pointer position.
-		float mPointerLocationX;
 
         // Gameplay
         std::unique_ptr<GameHud> mGameHud;

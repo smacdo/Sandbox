@@ -112,9 +112,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DirectXTK\DirectXTK_Desktop_2013.vcxproj">
-      <Project>{e0b52ae7-e160-4d32-bf3f-910b785e5a8e}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\SandboxEngine\SandboxEngine.vcxproj">
       <Project>{7560be1c-6290-439f-98cf-db6a0a60f693}</Project>
     </ProjectReference>

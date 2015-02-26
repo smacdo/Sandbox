@@ -2,22 +2,26 @@
 
 namespace DXSandboxApp
 {
+	// This class is thread safe.
     class InputTracker
     {
     public:
         InputTracker();
-        ~InputTracker();
 
-        float InputPositionX() const { return mPositionX; }
+		void PointerPressed(float x, float y);
+		void PointerMoved(float x, float y);
+		void PointerReleased(float x, float y);
 
-        void StartTracking();
-        void StopTracking();
-        bool IsTracking() const { return mTracking; }
+		float InputPositionX() const;
+		float InputPositionY() const;
+		bool IsTracking() const;
 
-        void TrackingUpdate(float positionX);
+	protected:
+		void SetInputPosition(float x, float y);
 
     private:
-        float mPositionX;
+        float mInputX;
+		float mInputY;
         bool mTracking;
     };
 }
