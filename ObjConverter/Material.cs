@@ -4,15 +4,74 @@ using System.Linq;
 
 namespace ObjConverter
 {
-    public class TextureInfo
+	/// <summary>
+	///  TODO: Better name for class?
+	/// </summary>
+	public class TextureInfo
     {
-        public Vector3 Color { get; set;}
-        public string Map { get; set; }
+		private Vector3? mColor;
+		private string mMap;
+
+        public Vector3 Color
+		{
+			get
+			{
+				if (!mColor.HasValue)
+				{
+					throw new InvalidOperationException("Material texture is not a solid color");
+				}
+
+				return mColor.Value;
+			}
+			set
+			{
+				mColor = value;
+				Map = null;
+			}
+		}
+
+        public string Map
+		{
+			get
+			{
+				if (mMap == null)
+				{
+					throw new InvalidOperationException("Material texture is not a texture map");
+				}
+
+				return mMap;
+			}
+			set
+			{
+				mColor = null;
+				mMap = value;
+			}
+		}
+
+		public bool HasColor { get { return mColor.HasValue; } }
+
+		public bool HasMap { get { return mMap != null; } }
 
         public TextureInfo()
         {
-            Color = new Vector3 { X = 1.0f, Y = 1.0f, Z = 1.0f };
+            mColor = new Vector3 { X = 1.0f, Y = 1.0f, Z = 1.0f };
         }
+
+		public TextureInfo(Vector3 color)
+		{
+			mColor = color;
+		}
+
+		public TextureInfo(string mapName)
+		{
+			if (string.IsNullOrWhiteSpace(mapName))
+			{
+				throw new ArgumentNullException("mapName");
+			}
+
+			mMap = mapName;
+		}
+
     }
 
     /// <summary>
@@ -26,7 +85,6 @@ namespace ObjConverter
         public TextureInfo Specular { get; set; }
         public float SpecularPower { get; set; }
         public bool Wireframe { get; set; }
-        public float Opacity { get; set; }
 
         public Material(string materialName)
         {
@@ -37,7 +95,6 @@ namespace ObjConverter
 
             Name = materialName;
             Wireframe = false;
-            Opacity = 1.0f;
         }
     }
 }

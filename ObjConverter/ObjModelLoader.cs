@@ -1,14 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ObjConverter
 {
-    public class ObjModelLoader
+    public class ObjModelLoader : IModelImporter
     {
-        public ObjData LoadFromText(string objTextData)
+		public StaticModelData Import(Stream input)
+		{
+			var streamReader = new StreamReader(input);
+			var inputAsText = streamReader.ReadToEnd();
+
+			var staticModel = ConvertToStaticModel(LoadFromText(inputAsText));
+			return staticModel;
+		}
+
+		/// <summary>
+		///  Loads an obj model from a text string.
+		/// </summary>
+		/// <param name="objTextData"></param>
+		/// <returns></returns>
+        private ObjData LoadFromText(string objTextData)
         {
             // Convert the obj text data into lines, and ensure each line is "clean" for processing.
             var objLines = new List<string>(objTextData.Split('\n').Select(s => s.Trim()).ToList());
@@ -18,6 +33,8 @@ namespace ObjConverter
             var texCoords = new List<Vector2>();
             var normals = new List<Vector3>();
             var faces = new List<ObjFace>();
+
+		    FaceType? faceType = null;
 
             // Read obj file components.
             foreach (var rawLine in objLines)
@@ -72,6 +89,11 @@ namespace ObjConverter
                 }
                 else if (command.Equals("f"))
                 {
+                    if (!faceType.HasValue)
+                    {
+                        faceType = DetectFaceType(parts[1]);
+                    }
+
                     // Expand face values.
                     var faceA = parts[1].Split('/');
                     var faceB = parts[2].Split('/');
@@ -118,9 +140,151 @@ namespace ObjConverter
                 }
             }
 
-            return new ObjData(vertices, texCoords, normals, faces);
+            return new ObjData
+			{
+				Vertices = vertices,
+				TexCoords = texCoords,
+				Normals = normals,
+				Faces = faces
+			};
         }
 
+		public StaticModelData ConvertToStaticModel(ObjData obj)
+		{
+			// Dumb conversion: Convert each face group into a unique vertex.
+			//  TODO: Make this smarter, and have identical face groups point to same vertex.
+			var vertices = new List<StaticVertex>();
+			var indices = new List<int>();
 
-    }
+			foreach (var face in obj.Faces)
+			{
+				// make sure to subtract one from face index, because it uses one based indexing.
+				vertices.Add(new StaticVertex
+				{
+					Position = obj.Vertices[face.A.V - 1],
+					TexCoord = obj.TexCoords[face.A.T - 1],
+					Normal = obj.Normals[face.A.N - 1]
+				});
+				indices.Add(vertices.Count - 1);
+
+				vertices.Add(new StaticVertex
+				{
+					Position = obj.Vertices[face.B.V - 1],
+					TexCoord = obj.TexCoords[face.B.T - 1],
+					Normal = obj.Normals[face.B.N - 1]
+				});
+				indices.Add(vertices.Count - 1);
+
+				vertices.Add(new StaticVertex
+				{
+					Position = obj.Vertices[face.C.V - 1],
+					TexCoord = obj.TexCoords[face.C.T - 1],
+					Normal = obj.Normals[face.C.N - 1]
+				});
+				indices.Add(vertices.Count - 1);
+			}
+
+			// Create and return new static model.
+			return new StaticModelData
+			{
+				Vertices = vertices,
+				Indices = indices
+			};
+		}
+
+        private ObjFace ParseFace(string facePartA, string facePartB, string facePartC, FaceType type)
+        {
+            var faceA = facePartA.Split('/');
+            var faceB = facePartB.Split('/');
+            var faceC = facePartC.Split('/');
+            var pos = new int[3];
+            var tex = new int[3];
+            var normal = new int[3];
+
+            // Convert to left hand system by reading face entries in reverse.
+            return (new ObjFace
+            {
+                A = new ObjVertexIndex
+                {
+                    V = Convert.ToInt32(faceC[0]),
+                    T = Convert.ToInt32(faceC[1]),
+                    N = Convert.ToInt32(faceC[2])
+                },
+                B = new ObjVertexIndex
+                {
+                    V = Convert.ToInt32(faceB[0]),
+                    T = Convert.ToInt32(faceB[1]),
+                    N = Convert.ToInt32(faceB[2])
+                },
+                C = new ObjVertexIndex
+                {
+                    V = Convert.ToInt32(faceA[0]),
+                    T = Convert.ToInt32(faceA[1]),
+                    N = Convert.ToInt32(faceA[2])
+                },
+            });
+        }
+
+        private FaceType DetectFaceType(string face)
+        {
+            var bits = face.Split('/');
+
+            switch (bits.Length)
+            {
+                case 1:
+                    return FaceType.Position;
+                case 2:
+                    return FaceType.PositionTexture;
+                case 3:
+                    if (string.IsNullOrWhiteSpace(bits[1]))
+                    {
+                        return FaceType.PositionNormal;
+                    }
+                    return FaceType.PoisitionTextureNormal;
+                default:
+                    throw new InvalidOperationException("Unknown obj face type");
+            }
+        }
+
+        /// <summary>
+		///  Obj face.
+		/// </summary>
+		public struct ObjFace
+		{
+			public ObjVertexIndex A { get; set; }
+			public ObjVertexIndex B { get; set; }
+			public ObjVertexIndex C { get; set; }
+		}
+
+		/// <summary>
+		///  Obj model vertex index offsets.
+		/// </summary>
+		public struct ObjVertexIndex
+		{
+			// Vertex position index.
+			public int V { get; set; }
+
+			// Vertex texture index.
+			public int T { get; set; }
+
+			// Vertex normal inde.x
+			public int N { get; set; }
+		}
+
+		public class ObjData
+		{
+			public IList<Vector3> Vertices { get; set; }
+			public IList<Vector2> TexCoords { get; set; }
+			public IList<Vector3> Normals { get; set; }
+			public IList<ObjFace> Faces { get; set; }
+		}
+
+        public enum FaceType
+        {
+            Position,
+            PositionTexture,
+            PositionNormal,
+            PoisitionTextureNormal
+        }
+	}
 }
