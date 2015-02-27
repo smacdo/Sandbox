@@ -44,6 +44,11 @@ namespace DX
 		void Trim();
 		void Present();
 
+		// XXX START MOD
+		// Block the current thread until the swap chain has finished presenting.
+		void WaitOnSwapChain();
+		// XXX END MOD
+
         // Getters.
         //  - Custom functions added by Scott.
         bool GetComputerShadersSupported() const;
@@ -118,6 +123,11 @@ namespace DX
 		// Transforms used for display orientation.
 		D2D1::Matrix3x2F	m_orientationTransform2D;
 		DirectX::XMFLOAT4X4	m_orientationTransform3D;
+
+		// XXX START MOD
+		// Used by the WaitOnSwapChain method.
+		HANDLE m_frameLatencyWaitableObject;
+		// XXX END MOD
 
 		// The IDeviceNotify can be held directly as it owns the DeviceResources.
 		IDeviceNotify* m_deviceNotify;

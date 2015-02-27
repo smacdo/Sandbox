@@ -108,6 +108,12 @@ void DXSandboxAppMain::StopRenderLoop()
 
 void DXSandboxAppMain::UpdateGameLoop()
 {
+	// XXX BEGIN MOD
+	// Block this thread until the swap chain is finished presenting. Note that it is important to call this before the
+	// first Present in order to minimize the latency of the swap chain.
+	mDeviceResources->WaitOnSwapChain();
+	// XXX END MOD
+
     // Get user input and process that before updating, ensuring all input is immediately applied prior to a rendering
     // call.
     ProcessInput();

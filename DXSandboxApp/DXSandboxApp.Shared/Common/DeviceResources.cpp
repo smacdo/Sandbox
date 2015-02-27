@@ -60,6 +60,7 @@ DX::DeviceResources::DeviceResources() :
 	m_dpi(-1.0f),
 	m_compositionScaleX(1.0f),
 	m_compositionScaleY(1.0f),
+	m_frameLatencyWaitableObject(),
 	m_deviceNotify(nullptr)
 {
 	CreateDeviceIndependentResources();
@@ -229,7 +230,9 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
                 lround(m_d3dRenderTargetSize.Width),
                 lround(m_d3dRenderTargetSize.Height),
                 DXGI_FORMAT_B8G8R8A8_UNORM,
-                0);
+// XXX BEGIN MOD
+				DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT);
+// XXX END MOD
 
 		if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
 		{
@@ -259,7 +262,9 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		swapChainDesc.BufferCount = 2; // Use double-buffering to minimize latency.
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
-		swapChainDesc.Flags = 0;
+// XXX START MOD
+		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
+// XXX END MOD
 		swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
@@ -304,11 +309,25 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 				);
 		}, CallbackContext::Any));
 		
+// XXX START MOD
 		// Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
 		// ensures that the application will only render after each VSync, minimizing power consumption.
-		DX::ThrowIfFailed(
-			dxgiDevice->SetMaximumFrameLatency(1)
-			);
+		// DX::ThrowIfFailed(dxgiDevice->SetMaximumFrameLatency(1));
+
+		// Swapchains created with the DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT flag use their
+		// own per-swapchain latency setting instead of the one associated with the DXGI device. The
+		// default per-swapchain latency is 1, which ensures that DXGI does not queue more than one frame
+		// at a time. This both reduces latency and ensures that the application will only render after
+		// each VSync, minimizing power consumption.
+		//
+		// Get the frame latency waitable object, which is used by the WaitOnSwapChain method. This
+		// requires that swap chain be created with the DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT
+		// flag.
+		ComPtr<IDXGISwapChain2> swapChain2;
+		DX::ThrowIfFailed(m_swapChain.As(&swapChain2));
+
+		m_frameLatencyWaitableObject = swapChain2->GetFrameLatencyWaitableObject();
+// XXX END MOD
 	}
 
 	// Set the proper orientation for the swap chain, and generate 2D and
@@ -646,6 +665,17 @@ void DX::DeviceResources::Present()
 		DX::ThrowIfFailed(hr);
 	}
 }
+
+// XXX BEGIN MOD
+// Block the current thread until the swap chain has finished presenting.
+void DX::DeviceResources::WaitOnSwapChain()
+{
+	WaitForSingleObjectEx(
+		m_frameLatencyWaitableObject,
+		1000,		// One second timeout while waiting (should not happen). TODO: Add warning if this happens.
+		true);
+}
+// XXX END MOD
 
 // Check if compute shaders are supported.
 bool DX::DeviceResources::GetComputerShadersSupported() const
