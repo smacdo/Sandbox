@@ -12,9 +12,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\DeviceResources.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Input\InputTracker.h">
       <Filter>Input</Filter>
     </ClInclude>
@@ -90,9 +87,6 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp">
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Input\InputTracker.cpp">

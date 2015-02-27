@@ -16,7 +16,6 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Camera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Common\Profiler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\StepTimer.cpp" />
@@ -39,7 +38,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Debugging.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Exceptions.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Profiler.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Demos\ColoredCubeRenderer.h" />
