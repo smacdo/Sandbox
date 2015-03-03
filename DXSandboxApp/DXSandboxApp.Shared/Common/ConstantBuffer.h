@@ -29,16 +29,7 @@ namespace DXSandboxApp
         // Disabled assignment operator.
         ConstantBuffer& operator = (const ConstantBuffer&) = delete;
 
-        // Update constant buffer.
-        //  TODO: Use static assertion / template trait to force T to be a POD.
-        template<class T>
-        HRESULT Update(ID3D11DeviceContext * deviceContext, std::function<void(T& buffer)> updateFunction);
-
-        // Update constant buffer with the provided data.
-        //  TODO: Use static assertion / template trait to force T to be a POD
-        template<class T>
-        void UpdateValue(ID3D11DeviceContext * deviceContext, const T& constantData);
-
+		// Update constant buffer with the provided data.
         void UpdateValue(ID3D11DeviceContext * deviceContext, const void * pData);
 
         // Binds this constant shader to the currently active vertex shader.
@@ -46,10 +37,6 @@ namespace DXSandboxApp
 
         // Binds this constant shader to the currently active pixel shader.
         void BindToActivePixelShader(ID3D11DeviceContext * deviceContext, unsigned int startSlot) const;
-
-        // Create a new typed constant buffer.
-        template<typename T>
-        static ConstantBuffer * Create(ID3D11Device * device);
 
         // Create a new untyped constant buffer.
         static ConstantBuffer * Create(ID3D11Device * device, size_t bufferSize);
@@ -62,41 +49,6 @@ namespace DXSandboxApp
     private:
         Microsoft::WRL::ComPtr<ID3D11Buffer> mConstantBuffer;
     };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // Implementation of constant buffer methods.
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    template<class T>
-    HRESULT ConstantBuffer::Update(ID3D11DeviceContext * deviceContext, std::function<void(T& buffer)> updateFunction)
-    {
-        // TODO: Verify deviceContext != nullptr.
-
-
-        // Lock and map the buffer to a typed pointer.
-        D3D11_MAPPED_SUBRESOURCE mappedChunk;
-        HRESULT hr = pDeviceContext->Map(mConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedChunk);
-
-        if (SUCCEEDED(hr))
-        {
-            updateFunction(reinterpret_cast<T*>(mappedChunk.pData));
-            pDeviceContext->Unmap(mConstantBuffer.Get(), 0);
-        }
-
-        return hr;
-    }
-
-    template<class T>
-    void ConstantBuffer::UpdateValue(ID3D11DeviceContext * deviceContext, const T& data)
-    {
-        // TODO: Verify deviceContext != nullptr.
-        UpdateValue(deviceContext, reinterpret_cast<const void *>(&data));
-    }
-
-    template<class T>
-    ConstantBuffer * ConstantBuffer::Create(ID3D11Device * pDevice)
-    {
-        return Create(pDevice, sizeof(T));
-    }
 
     /**
      * \brief Assists in manipulating and updating a DirectX typed constant buffer with backing storage.

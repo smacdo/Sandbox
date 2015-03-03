@@ -12,20 +12,18 @@ using namespace Platform;
 
 using namespace DXSandboxApp;
 
-ConstantBuffer::ConstantBuffer(ID3D11Device * device, size_t bufferSize)
+ConstantBuffer::ConstantBuffer(ID3D11Device * pDevice, size_t bufferSize)
     : mConstantBuffer()
 {
     CD3D11_BUFFER_DESC bufferDesc(bufferSize, D3D11_BIND_CONSTANT_BUFFER);
-
-    HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, &mConstantBuffer);
-    DX::ThrowIfFailed(hr);
+	DX::ThrowIfFailed(pDevice->CreateBuffer(&bufferDesc, nullptr, &mConstantBuffer));
 }
 
-ConstantBuffer::ConstantBuffer(ID3D11Buffer * constantBuffer)
+ConstantBuffer::ConstantBuffer(ID3D11Buffer * pConstantBuffer)
     : mConstantBuffer()
 {
-    CheckNotNull(constantBuffer);
-    mConstantBuffer.Attach(constantBuffer);     // Transfered ownership, do not AddRef.
+    CheckNotNull(pConstantBuffer);
+    mConstantBuffer.Attach(pConstantBuffer);     // Transfered ownership, do not AddRef.
 }
 
 ConstantBuffer::~ConstantBuffer()
