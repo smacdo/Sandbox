@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Common/Debugging.h"
+#include "Common\Utility.h"
 #include "Material.h"
 
 using namespace DXSandboxApp;

@@ -21,7 +21,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.h">
       <Filter>Ui</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Game\GameHud.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -49,13 +48,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Demos\SimpleMeshRenderer.h">
       <Filter>Demos</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Exceptions.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Debugging.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Demos\TexturedCubeRenderer.h">
@@ -82,7 +75,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Utility.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\DDSTextureLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\DDSTextureLoader.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Game\GameHud.h">
+      <Filter>Ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -102,7 +100,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.cpp">
       <Filter>Ui</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Game\GameHud.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -151,7 +148,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Common\Utility.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Common\DDSTextureLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\DDSTextureLoader.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Game\GameHud.cpp">
+      <Filter>Ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Demos\Shaders\SimpleMeshPixelShader.hlsl">

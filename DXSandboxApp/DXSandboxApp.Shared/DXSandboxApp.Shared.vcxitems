@@ -39,8 +39,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Camera.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ConstantBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\DDSTextureLoader.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Debugging.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Exceptions.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\ResourceLoader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\SimpleMesh.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Common\Utility.h" />

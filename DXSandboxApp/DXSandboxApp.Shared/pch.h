@@ -16,4 +16,5 @@
 #include <ppltasks.h>
 #include "App.xaml.h"
 
-#include "Common\Debugging.h"
+// App specific files
+#include "Common\Utility.h"
