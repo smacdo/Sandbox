@@ -79,6 +79,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\MeshFactory.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Common\Utility.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -143,6 +146,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\MeshFactory.cpp">
       <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Common\Utility.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
