@@ -8,7 +8,7 @@ using namespace DXSandboxApp;
 // Constants
 static const wchar_t * DefaultFontName = L"Segoe UI";
 static const wchar_t * DefaultRegion = L"en-US";
-static const float DefaultFontSize = 32.0f;
+static const int DefaultFontSize = 32;
 static const float MaxDrawTextWidth = 800.0f;
 static const float MaxDrawTextHeight = 100.0f;
 
@@ -41,7 +41,7 @@ RenderableTextSprite::RenderableTextSprite(
         DWRITE_FONT_WEIGHT_LIGHT,
         DWRITE_FONT_STYLE_NORMAL,
         DWRITE_FONT_STRETCH_NORMAL,
-        fontSize,
+        static_cast<float>(fontSize),
         DefaultRegion,
         &mFormat));
 

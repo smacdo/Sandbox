@@ -690,7 +690,7 @@ bool DX::DeviceResources::GetComputerShadersSupported() const
         {
             D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS hwopts = { 0 };
             m_d3dDevice->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &hwopts, sizeof(hwopts));
-            return hwopts.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x;
+            return (hwopts.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x == TRUE);
         }
     }
 
