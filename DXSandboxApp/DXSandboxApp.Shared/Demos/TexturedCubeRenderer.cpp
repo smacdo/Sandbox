@@ -71,7 +71,7 @@ void TexturedCubeRenderer::CreateDeviceDependentResources()
     SamplerSettings settings;
     settings = settings.AnisotropicFilter().MaxAnisotropy(8);
 
-    auto loadTextureTask = mResourceLoader->LoadTexture2dAsync(L"crate.png", settings).then([this](Material * pTexture)
+    auto loadTextureTask = mResourceLoader->LoadMaterialAsync(L"crate.png", settings).then([this](Material * pTexture)
     {
         mCubeTexture.reset(pTexture);
 

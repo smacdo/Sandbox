@@ -32,6 +32,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\GameUiRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\Material.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\MeshFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\Texture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.cpp" />
@@ -65,6 +66,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\MeshFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\ShaderStructures.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\Material.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\Texture.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\ImageSprite.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\RenderableImageSprite.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Ui\RenderableTextSprite.h" />

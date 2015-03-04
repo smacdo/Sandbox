@@ -2,14 +2,13 @@
 #include "ResourceLoader.h"
 #include <ppltasks.h>
 #include <string>
-#include <locale>
 #include <memory>
-#include <codecvt>
 
 #include "Common/DirectXHelper.h"
 #include "Ui/RenderableImageSprite.h"
 #include "Rendering/Material.h"
 #include "Rendering/ConfigurableDesc.h"
+#include "Rendering/Texture.h"
 
 using namespace DXSandboxApp;
 using namespace Microsoft::WRL;
@@ -73,7 +72,6 @@ concurrency::task<std::wstring> ResourceLoader::LoadWideStringAsync(const std::w
     {
         // Load HString string from buffer.
         Platform::String^ nativeText = Streams::DataReader::FromBuffer(fileBuffer)->ReadString(fileBuffer->Length);
-
         return std::wstring(nativeText->Data());
     });
 }
@@ -96,16 +94,16 @@ concurrency::task<ID3D11PixelShader*> ResourceLoader::LoadPixelShaderAsync(const
     auto loadPSTask = LoadDataAsync(fileName);
 
     return loadPSTask.then([this](const std::vector<byte>& fileData) {
-        ID3D11PixelShader * pixelShader = nullptr;
+        ComPtr<ID3D11PixelShader> pixelShader;
 
         DX::ThrowIfFailed(
             mDeviceResources->GetD3DDevice()->CreatePixelShader(
-            &fileData[0],
-            fileData.size(),
-            nullptr,
-            &pixelShader));
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&pixelShader));
 
-        return pixelShader;
+        return pixelShader.Detach();
     });
 }
 
@@ -117,7 +115,7 @@ concurrency::task<ID3D11VertexShader*> ResourceLoader::LoadVertexShaderAsync(con
     auto loadVSTask = LoadDataAsync(fileName);
 
     return loadVSTask.then([this](const std::vector<byte>& fileData) {
-        ID3D11VertexShader * vertexShader = nullptr;
+		ComPtr<ID3D11VertexShader> vertexShader;
 
         DX::ThrowIfFailed(
             mDeviceResources->GetD3DDevice()->CreateVertexShader(
@@ -126,7 +124,7 @@ concurrency::task<ID3D11VertexShader*> ResourceLoader::LoadVertexShaderAsync(con
                 nullptr,
                 &vertexShader));
 
-        return vertexShader;
+        return vertexShader.Detach();
     });
 }
 
@@ -141,8 +139,8 @@ concurrency::task<std::tuple<ID3D11VertexShader*, ID3D11InputLayout*>>  Resource
     auto loadVSTask = LoadDataAsync(fileName);
 
     return loadVSTask.then([this, inputElementDesc, inputElementCount](const std::vector<byte>& fileData) {
-        ID3D11VertexShader * vertexShader = nullptr;
-        ID3D11InputLayout * inputLayout = nullptr;
+        ComPtr<ID3D11VertexShader> vertexShader;
+        ComPtr<ID3D11InputLayout> inputLayout;
 
         // TODO: Call CreateInputLayout instead of doing it here.
 
@@ -161,28 +159,41 @@ concurrency::task<std::tuple<ID3D11VertexShader*, ID3D11InputLayout*>>  Resource
                 fileData.size(),
                 &inputLayout));
 
-        return std::make_tuple(vertexShader, inputLayout);
+        return std::make_tuple(vertexShader.Detach(), inputLayout.Detach());
     });
 }
 
-concurrency::task<Material *> ResourceLoader::LoadTexture2dAsync(
-    const std::wstring& fileName,
-    const SamplerSettings& settings)
+concurrency::task<Material *> ResourceLoader::LoadMaterialAsync(
+	const std::wstring& fileName,
+	const SamplerSettings& settings)
 {
-    using namespace Concurrency;
-    return create_task([=] { return LoadTexture2d(fileName, settings); });
+	using namespace Concurrency;
+	return create_task([=] { return LoadMaterial(fileName, settings); });
 }
 
-Material * ResourceLoader::LoadTexture2d(
-    const std::wstring& fileName,
-    const SamplerSettings& settings)
+Material * ResourceLoader::LoadMaterial(
+	const std::wstring& fileName,
+	const SamplerSettings& settings)
 {
-    // Format path to image file name.
-    auto location = Package::Current->InstalledLocation;
+	std::shared_ptr<Texture2d> texture(LoadTexture2d(fileName));
 
-    Platform::String^ path = Platform::String::Concat(location->Path, "\\");
-    path = Platform::String::Concat(path, "Assets\\");
-    path = Platform::String::Concat(path, Platform::StringReference(fileName.c_str()));
+	ComPtr<ID3D11SamplerState> sampler;
+	sampler = settings.CreateSamplerState(mDeviceResources->GetD3DDevice());
+
+	return new Material(
+		texture,
+		sampler.Get());
+}
+
+concurrency::task<Texture2d *> ResourceLoader::LoadTexture2dAsync(const std::wstring& fileName)
+{
+    using namespace Concurrency;
+    return create_task([=] { return LoadTexture2d(fileName); });
+}
+
+Texture2d * ResourceLoader::LoadTexture2d(const std::wstring& fileName)
+{
+	auto path = FindAssetPath(fileName);
 
     // Get WIC imaging factory, and create a decoder for the requested image.
     auto wicFactory = mDeviceResources->GetWicImagingFactory();
@@ -190,7 +201,7 @@ Material * ResourceLoader::LoadTexture2d(
     ComPtr<IWICBitmapDecoder> wicBitmapDecoder;
     DX::ThrowIfFailed(
         wicFactory->CreateDecoderFromFilename(
-            path->Data(),
+            path.c_str(),
             nullptr,
             GENERIC_READ,
             WICDecodeMetadataCacheOnDemand,
@@ -257,14 +268,8 @@ Material * ResourceLoader::LoadTexture2d(
             &srvDesc,
             &srv));
 
-    // Create a default sampler state.
-    ComPtr<ID3D11SamplerState> sampler;
-    sampler = settings.CreateSamplerState(mDeviceResources->GetD3DDevice());
-
-    // TODO: Set debug name on texture.
-
     // Create and return a new shader object.
-    return new Material(texture2d.Get(), srv.Get(), sampler.Get());
+	return new Texture2d(fileName, texture2d.Get(), srv.Get());
 }
 
 concurrency::task<RenderableImageSprite*> ResourceLoader::LoadImageSpriteAsync(const std::wstring& fileName)
@@ -275,12 +280,7 @@ concurrency::task<RenderableImageSprite*> ResourceLoader::LoadImageSpriteAsync(c
 
 RenderableImageSprite* ResourceLoader::LoadImageSprite(const std::wstring& imageFileName)
 {
-    // Format path to image file name.
-    auto location = Package::Current->InstalledLocation;
-    
-    Platform::String^ path = Platform::String::Concat(location->Path, "\\");
-    path = Platform::String::Concat(path, "Assets\\");
-    path = Platform::String::Concat(path, Platform::StringReference(imageFileName.c_str()));
+	auto path = FindAssetPath(imageFileName);
 
     // Get WIC imaging factory, and create a decoder for the requested image.
     auto wicFactory = mDeviceResources->GetWicImagingFactory();
@@ -288,7 +288,7 @@ RenderableImageSprite* ResourceLoader::LoadImageSprite(const std::wstring& image
     ComPtr<IWICBitmapDecoder> wicBitmapDecoder;
     DX::ThrowIfFailed(
         wicFactory->CreateDecoderFromFilename(
-            path->Data(),
+            path.c_str(),
             nullptr,
             GENERIC_READ,
             WICDecodeMetadataCacheOnDemand,
@@ -340,23 +340,6 @@ void ResourceLoader::ReleaseDeviceDependentResources()
 {
 }
 
-std::wstring ResourceLoader::ToWideString(const std::string& string)
-{
-    typedef std::codecvt_utf8<wchar_t> convert_type;
-    std::wstring_convert<convert_type, wchar_t> converter;
-
-    return converter.from_bytes(string);
-}
-
-std::string ResourceLoader::ToUtf8String(const std::wstring& string)
-{
-    typedef std::codecvt_utf8<wchar_t> convert_type;
-    std::wstring_convert<convert_type, wchar_t> converter;
-
-    return converter.to_bytes(string);
-}
-
-
 /**
 * Generate input layout for simple model format.
 */
@@ -386,9 +369,40 @@ void ResourceLoader::CreateInputLayout(
 {
     DX::ThrowIfFailed(
         mDeviceResources->GetD3DDevice()->CreateInputLayout(
-        layoutDesc,
-        layoutDescNumElements,
-        bytecode,
-        bytecodeSize,
-        layoutOut));
+			layoutDesc,
+			layoutDescNumElements,
+			bytecode,
+			bytecodeSize,
+			layoutOut));
+}
+
+std::wstring ResourceLoader::GetFileExtension(_In_ const std::wstring& fileName)
+{
+	int lastDotIndex = -1;
+
+	for (size_t i = 0; i < fileName.size(); i++)
+	{
+		if (fileName[i] == '.')
+		{
+			lastDotIndex = i;
+		}
+	}
+
+	if (lastDotIndex != -1)
+	{
+		return fileName.substr(lastDotIndex, fileName.size() - lastDotIndex + 1);
+	}
+
+	return std::wstring(L"");
+}
+
+std::wstring ResourceLoader::FindAssetPath(const std::wstring& assetFileName)
+{
+	auto location = Package::Current->InstalledLocation;
+
+	Platform::String^ path = Platform::String::Concat(location->Path, "\\");
+	path = Platform::String::Concat(path, "Assets\\");
+	path = Platform::String::Concat(path, Platform::StringReference(assetFileName.c_str()));
+
+	return std::wstring(path->Data());
 }

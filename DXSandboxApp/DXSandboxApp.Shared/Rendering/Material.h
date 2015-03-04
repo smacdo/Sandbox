@@ -1,26 +1,28 @@
 #pragma once
 
+#include <memory>
+
 // Forward declarations.
-struct ID3D11Material;
+struct ID3D11Material;		// ?
 struct ID3D11ShaderResourceView;
 
 namespace DXSandboxApp
 {
+	class Texture2d;
+
     // Wrapper around DirectX texture 2d.
     class Material
     {
     public:
         Material();
         Material(
-            ID3D11Texture2D * pTexture,
-            ID3D11ShaderResourceView * pResourceView,
+			std::shared_ptr<Texture2d> texture,
             ID3D11SamplerState * samplerState);
         ~Material();
 
         // Load texture.
         void Initialize(
-            ID3D11Texture2D * pTexture,
-            ID3D11ShaderResourceView * pResourceView,
+			std::shared_ptr<Texture2d> texture,
             ID3D11SamplerState * samplerState);
 
         // Unload texture object.
@@ -59,8 +61,7 @@ namespace DXSandboxApp
 
     private:
         bool mLoaded;
-        Microsoft::WRL::ComPtr<ID3D11Texture2D> mTexture;
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mShaderResourceView;
+		std::shared_ptr<Texture2d> mTexture;
         Microsoft::WRL::ComPtr<ID3D11SamplerState> mSamplerState;
         DirectX::XMFLOAT4 mMeshColor;
         DirectX::XMFLOAT4 mDiffuseColor;

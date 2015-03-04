@@ -14,6 +14,7 @@ namespace DXSandboxApp
     class RenderableImageSprite;
     class SimpleMesh;
     class Material;
+	class Texture2d;
     class SamplerSettings;
 
     class ResourceLoader
@@ -49,11 +50,17 @@ namespace DXSandboxApp
             _In_reads_bytes_(inputElementCount) const D3D11_INPUT_ELEMENT_DESC * inputElementDesc,
             _In_ uint32 inputElementCount);
 
-        // Load texture from disk.
-        concurrency::task<Material*> LoadTexture2dAsync(const std::wstring& fileName, const SamplerSettings& settings);
+		// Load a material from disk.
+		concurrency::task<Material*> LoadMaterialAsync(const std::wstring& fileName, const SamplerSettings& settings);
+
+		// Load a material from disk.
+		Material* LoadMaterial(const std::wstring& fileName, const SamplerSettings& settings);
 
         // Load texture from disk.
-        Material* LoadTexture2d(const std::wstring& fileName, const SamplerSettings& settings);
+        concurrency::task<Texture2d*> LoadTexture2dAsync(const std::wstring& fileName);
+
+        // Load texture from disk.
+        Texture2d* LoadTexture2d(const std::wstring& fileName);
 
         // Get an image sprite loaded from a file.
         concurrency::task<RenderableImageSprite*> LoadImageSpriteAsync(const std::wstring& imageFileName);
@@ -61,8 +68,8 @@ namespace DXSandboxApp
         // Get an image sprite loaded from a file.
         RenderableImageSprite* LoadImageSprite(const std::wstring& imageFileName);
 
-        static std::wstring ToWideString(const std::string& string);
-        static std::string ToUtf8String(const std::wstring& string);
+		static std::wstring GetFileExtension(_In_ const std::wstring& fileName);
+		static std::wstring FindAssetPath(const std::wstring& assetFileName);
 
     protected:
         void CreateSimpleModelInputLayout(
@@ -76,6 +83,8 @@ namespace DXSandboxApp
             _In_reads_bytes_(layoutDescNumElements) const D3D11_INPUT_ELEMENT_DESC *layoutDesc,
             _In_ uint32 layoutDescNumElements,
             _Out_ ID3D11InputLayout ** layoutOut);
+
+		
 
     private:
         // Cached pointer to device resources.

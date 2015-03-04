@@ -81,6 +81,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Game\GameHud.h">
       <Filter>Ui</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Rendering\Texture.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)DXSandboxAppMain.cpp" />
@@ -153,6 +156,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Game\GameHud.cpp">
       <Filter>Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Rendering\Texture.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

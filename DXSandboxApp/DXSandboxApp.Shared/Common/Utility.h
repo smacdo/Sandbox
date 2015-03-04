@@ -37,5 +37,12 @@ namespace DXSandboxApp
 	}
 
 	inline void DebugPrint(const std::wstring& text);
+
+	std::wstring ToWideString(const std::string& string);
+	std::string ToUtf8String(const std::wstring& string);
+
+	void SetDebugName(
+		_In_ IUnknown * pResource,
+		_In_ const std::wstring& name);
 }
 

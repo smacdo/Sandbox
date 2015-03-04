@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "Common\Utility.h"
 #include "Material.h"
+#include "Rendering\Texture.h"
+
+#include <memory>
 
 using namespace DXSandboxApp;
 
@@ -10,12 +13,11 @@ Material::Material()
 }
 
 Material::Material(
-    ID3D11Texture2D * pTexture,
-    ID3D11ShaderResourceView * pResourceView,
+	std::shared_ptr<Texture2d> texture,
     ID3D11SamplerState * pSamplerState)
     : mLoaded(false)
 {
-    Initialize(pTexture, pResourceView, pSamplerState);
+    Initialize(texture, pSamplerState);
 }
 
 Material::~Material()
@@ -24,46 +26,43 @@ Material::~Material()
 }
 
 void Material::Initialize(
-    ID3D11Texture2D * pTexture,
-    ID3D11ShaderResourceView * pResourceView,
+	std::shared_ptr<Texture2d> texture,
     ID3D11SamplerState * pSamplerState)
 {
-    CheckNotNull(pTexture);
-    CheckNotNull(pResourceView);
-
+    CheckNotNull(pSamplerState);
     Reset();
 
-    mTexture = pTexture;
-    mShaderResourceView = pResourceView;
+    mTexture = texture;
     mSamplerState = pSamplerState;
     mLoaded = true;
+
+	SetDebugName(pSamplerState, texture->Name() + L"(Sampler State)");
 }
 
 void Material::Reset()
 {
     mTexture = nullptr;
-    mShaderResourceView = nullptr;
     mLoaded = false;
 }
 
 ID3D11Texture2D * Material::GetTexture()
 {
-    return mTexture.Get();
+	return mTexture->GetTexture();
 }
 
 const ID3D11Texture2D * Material::GetTexture() const
 {
-    return mTexture.Get();
+	return mTexture->GetTexture();
 }
 
 ID3D11ShaderResourceView * Material::GetShaderResourceView()
 {
-    return mShaderResourceView.Get();
+	return mTexture->GetShaderResourceView();
 }
 
 const ID3D11ShaderResourceView * Material::GetShaderResourceView() const
 {
-    return mShaderResourceView.Get();
+	return mTexture->GetShaderResourceView();
 }
 
 ID3D11SamplerState * Material::GetSamplerState()
